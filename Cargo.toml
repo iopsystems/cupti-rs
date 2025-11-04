@@ -6,3 +6,6 @@ members = [
     "cupti-sys"
 ]
 
+[workspace.dependencies]
+cupti = { version = "0.1.0", path = "cupti" }
+cupti-sys = { version = "0.1.0", path = "cupti-sys" }
