@@ -1,14 +1,9 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+//! Generated bindings for cupti.
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#![allow(nonstandard_style)]
+#![allow(rustdoc::all)]
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+mod bindings;
+
+pub use bindings::*;
+
