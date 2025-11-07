@@ -28,6 +28,7 @@ c_enum! {
     /// Callback domains.
     ///
     /// Each domain represents callback points for a group of related API functions or CUDA driver activity.
+    #[derive(Copy, Clone, Eq, PartialEq, Hash)]
     pub enum CallbackDomain : CUpti_CallbackDomain {
         /// Invalid domain.
         Invalid = CUPTI_CB_DOMAIN_INVALID,
@@ -95,31 +96,31 @@ c_enum! {
         GraphCloned = CUPTI_CBID_RESOURCE_GRAPH_CLONED,
 
         /// CUDA graph node is about to be created.
-        GraphnodeCreateStarting = CUPTI_CBID_RESOURCE_GRAPHNODE_CREATE_STARTING,
+        GraphNodeCreateStarting = CUPTI_CBID_RESOURCE_GRAPHNODE_CREATE_STARTING,
 
         /// CUDA graph node is created.
-        GraphnodeCreated = CUPTI_CBID_RESOURCE_GRAPHNODE_CREATED,
+        GraphNodeCreated = CUPTI_CBID_RESOURCE_GRAPHNODE_CREATED,
 
         /// CUDA graph node is about to be destroyed.
-        GraphnodeDestroyStarting = CUPTI_CBID_RESOURCE_GRAPHNODE_DESTROY_STARTING,
+        GraphNodeDestroyStarting = CUPTI_CBID_RESOURCE_GRAPHNODE_DESTROY_STARTING,
 
         /// Dependency on a CUDA graph node is created.
-        GraphnodeDependencyCreated = CUPTI_CBID_RESOURCE_GRAPHNODE_DEPENDENCY_CREATED,
+        GraphNodeDependencyCreated = CUPTI_CBID_RESOURCE_GRAPHNODE_DEPENDENCY_CREATED,
 
         /// Dependency on a CUDA graph node is destroyed.
-        GraphnodeDependencyDestroyStarting = CUPTI_CBID_RESOURCE_GRAPHNODE_DEPENDENCY_DESTROY_STARTING,
+        GraphNodeDependencyDestroyStarting = CUPTI_CBID_RESOURCE_GRAPHNODE_DEPENDENCY_DESTROY_STARTING,
 
         /// An executable CUDA graph is about to be created.
-        GraphexecCreateStarting = CUPTI_CBID_RESOURCE_GRAPHEXEC_CREATE_STARTING,
+        GraphExecCreateStarting = CUPTI_CBID_RESOURCE_GRAPHEXEC_CREATE_STARTING,
 
         /// An executable CUDA graph is created.
-        GraphexecCreated = CUPTI_CBID_RESOURCE_GRAPHEXEC_CREATED,
+        GraphExecCreated = CUPTI_CBID_RESOURCE_GRAPHEXEC_CREATED,
 
         /// An executable CUDA graph is about to be destroyed.
-        GraphexecDestroyStarting = CUPTI_CBID_RESOURCE_GRAPHEXEC_DESTROY_STARTING,
+        GraphExecDestroyStarting = CUPTI_CBID_RESOURCE_GRAPHEXEC_DESTROY_STARTING,
 
         /// CUDA graph node is cloned.
-        GraphnodeCloned = CUPTI_CBID_RESOURCE_GRAPHNODE_CLONED,
+        GraphNodeCloned = CUPTI_CBID_RESOURCE_GRAPHNODE_CLONED,
 
         /// CUDA stream attribute is changed.
         StreamAttributeChanged = CUPTI_CBID_RESOURCE_STREAM_ATTRIBUTE_CHANGED,
@@ -176,12 +177,30 @@ c_enum! {
 }
 
 /// Data passed into a runtime or driver API callback function.
+#[derive(Clone, Copy)]
+#[repr(transparent)]
 pub struct CallbackData<'a> {
     raw: CUpti_CallbackData,
     _marker: PhantomData<&'a str>,
 }
 
 impl<'a> CallbackData<'a> {
+    /// Create a `CallbackData` from the underlying value.
+    ///
+    /// # Safety
+    /// You must ensure that the returned struct does not live past the end of
+    /// the current subscriber callback.
+    pub unsafe fn from_raw(raw: CUpti_CallbackData) -> Self {
+        Self {
+            raw,
+            _marker: PhantomData,
+        }
+    }
+
+    pub fn into_raw(self) -> CUpti_CallbackData {
+        self.raw
+    }
+
     /// The point in the runtime or driver function from where the callback was
     /// issued.
     pub fn site(&self) -> ApiCallbackSite {
@@ -242,16 +261,25 @@ impl<'a> CallbackData<'a> {
 }
 
 /// Data passed into a resource callback function.
+#[repr(transparent)]
 #[derive(Clone, Copy)]
-pub struct ResourceData {
+pub struct ResourceData<'a> {
     raw: CUpti_ResourceData,
+    _marker: PhantomData<&'a ()>,
 }
 
-impl ResourceData {
+impl<'a> ResourceData<'a> {
     /// Create a `ResourceData` from the underlying [`CUpti_ResourceData`]
     /// struct.
-    pub fn from_raw(raw: CUpti_ResourceData) -> Self {
-        Self { raw }
+    ///
+    /// # Safety
+    /// You must ensure the resulting `ResourceData` does not outlive the
+    /// subscriber callback.
+    pub unsafe fn from_raw(raw: CUpti_ResourceData) -> Self {
+        Self {
+            raw,
+            _marker: PhantomData,
+        }
     }
 
     /// Get the underlying [`CUpti_ResourceData`] struct.
@@ -281,6 +309,8 @@ impl ResourceData {
     }
 }
 
+/// Module data passed into a resource callback function.
+#[repr(transparent)]
 #[derive(Copy, Clone)]
 pub struct ModuleResourceData<'a> {
     raw: CUpti_ModuleResourceData,
@@ -292,8 +322,8 @@ impl<'a> ModuleResourceData<'a> {
     /// [`CUpti_ModuleResourceData`].
     ///
     /// # Safety
-    /// You must ensure that the struct does not outlive the lifetime of the
-    /// underlying pointers stored within the struct.
+    /// You must ensure that the struct does not live beyond the end of the
+    /// current subscriber callback.
     pub unsafe fn from_raw(raw: CUpti_ModuleResourceData) -> Self {
         Self {
             raw,
@@ -366,14 +396,24 @@ c_enum! {
 }
 
 /// CUDA graphs data passed into a resource callback function.
-pub struct GraphData {
+#[repr(transparent)]
+#[derive(Copy, Clone)]
+pub struct GraphData<'a> {
     raw: CUpti_GraphData,
+    _marker: PhantomData<&'a ()>,
 }
 
-impl GraphData {
-    /// Create a `GraphData` from its underlying [`CUpti_GraphData`]
-    pub fn from_raw(raw: CUpti_GraphData) -> Self {
-        Self { raw }
+impl<'a> GraphData<'a> {
+    /// Create a `GraphData` from its underlying [`CUpti_GraphData`].
+    ///
+    /// # Safety
+    /// You must ensure that the resulting struct does not live beyond the end
+    /// of the current subscriber callback.
+    pub unsafe fn from_raw(raw: CUpti_GraphData) -> Self {
+        Self {
+            raw,
+            _marker: PhantomData,
+        }
     }
 
     /// Get the underlying [`CUpti_GraphData`].
@@ -420,15 +460,28 @@ impl GraphData {
 }
 
 /// Data passed into a synchronize callback function.
-pub struct SynchronizeData {
+#[repr(transparent)]
+#[derive(Copy, Clone)]
+pub struct SynchronizeData<'a> {
     raw: CUpti_SynchronizeData,
+    _marker: PhantomData<&'a ()>,
 }
 
-impl SynchronizeData {
-    pub fn from_raw(raw: CUpti_SynchronizeData) -> Self {
-        Self { raw }
+impl<'a> SynchronizeData<'a> {
+    /// Create a `SynchronizeData` from its underlying
+    /// [`CUpti_SynchronizeData`].
+    ///
+    /// # Safety
+    /// You must ensure that the returned struct does not live past the end of
+    /// the current subscriber callback.
+    pub unsafe fn from_raw(raw: CUpti_SynchronizeData) -> Self {
+        Self {
+            raw,
+            _marker: PhantomData,
+        }
     }
 
+    /// Get the underlying [`CUpti_SynchronizeData`].
     pub fn into_raw(self) -> CUpti_SynchronizeData {
         self.raw
     }
@@ -445,6 +498,8 @@ impl SynchronizeData {
 }
 
 /// Data passed into a NVTX callback function.
+#[repr(transparent)]
+#[derive(Copy, Clone)]
 pub struct NvtxData<'a> {
     raw: CUpti_NvtxData,
     _marker: PhantomData<&'a ()>,
@@ -484,13 +539,20 @@ impl<'a> NvtxData<'a> {
 }
 
 /// Stream attribute data passed into a resource callback function.
+#[repr(transparent)]
+#[derive(Copy, Clone)]
 pub struct StreamAttrData<'a> {
     raw: CUpti_StreamAttrData,
     _marker: PhantomData<&'a ()>,
 }
 
 impl<'a> StreamAttrData<'a> {
-    pub fn from_raw(raw: CUpti_StreamAttrData) -> Self {
+    /// Create a `StreamAttrData` from the underlying [`CUpti_StreamAttrData`].
+    ///
+    /// # Safety
+    /// You must ensure that the returned struct does not live beyond the end of
+    /// the current subscriber callback.
+    pub unsafe fn from_raw(raw: CUpti_StreamAttrData) -> Self {
         Self {
             raw,
             _marker: PhantomData,
@@ -543,12 +605,19 @@ impl<'a> StreamAttrData<'a> {
 }
 
 /// Data passed into a state callback function.
+#[repr(transparent)]
+#[derive(Copy, Clone)]
 pub struct StateData<'a> {
     raw: CUpti_StateData,
     _marker: PhantomData<&'a ()>,
 }
 
 impl<'a> StateData<'a> {
+    /// Create a `StateData` from the underlying [`CUpti_StateData`].
+    ///
+    /// # Safety
+    /// You must ensure that the returned struct does not live beyond the end of
+    /// the current subscriber callback.
     pub unsafe fn from_raw(raw: CUpti_StateData) -> Self {
         Self {
             raw,
@@ -914,4 +983,34 @@ pub trait RawSubscriberCallback: Send + Sync + 'static {
     fn call(&self, domain: CallbackDomain, cbid: CallbackId, cbdata: *const c_void);
 }
 
-pub trait SubscriberCallbacks {}
+#[allow(unused_variables)]
+pub trait SubscriberCallbacks: Send + Sync + 'static {
+    fn driver_api(&self, cbid: CallbackId, data: &CallbackData<'_>) {}
+    fn runtime_api(&self, cbid: CallbackId, data: &CallbackData<'_>) {}
+    fn resource(&self, cbid: CallbackIdResource, data: &ResourceData<'_>) {}
+    fn synchronize(&self, cbid: CallbackIdSync, data: &SynchronizeData<'_>) {}
+    fn nvtx(&self, cbid: CallbackId, data: &NvtxData<'_>) {}
+    fn state(&self, cbid: CallbackIdState, data: &StateData<'_>) {}
+}
+
+impl<T> RawSubscriberCallback for T
+where
+    T: SubscriberCallbacks,
+{
+    fn call(&self, domain: CallbackDomain, cbid: CallbackId, cbdata: *const c_void) {
+        match domain {
+            CallbackDomain::DriverApi => self.driver_api(cbid, unsafe { &*(cbdata as *const _) }),
+            CallbackDomain::RuntimeApi => self.runtime_api(cbid, unsafe { &*(cbdata as *const _) }),
+            CallbackDomain::Resource => {
+                self.resource(cbid.into(), unsafe { &*(cbdata as *const _) })
+            }
+            CallbackDomain::Synchronize => {
+                self.synchronize(cbid.into(), unsafe { &*(cbdata as *const _) });
+            }
+            CallbackDomain::Nvtx => self.nvtx(cbid, unsafe { &*(cbdata as *const _) }),
+            CallbackDomain::State => self.state(cbid.into(), unsafe { &*(cbdata as *const _) }),
+
+            _ => (),
+        }
+    }
+}
