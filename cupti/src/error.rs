@@ -39,7 +39,7 @@ macro_rules! error_enum
 
 error_enum! {
     /// Errors that can be returned from CUPTI functions.
-    /// 
+    ///
     /// This is meant to be usable like an enum, but it is possible for CUPTI
     /// functions to return error codes not listed here (either due to internal
     /// errors or a new version).
@@ -276,3 +276,5 @@ impl fmt::Display for Error {
         }
     }
 }
+
+impl std::error::Error for Error {}

@@ -4,7 +4,7 @@ resolver = "2"
 members = [
     "cupti",
     "cupti-sys"
-]
+, "xtask"]
 
 [workspace.dependencies]
 cupti = { version = "0.1.0", path = "cupti" }

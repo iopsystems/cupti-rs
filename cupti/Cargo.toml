@@ -5,4 +5,5 @@ edition = "2024"
 
 [dependencies]
 c-enum = "0.2.3"
+cuda-sys = "0.2.0"
 cupti-sys = { workspace = true }
