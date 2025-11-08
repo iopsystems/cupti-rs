@@ -44,6 +44,11 @@ This document describes the rules for converting C API documentation from CUPTI 
 - Return value descriptions → integrate into the brief or return type documentation
 - "Returns non-zero if..." → "Returns `true` if..."
 
+### 7. Enum Naming Conventions
+- Use PascalCase for enum variant names (not SCREAMING_SNAKE_CASE)
+- Strip the common prefix from C enum names (e.g., `CUPTI_ACTIVITY_OBJECT_PROCESS` → `Process`)
+- Omit the `FORCE_INT` sentinel values used in C for ABI compatibility
+
 ## Example
 
 ### C API Documentation

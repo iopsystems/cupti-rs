@@ -28,7 +28,8 @@ impl Regenerate {
         builder = builder
             .blocklist_function("cu([^p]|p[^t]|pt[^i]).*")
             .blocklist_type("CUcontext")
-            .blocklist_type("CUstream");
+            .blocklist_type("CUstream(_st)?")
+            .blocklist_type("CUctx_st");
 
         builder
             .clang_args(&self.rest)

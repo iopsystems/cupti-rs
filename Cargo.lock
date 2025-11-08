@@ -181,6 +181,7 @@ checksum = "b34be17513126fc87acdbb851bc430fdcdbfcd2945eb4e38171d4e1601cae6c3"
 name = "cupti"
 version = "0.1.0"
 dependencies = [
+ "bitflags",
  "c-enum",
  "cuda-sys",
  "cupti-sys",

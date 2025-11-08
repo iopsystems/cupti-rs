@@ -6,6 +6,14 @@ use c_enum::c_enum;
 use cuda_sys::cuda::CUevent;
 use cupti_sys::*;
 
+mod context;
+mod graph;
+mod stream;
+
+pub use self::context::Context;
+pub use self::stream::Stream;
+pub use self::graph::{Graph, GraphExec, GraphNode};
+
 c_enum! {
     /// Launch attribute IDs.
     ///
@@ -230,6 +238,54 @@ c_enum! {
     }
 }
 
+c_enum! {
+    /// Graph node types.
+    #[derive(Copy, Clone, Eq, PartialEq)]
+    pub enum GraphNodeType : CUgraphNodeType {
+        /// GPU kernel node.
+        Kernel = CU_GRAPH_NODE_TYPE_KERNEL,
+
+        /// Memcpy node.
+        Memcpy = CU_GRAPH_NODE_TYPE_MEMCPY,
+
+        /// Memset node.
+        Memset = CU_GRAPH_NODE_TYPE_MEMSET,
+
+        /// Host (executable) node.
+        Host = CU_GRAPH_NODE_TYPE_HOST,
+
+        /// Node which executes an embedded graph.
+        Graph = CU_GRAPH_NODE_TYPE_GRAPH,
+
+        /// Empty (no-op) node.
+        Empty = CU_GRAPH_NODE_TYPE_EMPTY,
+
+        /// External event wait node.
+        WaitEvent = CU_GRAPH_NODE_TYPE_WAIT_EVENT,
+
+        /// External event record node.
+        EventRecord = CU_GRAPH_NODE_TYPE_EVENT_RECORD,
+
+        /// External semaphore signal node.
+        ExtSemasSignal = CU_GRAPH_NODE_TYPE_EXT_SEMAS_SIGNAL,
+
+        /// External semaphore wait node.
+        ExtSemasWait = CU_GRAPH_NODE_TYPE_EXT_SEMAS_WAIT,
+
+        /// Memory allocation node.
+        MemAlloc = CU_GRAPH_NODE_TYPE_MEM_ALLOC,
+
+        /// Memory free node.
+        MemFree = CU_GRAPH_NODE_TYPE_MEM_FREE,
+
+        /// Batch memory operation node.
+        BatchMemOp = CU_GRAPH_NODE_TYPE_BATCH_MEM_OP,
+
+        /// Conditional node.
+        Conditional = CU_GRAPH_NODE_TYPE_CONDITIONAL,
+    }
+}
+
 /// Stream attributes.
 ///
 /// This is a subset of the values allowed for a full launch attribute
@@ -378,3 +434,5 @@ pub enum LaunchAttributeValue<'a> {
     /// A variant known to this library.
     Unknown(&'a CUlaunchAttributeValue),
 }
+
+

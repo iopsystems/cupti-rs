@@ -51,7 +51,11 @@ where
             index % 8
         };
         let mask = 1 << bit_index;
-        if val { byte | mask } else { byte & !mask }
+        if val {
+            byte | mask
+        } else {
+            byte & !mask
+        }
     }
     #[inline]
     pub fn set_bit(&mut self, index: usize, val: bool) {
@@ -156,21 +160,10 @@ pub type CUdevice_v1 = ::std::os::raw::c_int;
 pub type CUdevice = CUdevice_v1;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct CUctx_st {
-    _unused: [u8; 0],
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
 pub struct CUevent_st {
     _unused: [u8; 0],
 }
 pub type CUevent = *mut CUevent_st;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct CUstream_st {
-    _unused: [u8; 0],
-}
-pub type CUstream = *mut CUstream_st;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct CUgraph_st {
@@ -1353,7 +1346,7 @@ impl Default for CUpti_GraphData {
 }
 #[doc = " \\brief Data passed into a synchronize callback function.\n\n Data passed into a synchronize callback function as the \\p cbdata\n argument to \\ref CUpti_CallbackFunc. The \\p cbdata will be this\n type for \\p domain equal to CUPTI_CB_DOMAIN_SYNCHRONIZE. The\n callback data is valid only within the invocation of the callback\n function that is passed the data. If you need to retain some data\n for use outside of the callback, you must make a copy of that data."]
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Default, Copy, Clone)]
 pub struct CUpti_SynchronizeData {
     #[doc = " The context of the stream being synchronized."]
     pub context: CUcontext,
@@ -1370,15 +1363,6 @@ const _: () = {
     ["Offset of field: CUpti_SynchronizeData::stream"]
         [::std::mem::offset_of!(CUpti_SynchronizeData, stream) - 8usize];
 };
-impl Default for CUpti_SynchronizeData {
-    fn default() -> Self {
-        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
-        unsafe {
-            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-            s.assume_init()
-        }
-    }
-}
 #[doc = " \\brief Data passed into a NVTX callback function.\n\n Data passed into a NVTX callback function as the \\p cbdata argument\n to \\ref CUpti_CallbackFunc. The \\p cbdata will be this type for \\p\n domain equal to CUPTI_CB_DOMAIN_NVTX. Unless otherwise notes, the\n callback data is valid only within the invocation of the callback\n function that is passed the data. If you need to retain some data\n for use outside of the callback, you must make a copy of that data."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -3779,16 +3763,7 @@ impl Default for CUpti_ActivityMemory4 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMemory4 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMemory4 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?}, source: {:?} }}",
-            self.kind,
-            self.memoryOperationType,
-            self.memoryKind,
-            self.name,
-            self.memoryPoolConfig,
-            self.source
-        )
+        write ! (f , "CUpti_ActivityMemory4 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?}, source: {:?} }}" , self . kind , self . memoryOperationType , self . memoryKind , self . name , self . memoryPoolConfig , self . source)
     }
 }
 #[doc = " \\brief The activity record for memory pool.\n\n This activity record represents a memory pool creation, destruction and\n trimming (CUPTI_ACTIVITY_KIND_MEMORY_POOL).\n This activity record provides separate records for memory pool creation,\n destruction and trimming operations.\n This allows to correlate the corresponding driver and runtime API\n activity record with the memory pool operation.\n"]
@@ -4226,20 +4201,7 @@ impl Default for CUpti_ActivityKernel10 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel10 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel10 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?}, padding3: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig,
-            self.pAccessPolicyWindow,
-            self.channelType,
-            self.padding3
-        )
+        write ! (f , "CUpti_ActivityKernel10 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?}, padding3: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType , self . padding3)
     }
 }
 #[doc = " \\brief The activity record for CDP (CUDA Dynamic Parallelism)\n kernel.\n\n This activity record represents a CDP kernel execution."]
@@ -5261,11 +5223,7 @@ impl Default for CUpti_ActivityDeviceAttribute {
 }
 impl ::std::fmt::Debug for CUpti_ActivityDeviceAttribute {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityDeviceAttribute {{ kind: {:?}, flags: {:?}, attribute: {:?}, value: {:?} }}",
-            self.kind, self.flags, self.attribute, self.value
-        )
+        write ! (f , "CUpti_ActivityDeviceAttribute {{ kind: {:?}, flags: {:?}, attribute: {:?}, value: {:?} }}" , self . kind , self . flags , self . attribute , self . value)
     }
 }
 #[doc = " \\brief The activity record for a context.\n\n This activity record represents information about a context\n (CUPTI_ACTIVITY_KIND_CONTEXT)."]
@@ -5437,11 +5395,7 @@ impl Default for CUpti_ActivityMarker2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMarker2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMarker2 {{ kind: {:?}, flags: {:?}, objectKind: {:?}, objectId: {:?}, name: {:?}, domain: {:?} }}",
-            self.kind, self.flags, self.objectKind, self.objectId, self.name, self.domain
-        )
+        write ! (f , "CUpti_ActivityMarker2 {{ kind: {:?}, flags: {:?}, objectKind: {:?}, objectId: {:?}, name: {:?}, domain: {:?} }}" , self . kind , self . flags , self . objectKind , self . objectId , self . name , self . domain)
     }
 }
 #[doc = " \\brief The activity record providing detailed information for a marker.\n\n User must enable CUPTI_ACTIVITY_KIND_MARKER as well\n to get records for marker data.\n The marker data contains color, payload, and category.\n (CUPTI_ACTIVITY_KIND_MARKER_DATA)."]
@@ -5503,11 +5457,7 @@ impl Default for CUpti_ActivityMarkerData2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMarkerData2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMarkerData2 {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}",
-            self.kind, self.flags, self.payloadKind, self.payload
-        )
+        write ! (f , "CUpti_ActivityMarkerData2 {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}" , self . kind , self . flags , self . payloadKind , self . payload)
     }
 }
 #[doc = " \\brief The activity record for CUPTI and driver overheads.\n\n This activity record provides CUPTI and driver overhead information\n (CUPTI_ACTIVITY_KIND_OVERHEAD)."]
@@ -5568,11 +5518,7 @@ impl Default for CUpti_ActivityOverhead3 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityOverhead3 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityOverhead3 {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?}, overheadData: {:?} }}",
-            self.kind, self.overheadKind, self.objectKind, self.objectId, self.overheadData
-        )
+        write ! (f , "CUpti_ActivityOverhead3 {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?}, overheadData: {:?} }}" , self . kind , self . overheadKind , self . objectKind , self . objectId , self . overheadData)
     }
 }
 #[doc = " \\brief The activity record for CUPTI environmental data.\n\n This activity record provides CUPTI environmental data, include\n power, clocks, and thermals.  This information is sampled at\n various rates and returned in this activity record.  The consumer\n of the record needs to check the environmentKind field to figure\n out what kind of environmental record this is."]
@@ -5637,12 +5583,7 @@ const _: () = {
         pcieLinkWidth
     )
         - 12usize];
-    [
-        "Offset of field: CUpti_ActivityEnvironment__bindgen_ty_1__bindgen_ty_1::clocksThrottleReasons",
-    ][::std::mem::offset_of!(
-        CUpti_ActivityEnvironment__bindgen_ty_1__bindgen_ty_1,
-        clocksThrottleReasons
-    ) - 16usize];
+    ["Offset of field: CUpti_ActivityEnvironment__bindgen_ty_1__bindgen_ty_1::clocksThrottleReasons"] [:: std :: mem :: offset_of ! (CUpti_ActivityEnvironment__bindgen_ty_1__bindgen_ty_1 , clocksThrottleReasons) - 16usize] ;
 };
 impl Default for CUpti_ActivityEnvironment__bindgen_ty_1__bindgen_ty_1 {
     fn default() -> Self {
@@ -7216,18 +7157,7 @@ impl Default for CUpti_ActivityNvLink4 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityNvLink4 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityNvLink4 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?}, pad: {:?} }}",
-            self.kind,
-            self.typeDev0,
-            self.typeDev1,
-            self.idDev0,
-            self.idDev1,
-            self.portDev0,
-            self.portDev1,
-            self.pad
-        )
+        write ! (f , "CUpti_ActivityNvLink4 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?}, pad: {:?} }}" , self . kind , self . typeDev0 , self . typeDev1 , self . idDev0 , self . idDev1 , self . portDev0 , self . portDev1 , self . pad)
     }
 }
 #[doc = " PCIE GPU record"]
@@ -8098,7 +8028,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     #[doc = " \\brief Disable collection of a specific kind of activity record for\n a context.\n\n Disable collection of a specific kind of activity record for a context.\n This setting done by this API will supersede the global settings\n for activity records.\n Multiple kinds can be enabled by calling this function multiple times.\n\n \\param context The context for which activity is to be disabled\n \\param kind The kind of activity record to stop collecting\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_KIND if the activity kind is not supported"]
     pub fn cuptiActivityDisableContext(context: CUcontext, kind: CUpti_ActivityKind)
-    -> CUptiResult;
+        -> CUptiResult;
 }
 unsafe extern "C" {
     #[doc = " \\brief Get the number of activity records that were dropped of\n insufficient buffer space.\n\n Get the number of records that were dropped because of insufficient\n buffer space.  The dropped count includes records that could not be\n recorded because CUPTI did not have activity buffer space available\n for the record (because the CUpti_BuffersCallbackRequestFunc\n callback did not return an empty buffer of sufficient size) and\n also CDP records that could not be record because the device-size\n buffer was full (size is controlled by the\n CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE_CDP attribute). The dropped\n count maintained for the queue is reset to zero when this function\n is called.\n\n \\param context The context, or NULL to get dropped count from global queue\n \\param streamId The stream ID\n \\param dropped The number of records that were dropped since the last call\n to this function.\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p dropped is NULL"]
@@ -8335,11 +8265,7 @@ impl Default for CUpti_ActivityOverhead {
 }
 impl ::std::fmt::Debug for CUpti_ActivityOverhead {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityOverhead {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?} }}",
-            self.kind, self.overheadKind, self.objectKind, self.objectId
-        )
+        write ! (f , "CUpti_ActivityOverhead {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?} }}" , self . kind , self . overheadKind , self . objectKind , self . objectId)
     }
 }
 #[doc = " \\brief The activity record for CUPTI and driver overheads.\n\n This activity record provides CUPTI and driver overhead information\n (CUPTI_ACTIVITY_OVERHEAD)."]
@@ -8396,11 +8322,7 @@ impl Default for CUpti_ActivityOverhead2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityOverhead2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityOverhead2 {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?} }}",
-            self.kind, self.overheadKind, self.objectKind, self.objectId
-        )
+        write ! (f , "CUpti_ActivityOverhead2 {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?} }}" , self . kind , self . overheadKind , self . objectKind , self . objectId)
     }
 }
 #[doc = " \\brief The activity record for a device. (deprecated)\n\n This activity record represents information about a GPU device\n (CUPTI_ACTIVITY_KIND_DEVICE).\n Device activity is now reported using the\n CUpti_ActivityDevice5 activity record."]
@@ -9337,11 +9259,7 @@ impl Default for CUpti_ActivityKernel2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel2 {{ kind: {:?}, cacheConfig: {:?}, name: {:?}, reserved0: {:?} }}",
-            self.kind, self.cacheConfig, self.name, self.reserved0
-        )
+        write ! (f , "CUpti_ActivityKernel2 {{ kind: {:?}, cacheConfig: {:?}, name: {:?}, reserved0: {:?} }}" , self . kind , self . cacheConfig , self . name , self . reserved0)
     }
 }
 #[doc = " \\brief The activity record for a kernel (CUDA 6.5(with sm_52 support) onwards).\n (deprecated in CUDA 9.0)\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL).\n Kernel activities are now reported using the CUpti_ActivityKernel9 activity\n record."]
@@ -9594,16 +9512,7 @@ impl Default for CUpti_ActivityKernel3 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel3 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel3 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0
-        )
+        write ! (f , "CUpti_ActivityKernel3 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0)
     }
 }
 #[doc = " \\brief The activity record for a kernel (CUDA 9.0(with sm_70 support) onwards).\n (deprecated in CUDA 11.0)\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL).\n Kernel activities are now reported using the CUpti_ActivityKernel9 activity\n record."]
@@ -9885,16 +9794,7 @@ impl Default for CUpti_ActivityKernel4 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel4 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel4 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0
-        )
+        write ! (f , "CUpti_ActivityKernel4 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0)
     }
 }
 #[doc = " \\brief The activity record for a kernel (CUDA 11.0(with sm_80 support) onwards).\n (deprecated in CUDA 11.2)\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL) but is no longer generated\n by CUPTI. Kernel activities are now reported using the\n CUpti_ActivityKernel9 activity record."]
@@ -10188,17 +10088,7 @@ impl Default for CUpti_ActivityKernel5 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel5 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel5 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig
-        )
+        write ! (f , "CUpti_ActivityKernel5 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig)
     }
 }
 #[doc = " \\brief The activity record for kernel. (deprecated in CUDA 11.6)\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL) but is no longer generated\n by CUPTI. Kernel activities are now reported using the\n CUpti_ActivityKernel9 activity record."]
@@ -10496,18 +10386,7 @@ impl Default for CUpti_ActivityKernel6 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel6 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel6 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig,
-            self.pAccessPolicyWindow
-        )
+        write ! (f , "CUpti_ActivityKernel6 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow)
     }
 }
 #[doc = " \\brief The activity record for kernel. (deprecated in CUDA 11.8)\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL) but is no longer generated\n by CUPTI. Kernel activities are now reported using the\n CUpti_ActivityKernel9 activity record."]
@@ -10813,19 +10692,7 @@ impl Default for CUpti_ActivityKernel7 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel7 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel7 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig,
-            self.pAccessPolicyWindow,
-            self.channelType
-        )
+        write ! (f , "CUpti_ActivityKernel7 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType)
     }
 }
 #[doc = " \\brief The activity record for kernel.\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL)"]
@@ -11151,19 +11018,7 @@ impl Default for CUpti_ActivityKernel8 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel8 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel8 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig,
-            self.pAccessPolicyWindow,
-            self.channelType
-        )
+        write ! (f , "CUpti_ActivityKernel8 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType)
     }
 }
 #[doc = " \\brief The activity record for kernel.\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL)"]
@@ -11497,19 +11352,7 @@ impl Default for CUpti_ActivityKernel9 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel9 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel9 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig,
-            self.pAccessPolicyWindow,
-            self.channelType
-        )
+        write ! (f , "CUpti_ActivityKernel9 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType)
     }
 }
 #[doc = " \\brief The activity record for memory copies. (deprecated)\n\n This activity record represents a memory copy\n (CUPTI_ACTIVITY_KIND_MEMCPY)."]
@@ -12454,11 +12297,7 @@ impl Default for CUpti_ActivityMemory2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMemory2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMemory2 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?} }}",
-            self.kind, self.memoryOperationType, self.memoryKind, self.name, self.memoryPoolConfig
-        )
+        write ! (f , "CUpti_ActivityMemory2 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?} }}" , self . kind , self . memoryOperationType , self . memoryKind , self . name , self . memoryPoolConfig)
     }
 }
 #[doc = " \\brief The activity record for memory.\n\n This activity record represents a memory allocation and free operation\n (CUPTI_ACTIVITY_KIND_MEMORY2).\n This activity record provides separate records for memory allocation and\n memory release operations.\n This allows to correlate the corresponding driver and runtime API\n activity record with the memory operation.\n\n Note: This activity record is an upgrade over \\ref CUpti_ActivityMemory2\n enabled using the kind \\ref CUPTI_ACTIVITY_KIND_MEMORY.\n \\ref CUpti_ActivityMemory provides a single record for the memory\n allocation and memory release operations."]
@@ -12636,11 +12475,7 @@ impl Default for CUpti_ActivityMemory3 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMemory3 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMemory3 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?} }}",
-            self.kind, self.memoryOperationType, self.memoryKind, self.name, self.memoryPoolConfig
-        )
+        write ! (f , "CUpti_ActivityMemory3 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?} }}" , self . kind , self . memoryOperationType , self . memoryKind , self . name , self . memoryPoolConfig)
     }
 }
 #[doc = " \\brief The activity record for memory pool.\n\n This activity record represents a memory pool creation, destruction and\n trimming (CUPTI_ACTIVITY_KIND_MEMORY_POOL).\n This activity record provides separate records for memory pool creation,\n destruction and trimming operations.\n This allows to correlate the corresponding driver and runtime API\n activity record with the memory pool operation.\n"]
@@ -12830,11 +12665,7 @@ impl Default for CUpti_ActivityMarker {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMarker {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMarker {{ kind: {:?}, flags: {:?}, objectKind: {:?}, objectId: {:?}, name: {:?} }}",
-            self.kind, self.flags, self.objectKind, self.objectId, self.name
-        )
+        write ! (f , "CUpti_ActivityMarker {{ kind: {:?}, flags: {:?}, objectKind: {:?}, objectId: {:?}, name: {:?} }}" , self . kind , self . flags , self . objectKind , self . objectId , self . name)
     }
 }
 #[doc = " \\brief The activity record for source-level global\n access. (deprecated)\n\n This activity records the locations of the global\n accesses in the source (CUPTI_ACTIVITY_KIND_GLOBAL_ACCESS).\n Global access activities are now reported using the\n CUpti_ActivityGlobalAccess3 activity record."]
@@ -13408,17 +13239,7 @@ impl Default for CUpti_ActivityNvLink {
 }
 impl ::std::fmt::Debug for CUpti_ActivityNvLink {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityNvLink {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?} }}",
-            self.kind,
-            self.typeDev0,
-            self.typeDev1,
-            self.idDev0,
-            self.idDev1,
-            self.portDev0,
-            self.portDev1
-        )
+        write ! (f , "CUpti_ActivityNvLink {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?} }}" , self . kind , self . typeDev0 , self . typeDev1 , self . idDev0 , self . idDev1 , self . portDev0 , self . portDev1)
     }
 }
 #[doc = " \\brief NVLink information. (deprecated in CUDA 10.0)\n\n This structure gives capabilities of each logical NVLink connection between two devices,\n gpu<->gpu or gpu<->CPU which can be used to understand the topology.\n NvLink information are now reported using the\n CUpti_ActivityNvLink4 activity record."]
@@ -13591,17 +13412,7 @@ impl Default for CUpti_ActivityNvLink2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityNvLink2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityNvLink2 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?} }}",
-            self.kind,
-            self.typeDev0,
-            self.typeDev1,
-            self.idDev0,
-            self.idDev1,
-            self.portDev0,
-            self.portDev1
-        )
+        write ! (f , "CUpti_ActivityNvLink2 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?} }}" , self . kind , self . typeDev0 , self . typeDev1 , self . idDev0 , self . idDev1 , self . portDev0 , self . portDev1)
     }
 }
 #[doc = " \\brief NVLink information.\n\n This structure gives capabilities of each logical NVLink connection between two devices,\n gpu<->gpu or gpu<->CPU which can be used to understand the topology.\n NvLink information are now reported using the\n CUpti_ActivityNvLink4 activity record."]
@@ -13782,18 +13593,7 @@ impl Default for CUpti_ActivityNvLink3 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityNvLink3 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityNvLink3 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?}, pad: {:?} }}",
-            self.kind,
-            self.typeDev0,
-            self.typeDev1,
-            self.idDev0,
-            self.idDev1,
-            self.portDev0,
-            self.portDev1,
-            self.pad
-        )
+        write ! (f , "CUpti_ActivityNvLink3 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?}, pad: {:?} }}" , self . kind , self . typeDev0 , self . typeDev1 , self . idDev0 , self . idDev1 , self . portDev0 , self . portDev1 , self . pad)
     }
 }
 #[doc = " \\brief The activity record for trace of graph execution.\n\n This activity record represents execution for a graph without giving visibility\n about the execution of its nodes. This is intended to reduce overheads in tracing\n each node. The activity kind is CUPTI_ACTIVITY_KIND_GRAPH_TRACE\n Graph trace activity is now reported using CUpti_ActivityGraphTrace2 record."]
@@ -14262,11 +14062,7 @@ impl Default for CUpti_ActivityMarkerData {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMarkerData {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMarkerData {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}",
-            self.kind, self.flags, self.payloadKind, self.payload
-        )
+        write ! (f , "CUpti_ActivityMarkerData {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}" , self . kind , self . flags , self . payloadKind , self . payload)
     }
 }
 pub const CUPTI_DRIVER_TRACE_CBID_INVALID: CUpti_driver_api_trace_cbid_enum = 0;

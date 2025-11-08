@@ -422,23 +422,23 @@ impl<'a> GraphData<'a> {
     }
 
     /// CUDA graph.
-    pub fn graph(&self) -> CUgraph {
-        self.raw.graph
+    pub fn graph(&self) -> Option<&'a Graph> {
+        unsafe { Graph::from_ptr(self.raw.graph) }
     }
 
     /// The original CUDA graph from which [`graph`] is cloned.
-    pub fn original_graph(&self) -> CUgraph {
-        self.raw.originalGraph
+    pub fn original_graph(&self) -> Option<&'a Graph> {
+        unsafe { Graph::from_ptr(self.raw.originalGraph) }
     }
 
     /// CUDA graph node.
-    pub fn node(&self) -> CUgraphNode {
-        self.raw.node
+    pub fn node(&self) -> Option<&'a GraphNode> {
+        unsafe { GraphNode::from_ptr(self.raw.node) }
     }
 
     /// The original CUDA graph node from which [`node`] is cloned.
-    pub fn original_node(&self) -> CUgraphNode {
-        self.raw.originalNode
+    pub fn original_node(&self) -> Option<&'a GraphNode> {
+        unsafe { GraphNode::from_ptr(self.raw.originalNode)}
     }
 
     /// Type of the [`node`].
@@ -487,13 +487,13 @@ impl<'a> SynchronizeData<'a> {
     }
 
     /// The context of the stream being synchronized.
-    pub fn context(&self) -> CUcontext {
-        self.raw.context
+    pub fn context(&self) -> Option<&'a Context> {
+        unsafe { Context::from_ptr(self.raw.context) }
     }
 
     /// The stream being synchronized.
-    pub fn stream(&self) -> CUstream {
-        self.raw.stream
+    pub fn stream(&self) -> Option<&'a Stream> {
+        unsafe { Stream::from_ptr(self.raw.stream) }
     }
 }
 
@@ -564,8 +564,8 @@ impl<'a> StreamAttrData<'a> {
     }
 
     /// The CUDA stream handle for the attribute.
-    pub fn stream(&self) -> CUstream {
-        self.raw.stream
+    pub fn stream(&self) -> &'a Stream {
+        Stream::from_ref(unsafe { &*self.raw.stream })
     }
 
     /// The type of the CUDA stream attribute.
