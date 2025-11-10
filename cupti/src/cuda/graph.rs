@@ -1,10 +1,12 @@
+use std::cell::UnsafeCell;
+
 use cupti_sys::*;
 
 use crate::*;
 
 /// A reference to a CUDA graph ([`CUgraph`]).
 #[repr(transparent)]
-pub struct Graph(CUgraph_st);
+pub struct Graph(UnsafeCell<CUgraph_st>);
 
 impl Graph {
     /// Create a [`Graph`] from a [`CUgraph`] reference.
@@ -16,9 +18,9 @@ impl Graph {
     pub fn from_mut(context: &mut CUgraph_st) -> &mut Self {
         unsafe { &mut *(context as *mut _ as *mut _) }
     }
-    
+
     /// Create a [`Graph`] directly from a pointer.
-    /// 
+    ///
     /// # Safety
     /// `ptr` must either be null or a pointer to a valid graph.
     pub unsafe fn from_ptr<'a>(ptr: *const CUgraph_st) -> Option<&'a Self> {
@@ -47,7 +49,7 @@ impl Graph {
 
 /// A reference to a CUDA graph node ([`CUgraphNode`]).
 #[repr(transparent)]
-pub struct GraphNode(CUgraphNode_st);
+pub struct GraphNode(UnsafeCell<CUgraphNode_st>);
 
 impl GraphNode {
     /// Create a [`GraphNode`] from a [`CUgraphNode`] reference.
@@ -59,9 +61,9 @@ impl GraphNode {
     pub fn from_mut(context: &mut CUgraphNode_st) -> &mut Self {
         unsafe { &mut *(context as *mut _ as *mut _) }
     }
-    
+
     /// Create a [`GraphNode`] directly from a pointer.
-    /// 
+    ///
     /// # Safety
     /// `ptr` must either be null or a pointer to a valid graph node.
     pub unsafe fn from_ptr<'a>(ptr: *const CUgraphNode_st) -> Option<&'a Self> {
@@ -90,7 +92,7 @@ impl GraphNode {
 
 /// A reference to a CUDA graph node ([`CUgraphNode`]).
 #[repr(transparent)]
-pub struct GraphExec(CUgraphExec_st);
+pub struct GraphExec(UnsafeCell<CUgraphExec_st>);
 
 impl GraphExec {
     /// Create a [`GraphNode`] from a [`CUgraphNode`] reference.
@@ -104,7 +106,7 @@ impl GraphExec {
     }
 
     /// Create a [`GraphExec`] directly from a pointer.
-    /// 
+    ///
     /// # Safety
     /// `ptr` must either be null or a pointer to a valid execution graph.
     pub unsafe fn from_ptr<'a>(ptr: *const CUgraphExec_st) -> Option<&'a Self> {

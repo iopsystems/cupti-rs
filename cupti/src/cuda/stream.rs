@@ -1,3 +1,5 @@
+use std::cell::UnsafeCell;
+
 use cuda_sys::cuda::{CUstream, CUstream_st};
 use cupti_sys::*;
 
@@ -7,7 +9,7 @@ use crate::*;
 ///
 /// This is a thin wrapper that only exposes the relevant CUPTI functions.
 #[repr(transparent)]
-pub struct Stream(CUstream_st);
+pub struct Stream(UnsafeCell<CUstream_st>);
 
 impl Stream {
     /// Create a [`Stream`] from a [`CUstream`] reference.
@@ -21,7 +23,7 @@ impl Stream {
     }
 
     /// Create a [`Stream`] directly from a pointer.
-    /// 
+    ///
     /// # Safety
     /// `ptr` must either be null or a pointer to a valid context.
     pub unsafe fn from_ptr<'a>(ptr: *const CUstream_st) -> Option<&'a Self> {
@@ -37,7 +39,7 @@ impl Stream {
     }
 
     /// Get the ID of this stream.
-    /// 
+    ///
     /// The returned ID will be unique within the stream's context.
     pub fn id(&self, per_thread_stream: bool) -> Result<u32> {
         let mut id = 0;

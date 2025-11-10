@@ -1,3 +1,5 @@
+use std::cell::UnsafeCell;
+
 use cuda_sys::cuda::{CUcontext, CUctx_st};
 use cupti_sys::*;
 
@@ -7,7 +9,7 @@ use crate::*;
 ///
 /// This is a thin wrapper that only exposes the relevant CUPTI functions.
 #[repr(transparent)]
-pub struct Context(CUctx_st);
+pub struct Context(UnsafeCell<CUctx_st>);
 
 impl Context {
     /// Create a [`Context`] from a [`CUcontext`] reference.
@@ -21,7 +23,7 @@ impl Context {
     }
 
     /// Create a [`Context`] directly from a pointer.
-    /// 
+    ///
     /// # Safety
     /// `ptr` must either be null or a pointer to a valid context.
     pub unsafe fn from_ptr<'a>(ptr: *const CUctx_st) -> Option<&'a Self> {

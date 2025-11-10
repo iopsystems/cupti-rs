@@ -5,7 +5,6 @@ use std::fmt;
 use std::marker::PhantomData;
 
 use c_enum::c_enum;
-use cuda_sys::cuda::CUcontext;
 use cupti_sys::*;
 
 use crate::util::NonPoisonMutex;
@@ -227,8 +226,8 @@ impl<'a> CallbackData<'a> {
     /// The driver context current to the thread, or null if no context is
     /// current. This value can change from the entry to exit callback of a
     /// runtime API function if the runtime initializes a context.
-    pub fn context(&self) -> CUcontext {
-        self.raw.context
+    pub fn context(&self) -> Option<&'a Context> {
+        unsafe { Context::from_ptr(self.raw.context) }
     }
 
     /// The unique iD for the CUDA context associated with the thread. The UIDs
@@ -295,8 +294,8 @@ impl<'a> ResourceData<'a> {
     /// * For [`CallbackIdResource::StreamCreated`] and
     ///   [`CallbackIdResource::StreamDestroyStarting`] this is the context
     ///   containing the stream being created or destroyed.
-    pub fn context(&self) -> CUcontext {
-        self.raw.context
+    pub fn context(&self) -> Option<&'a Context> {
+        unsafe { Context::from_ptr(self.raw.context) }
     }
 
     /// The stream associated with this event.
@@ -304,8 +303,8 @@ impl<'a> ResourceData<'a> {
     /// * For [`CallbackIdResource::StreamCreated`] and
     ///   [`CallbackIdResource::StreamDestroyStarting`] this is the stream being
     ///   created or destroyed.
-    pub fn stream(&self) -> CUstream {
-        unsafe { self.raw.resourceHandle.stream }
+    pub fn stream(&self) -> Option<&'a Stream> {
+        unsafe { Stream::from_ptr(self.raw.resourceHandle.stream) }
     }
 }
 
@@ -344,54 +343,6 @@ impl<'a> ModuleResourceData<'a> {
     /// The bytes of the cuda binary.
     pub fn cubin(&self) -> &'a [u8] {
         unsafe { std::slice::from_raw_parts(self.raw.pCubin as *const u8, self.raw.cubinSize) }
-    }
-}
-
-c_enum! {
-    /// Graph node types.
-    #[derive(Copy, Clone,  Eq, PartialEq)]
-    pub enum GraphNodeType : CUgraphNodeType {
-        /// GPU kernel node.
-        Kernel = CU_GRAPH_NODE_TYPE_KERNEL,
-
-        /// Memcpy node.
-        Memcpy = CU_GRAPH_NODE_TYPE_MEMCPY,
-
-        /// Memset node.
-        Memset = CU_GRAPH_NODE_TYPE_MEMSET,
-
-        /// Host (executable) node.
-        Host = CU_GRAPH_NODE_TYPE_HOST,
-
-        /// Node which executes an embedded graph.
-        Graph = CU_GRAPH_NODE_TYPE_GRAPH,
-
-        /// Empty (no-op) node.
-        Empty = CU_GRAPH_NODE_TYPE_EMPTY,
-
-        /// External event wait node.
-        WaitEvent = CU_GRAPH_NODE_TYPE_WAIT_EVENT,
-
-        /// External event record node.
-        EventRecord = CU_GRAPH_NODE_TYPE_EVENT_RECORD,
-
-        /// External semaphore signal node.
-        ExtSemasSignal = CU_GRAPH_NODE_TYPE_EXT_SEMAS_SIGNAL,
-
-        /// External semaphore wait node.
-        ExtSemasWait = CU_GRAPH_NODE_TYPE_EXT_SEMAS_WAIT,
-
-        /// Memory allocation node.
-        MemAlloc = CU_GRAPH_NODE_TYPE_MEM_ALLOC,
-
-        /// Memory free node.
-        MemFree = CU_GRAPH_NODE_TYPE_MEM_FREE,
-
-        /// Batch MemOp node.
-        BatchMemOp = CU_GRAPH_NODE_TYPE_BATCH_MEM_OP,
-
-        /// Conditional node.
-        Conditional = CU_GRAPH_NODE_TYPE_CONDITIONAL,
     }
 }
 
@@ -438,24 +389,24 @@ impl<'a> GraphData<'a> {
 
     /// The original CUDA graph node from which [`node`] is cloned.
     pub fn original_node(&self) -> Option<&'a GraphNode> {
-        unsafe { GraphNode::from_ptr(self.raw.originalNode)}
+        unsafe { GraphNode::from_ptr(self.raw.originalNode) }
     }
 
     /// Type of the [`node`].
     ///
     /// [`node`]: Self::node
-    pub fn node_type(&self) -> CUgraphNodeType {
+    pub fn node_type(&self) -> GraphNodeType {
         self.raw.nodeType.into()
     }
 
     /// The dependent graph node.
-    pub fn dependency(&self) -> CUgraphNode {
-        self.raw.dependency
+    pub fn dependency(&self) -> Option<&'a GraphNode> {
+        unsafe { GraphNode::from_ptr(self.raw.dependency) }
     }
 
     /// CUDA executable graph.
-    pub fn graph_exec(&self) -> CUgraphExec {
-        self.raw.graphExec
+    pub fn graph_exec(&self) -> Option<&'a GraphExec> {
+        unsafe { GraphExec::from_ptr(self.raw.graphExec) }
     }
 }
 

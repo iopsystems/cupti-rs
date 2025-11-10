@@ -11,8 +11,8 @@ mod graph;
 mod stream;
 
 pub use self::context::Context;
-pub use self::stream::Stream;
 pub use self::graph::{Graph, GraphExec, GraphNode};
+pub use self::stream::Stream;
 
 c_enum! {
     /// Launch attribute IDs.
@@ -434,5 +434,3 @@ pub enum LaunchAttributeValue<'a> {
     /// A variant known to this library.
     Unknown(&'a CUlaunchAttributeValue),
 }
-
-
