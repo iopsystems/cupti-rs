@@ -2,6 +2,7 @@
 
 pub mod activity;
 pub mod callbacks;
+pub mod checkpoint;
 mod cuda;
 mod error;
 mod util;

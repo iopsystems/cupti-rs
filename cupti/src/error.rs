@@ -68,7 +68,7 @@ error_enum! {
         InvalidOperation = CUPTI_ERROR_INVALID_OPERATION,
 
         /// Unable to allocate enough memory to perform the requested operation.
-        OutOFMemory = CUPTI_ERROR_OUT_OF_MEMORY,
+        OutOfMemory = CUPTI_ERROR_OUT_OF_MEMORY,
 
         /// An error occurred on the performance monitoring hardware.
         Hardware = CUPTI_ERROR_HARDWARE,
