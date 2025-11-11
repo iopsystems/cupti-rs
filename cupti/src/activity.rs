@@ -1,5 +1,4 @@
 use c_enum::c_enum;
-use cuda_sys::cuda::CUcontext;
 use cupti_sys::*;
 
 use crate::*;
@@ -225,7 +224,7 @@ c_enum! {
         /// Records for correlation of different programming APIs.
         ExternalCorrelation = CUPTI_ACTIVITY_KIND_EXTERNAL_CORRELATION,
         /// NVLink topology information.
-        Nvlink = CUPTI_ACTIVITY_KIND_NVLINK,
+        NvLink = CUPTI_ACTIVITY_KIND_NVLINK,
         /// Instantaneous Event information.
         ///
         /// This activity cannot be directly enabled or disabled. Information collected using
@@ -1213,7 +1212,7 @@ c_enum! {
         ///
         /// The actual amount of device memory per context reserved by
         /// CUPTI might be larger.
-        DeviceBufferSizeCdp = CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE_CDP,
+        DeviceBufferSizeCDP = CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE_CDP,
 
         /// The maximum number of device memory buffers per context. The value is a size_t.
         ///
@@ -1417,29 +1416,155 @@ pub fn get_timestamp() -> u64 {
     timestamp
 }
 
+/// Enable collection of a specific kind of activity record.
+///
+/// Multiple kinds can be enabled by calling this function multiple times. By
+/// default all activity kinds are disabled for collection.
+///
+/// # Parameters
+///
+/// - `kind`: The kind of activity record to collect
+///
+/// # Errors
+///
+/// - [`Error::NotInitialized`]
+/// - [`Error::NotCompatible`] if the activity kind cannot be enabled
+/// - [`Error::InvalidKind`] if the activity kind is not supported
 pub fn enable(kind: ActivityKind) -> Result<()> {
     Error::result(unsafe { cuptiActivityEnable(kind.0) })
 }
 
+/// Enable collection of a specific kind of activity record and dump existing
+/// records for certain activity kinds.
+///
+/// In general, the behavior of this function is similar to [`enable`], enabling
+/// collection of a specific kind of activity record. Additionally, this
+/// function can help in dumping the records for activities which happened in
+/// the past before enabling the corresponding activity kind. The
+/// function allows getting records for the current resource allocations done in
+/// CUDA:
+///
+/// - For [`ActivityKind::Device`], existing device records are dumped
+/// - For [`ActivityKind::Context`], existing context records are dumped
+/// - For [`ActivityKind::Stream`], existing stream records are dumped
+/// - For [`ActivityKind::NvLink`], existing NVLINK records are dumped
+/// - For [`ActivityKind::Pcie`], existing PCIE records are dumped
+/// - For other activities, the behavior is similar to [`enable`]
+///
+/// Device records are emitted in CUPTI on CUDA driver initialization. Those
+/// records can only be retrieved by the user if CUPTI is attached before CUDA
+/// initialization. Context and stream records are emitted on context and stream
+/// creation. The use case of this function is to provide the records for CUDA
+/// resources (contexts/streams/devices) that are currently active if the user
+/// late attaches CUPTI.
+///
+/// Before calling this function, the user must register buffer callbacks to get
+/// the activity records by creating a [`Subscriber`]. If the user does not
+/// register the buffers and calls this function, then CUPTI will enable the
+/// activity kind but not provide any records for that activity kind.
+///
+/// # Parameters
+///
+/// - `kind`: The kind of activity record to collect
+///
+/// # Errors
+///
+/// - [`Error::NotInitialized`]
+/// - [`Error::Unknown`] if buffer is not initialized
+/// - [`Error::NotCompatible`] if the activity kind cannot be enabled
+/// - [`Error::InvalidKind`] if the activity kind is not supported
+///
+/// [`enable`]: enable
+/// [`Subscriber`]: crate::Subscriber
 pub fn enable_and_dump(kind: ActivityKind) -> Result<()> {
     Error::result(unsafe { cuptiActivityEnableAndDump(kind.0) })
 }
 
+/// Disable collection of a specific kind of activity record.
+///
+/// Multiple kinds can be disabled by calling this function multiple times. By
+/// default all activity kinds are disabled for collection.
+///
+/// # Parameters
+///
+/// - `kind`: The kind of activity record to stop collecting
+///
+/// # Errors
+///
+/// - [`Error::NotInitialized`]
+/// - [`Error::InvalidKind`] if the activity kind is not supported
 pub fn disable(kind: ActivityKind) -> Result<()> {
     Error::result(unsafe { cuptiActivityDisable(kind.0) })
 }
 
+/// Enable collection of a specific kind of activity record for a context.
+///
+/// This setting done by this function will supersede the global settings for
+/// activity records enabled by [`enable`]. Multiple kinds can be enabled by
+/// calling this function multiple times.
+///
+/// # Parameters
+///
+/// - `context`: The context for which activity is to be enabled
+/// - `kind`: The kind of activity record to collect
+///
+/// # Errors
+///
+/// - [`Error::NotInitialized`]
+/// - [`Error::NotCompatible`] if the activity kind cannot be enabled
+/// - [`Error::InvalidKind`] if the activity kind is not supported
 pub fn enable_context(context: &Context, kind: ActivityKind) -> Result<()> {
     Error::result(unsafe { cuptiActivityEnableContext(context.as_raw(), kind.0) })
 }
 
+/// Disable collection of a specific kind of activity record for a context.
+///
+/// This setting done by this function will supersede the global settings for
+/// activity records. Multiple kinds can be enabled by calling this function
+/// multiple times.
+///
+/// # Parameters
+///
+/// - `context`: The context for which activity is to be disabled
+/// - `kind`: The kind of activity record to stop collecting
+///
+/// # Errors
+///
+/// - [`Error::NotInitialized`]
+/// - [`Error::InvalidKind`] if the activity kind is not supported
 pub fn disable_context(context: &Context, kind: ActivityKind) -> Result<()> {
     Error::result(unsafe { cuptiActivityDisableContext(context.as_raw(), kind.0) })
 }
 
-pub fn get_num_dropped_records(context: &Context, stream_id: u32) -> Result<usize> {
+/// Get the number of activity records that were dropped due to insufficient
+/// buffer space.
+///
+/// The dropped count includes records that could not be recorded because CUPTI
+/// did not have activity buffer space available for the record (because the
+/// buffer request callback did not return an empty buffer of sufficient size)
+/// and also CDP records that could not be recorded because the device-size
+/// buffer was full (size is controlled by the
+/// `CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE_CDP` attribute). The dropped count
+/// maintained for the queue is reset to zero when this function is called.
+///
+/// # Parameters
+///
+/// - `context`: The context, or `None` to get dropped count from global queue
+/// - `stream_id`: The stream ID
+///
+/// # Errors
+///
+/// - [`Error::NotInitialized`]
+/// - [`Error::InvalidParameter`]
+pub fn get_num_dropped_records(context: Option<&Context>, stream_id: u32) -> Result<usize> {
     let mut num = 0;
-    let code = unsafe { cuptiActivityGetNumDroppedRecords(context.as_raw(), stream_id, &mut num) };
+    let code = unsafe {
+        cuptiActivityGetNumDroppedRecords(
+            context.map(|c| c.as_raw()).unwrap_or(std::ptr::null_mut()),
+            stream_id,
+            &mut num,
+        )
+    };
 
     Error::result(code).map(|_| num)
 }

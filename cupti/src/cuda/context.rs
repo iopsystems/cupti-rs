@@ -3,6 +3,7 @@ use std::cell::UnsafeCell;
 use cuda_sys::cuda::{CUcontext, CUctx_st};
 use cupti_sys::*;
 
+use crate::activity::ActivityKind;
 use crate::*;
 
 /// A reference to a CUDA context ([`CUcontext`]).
@@ -82,5 +83,58 @@ impl Context {
         let code = unsafe { cuptiGetDeviceId(self.as_raw(), &mut id) };
 
         Error::result(code).map(|_| id)
+    }
+
+    /// Enable collection of a specific kind of activity record for this
+    /// context.
+    ///
+    /// This will supersede the global settings for activity records enabled by
+    /// [`activity::enable`]. Multiple kinds can be enabled by calling this
+    /// function multiple times with different [`ActivityKind`]s.
+    ///
+    /// # Parameters
+    /// - `kind`: The kind of activity record to collect.
+    ///
+    /// # Errors
+    /// - [`Error::NotInitialized`]
+    /// - [`Error::NotCompatible`] if the activity kind cannot be enabled
+    /// - [`Error::InvalidKind`] if the activity kind is not supported
+    pub fn enable(&self, kind: ActivityKind) -> Result<()> {
+        crate::activity::enable_context(self, kind)
+    }
+
+    /// Disable collection of a specific kind of activity record for this
+    /// context.
+    ///
+    /// This will supersede the global settings for activity records. Multiple
+    /// kinds can be enabled by calling this function multiple times.
+    ///
+    /// # Parameters
+    /// - `kind`: The kind of acivity record to stop collecting.
+    ///
+    /// # Errors
+    /// - [`Error::NotInitialized`]
+    /// - [`Error::InvalidKind`] if the activity kind is not supported
+    pub fn disable(&self, kind: ActivityKind) -> Result<()> {
+        crate::activity::disable_context(self, kind)
+    }
+
+    /// Get the number of activity records that were dropped due to insufficient
+    /// buffer space.
+    ///
+    /// The dropped count includes record that could not be recorded because
+    /// CUPTI did not have activity buffer space available for the record
+    /// (because the buffer request callback did not return an empty buffer of
+    /// sufficient size) and also CDB records that could not be recorded because
+    /// the device-size buffer was ful (size is controlled by the
+    /// [`ActivityAttribute::DeviceBufferSizeCDP`][attr] attribute). The dropped
+    /// count maintained for the queue is reset to zero when this function is
+    /// called.
+    /// 
+    /// # Parameters
+    ///
+    /// [attr]: crate::activity::ActivityAttribute::DeviceBufferSizeCDP
+    pub fn get_num_dropped_records(&self, stream_id: u32) -> Result<usize> {
+        crate::activity::get_num_dropped_records(Some(self), stream_id)
     }
 }
