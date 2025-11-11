@@ -378,6 +378,8 @@ impl<'a> GraphData<'a> {
     }
 
     /// The original CUDA graph from which [`graph`] is cloned.
+    /// 
+    /// [`graph`]: Self::graph
     pub fn original_graph(&self) -> Option<&'a Graph> {
         unsafe { Graph::from_ptr(self.raw.originalGraph) }
     }
@@ -388,6 +390,8 @@ impl<'a> GraphData<'a> {
     }
 
     /// The original CUDA graph node from which [`node`] is cloned.
+    /// 
+    /// [`node`]: Self::node
     pub fn original_node(&self) -> Option<&'a GraphNode> {
         unsafe { GraphNode::from_ptr(self.raw.originalNode) }
     }

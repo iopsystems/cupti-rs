@@ -90,17 +90,17 @@ impl GraphNode {
     }
 }
 
-/// A reference to a CUDA graph node ([`CUgraphNode`]).
+/// A reference to a CUDA graph execution ([`CUgraphExec`]).
 #[repr(transparent)]
 pub struct GraphExec(UnsafeCell<CUgraphExec_st>);
 
 impl GraphExec {
-    /// Create a [`GraphNode`] from a [`CUgraphNode`] reference.
+    /// Create a [`GraphExec`] from a [`CUgraphExec`] reference.
     pub fn from_ref(context: &CUgraphExec_st) -> &Self {
         unsafe { &*(context as *const _ as *const _) }
     }
 
-    /// Create a [`GraphNode`] from a mutable [`CUgraphNode`] reference.
+    /// Create a [`GraphExec`] from a mutable [`CUgraphExec`] reference.
     pub fn from_mut(context: &mut CUgraphExec) -> &mut Self {
         unsafe { &mut *(context as *mut _ as *mut _) }
     }
