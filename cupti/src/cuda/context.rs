@@ -130,7 +130,7 @@ impl Context {
     /// [`ActivityAttribute::DeviceBufferSizeCDP`][attr] attribute). The dropped
     /// count maintained for the queue is reset to zero when this function is
     /// called.
-    /// 
+    ///
     /// # Parameters
     ///
     /// [attr]: crate::activity::ActivityAttribute::DeviceBufferSizeCDP
