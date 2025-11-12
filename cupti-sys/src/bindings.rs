@@ -152,6 +152,7 @@ pub const CUPTI_NVLINK_INVALID_PORT: i32 = -1;
 pub const CUPTI_MAX_NVLINK_PORTS: u32 = 32;
 pub const CUPTI_DECOMPRESSED_BYTES_UNKNOWN: u32 = 0;
 pub const CUPTI_MAX_GPUS: u32 = 32;
+pub const CUPTI_STALL_REASON_STRING_SIZE: u32 = 128;
 pub type CUdevice_v1 = ::std::os::raw::c_int;
 pub type CUdevice = CUdevice_v1;
 #[repr(C)]
@@ -16331,13 +16332,3548 @@ impl Default for CUpti_Checkpoint {
 }
 unsafe extern "C" {
     #[doc = " \\brief Initialize and save a checkpoint of the device state associated with the handle context\n\n Uses the handle options to configure and save a checkpoint of the device state associated with the specified context.\n\n \\param handle A pointer to a CUpti_Checkpoint object\n\n \\retval CUPTI_SUCCESS if a checkpoint was successfully initialized and saved\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p handle does not appear to refer to a valid CUpti_Checkpoint\n \\retval CUPTI_ERROR_INVALID_CONTEXT\n \\retval CUPTI_ERROR_INVALID_DEVICE if device associated with context is not compatible with checkpoint API\n \\retval CUPTI_ERROR_INVALID_OPERATION if Save is requested over an existing checkpoint, but \\p allowOverwrite was not originally specified\n \\retval CUPTI_ERROR_OUT_OF_MEMORY if as configured, not enough backing storage space to save the checkpoint"]
+    #[link_name = "\u{1}_Z19cuptiCheckpointSaveP16CUpti_Checkpoint"]
     pub fn cuptiCheckpointSave(handle: *mut CUpti_Checkpoint) -> CUptiResult;
 }
 unsafe extern "C" {
     #[doc = " \\brief Restore a checkpoint to the device associated with its context\n\n Restores device, pinned, and allocated memory to the state when the checkpoint was saved\n\n \\param handle A pointer to a previously saved CUpti_Checkpoint object\n\n \\retval CUTPI_SUCCESS if the checkpoint was successfully restored\n \\retval CUPTI_ERROR_NOT_INITIALIZED if the checkpoint was not previously initialized\n \\retval CUPTI_ERROR_INVALID_CONTEXT\n \\retval CUPTI_ERROR_INVALID_PARAMETER if the handle appears invalid\n \\retval CUPTI_ERROR_UNKNOWN if the restore or optimization operation fails"]
+    #[link_name = "\u{1}_Z22cuptiCheckpointRestoreP16CUpti_Checkpoint"]
     pub fn cuptiCheckpointRestore(handle: *mut CUpti_Checkpoint) -> CUptiResult;
 }
 unsafe extern "C" {
     #[doc = " \\brief Free the backing data for a checkpoint\n\n Frees all associated device, host memory and filesystem storage used for this context.\n After freeing a handle, it may be re-used as if it was new - options may be re-configured and will\n take effect on the next call to \\p cuptiCheckpointSave.\n\n \\param handle A pointer to a previously saved CUpti_Checkpoint object\n\n \\retval CUPTI_SUCCESS if the handle was successfully freed\n \\retval CUPTI_ERROR_INVALID_PARAMETER if the handle was already freed or appears invalid\n \\retval CUPTI_ERROR_INVALID_CONTEXT if the context is no longer valid"]
+    #[link_name = "\u{1}_Z19cuptiCheckpointFreeP16CUpti_Checkpoint"]
     pub fn cuptiCheckpointFree(handle: *mut CUpti_Checkpoint) -> CUptiResult;
+}
+#[doc = " INVALID Value"]
+pub const CUPTI_PC_SAMPLING_COLLECTION_MODE_INVALID: CUpti_PCSamplingCollectionMode = 0;
+#[doc = " Continuous mode. Kernels are not serialized in this mode."]
+pub const CUPTI_PC_SAMPLING_COLLECTION_MODE_CONTINUOUS: CUpti_PCSamplingCollectionMode = 1;
+#[doc = " Serialized mode. Kernels are serialized in this mode."]
+pub const CUPTI_PC_SAMPLING_COLLECTION_MODE_KERNEL_SERIALIZED: CUpti_PCSamplingCollectionMode = 2;
+#[doc = " \\brief PC Sampling collection mode"]
+pub type CUpti_PCSamplingCollectionMode = ::std::os::raw::c_uint;
+#[doc = " \\brief PC Sampling stall reasons"]
+#[repr(C)]
+#[repr(align(8))]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUpti_PCSamplingStallReason {
+    #[doc = " [r] Collected stall reason index"]
+    pub pcSamplingStallReasonIndex: u32,
+    #[doc = " [r] Number of times the PC was sampled with the stallReason."]
+    pub samples: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingStallReason"]
+        [::std::mem::size_of::<CUpti_PCSamplingStallReason>() - 8usize];
+    ["Alignment of CUpti_PCSamplingStallReason"]
+        [::std::mem::align_of::<CUpti_PCSamplingStallReason>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingStallReason::pcSamplingStallReasonIndex"]
+        [::std::mem::offset_of!(CUpti_PCSamplingStallReason, pcSamplingStallReasonIndex) - 0usize];
+    ["Offset of field: CUpti_PCSamplingStallReason::samples"]
+        [::std::mem::offset_of!(CUpti_PCSamplingStallReason, samples) - 4usize];
+};
+#[doc = " \\brief PC Sampling data"]
+#[repr(C, packed(8))]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingPCData {
+    #[doc = " [w] Size of the data structure.\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [r] Unique cubin id"]
+    pub cubinCrc: u64,
+    #[doc = " [r] PC offset"]
+    pub pcOffset: u64,
+    #[doc = " The function's unique symbol index in the module."]
+    pub functionIndex: u32,
+    #[doc = " Padding"]
+    pub pad: u32,
+    #[doc = " [r] The function name. This name string might be shared across all the records\n including records from activity APIs representing the same function, and so it should not be\n modified or freed until post processing of all the records is done. Once done, it is user’s responsibility to\n free the memory using free() function."]
+    pub functionName: *mut ::std::os::raw::c_char,
+    #[doc = " [r] Collected stall reason count"]
+    pub stallReasonCount: usize,
+    #[doc = " [r] Stall reason id\n Total samples"]
+    pub stallReason: *mut CUpti_PCSamplingStallReason,
+    #[doc = " The correlation ID of the kernel to which this result is associated. Only valid for serialized mode of pc sampling collection.\n For continous mode of collection the correlationId will be set to 0."]
+    pub correlationId: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingPCData"][::std::mem::size_of::<CUpti_PCSamplingPCData>() - 64usize];
+    ["Alignment of CUpti_PCSamplingPCData"]
+        [::std::mem::align_of::<CUpti_PCSamplingPCData>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingPCData::size"]
+        [::std::mem::offset_of!(CUpti_PCSamplingPCData, size) - 0usize];
+    ["Offset of field: CUpti_PCSamplingPCData::cubinCrc"]
+        [::std::mem::offset_of!(CUpti_PCSamplingPCData, cubinCrc) - 8usize];
+    ["Offset of field: CUpti_PCSamplingPCData::pcOffset"]
+        [::std::mem::offset_of!(CUpti_PCSamplingPCData, pcOffset) - 16usize];
+    ["Offset of field: CUpti_PCSamplingPCData::functionIndex"]
+        [::std::mem::offset_of!(CUpti_PCSamplingPCData, functionIndex) - 24usize];
+    ["Offset of field: CUpti_PCSamplingPCData::pad"]
+        [::std::mem::offset_of!(CUpti_PCSamplingPCData, pad) - 28usize];
+    ["Offset of field: CUpti_PCSamplingPCData::functionName"]
+        [::std::mem::offset_of!(CUpti_PCSamplingPCData, functionName) - 32usize];
+    ["Offset of field: CUpti_PCSamplingPCData::stallReasonCount"]
+        [::std::mem::offset_of!(CUpti_PCSamplingPCData, stallReasonCount) - 40usize];
+    ["Offset of field: CUpti_PCSamplingPCData::stallReason"]
+        [::std::mem::offset_of!(CUpti_PCSamplingPCData, stallReason) - 48usize];
+    ["Offset of field: CUpti_PCSamplingPCData::correlationId"]
+        [::std::mem::offset_of!(CUpti_PCSamplingPCData, correlationId) - 56usize];
+};
+impl Default for CUpti_PCSamplingPCData {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+pub const CUPTI_PC_SAMPLING_OUTPUT_DATA_FORMAT_INVALID: CUpti_PCSamplingOutputDataFormat = 0;
+#[doc = " HW buffer data will be parsed during collection of data"]
+pub const CUPTI_PC_SAMPLING_OUTPUT_DATA_FORMAT_PARSED: CUpti_PCSamplingOutputDataFormat = 1;
+#[doc = " \\brief PC Sampling output data format"]
+pub type CUpti_PCSamplingOutputDataFormat = ::std::os::raw::c_uint;
+#[doc = " \\brief Collected PC Sampling data\n"]
+#[repr(C, packed(8))]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingData {
+    #[doc = " [w] Size of the data structure.\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Number of PCs to be collected"]
+    pub collectNumPcs: usize,
+    #[doc = " [r] Number of samples collected across all PCs.\n It includes samples for user modules, samples for non-user kernels and dropped samples.\n It includes counts for all non selected stall reasons.\n CUPTI does not provide PC records for non-user kernels.\n CUPTI does not provide PC records for instructions for which all selected stall reason metrics counts are zero."]
+    pub totalSamples: u64,
+    #[doc = " [r] Number of samples that were dropped by hardware due to backpressure/overflow."]
+    pub droppedSamples: u64,
+    #[doc = " [r] Number of PCs collected"]
+    pub totalNumPcs: usize,
+    #[doc = " [r] Number of PCs available for collection"]
+    pub remainingNumPcs: usize,
+    #[doc = " [r] Unique identifier for each range.\n Data collected across multiple ranges in multiple buffers can be identified using range id."]
+    pub rangeId: u64,
+    #[doc = " [r] Profiled PC data\n This data struct should have enough memory to collect number of PCs mentioned in \\brief collectNumPcs"]
+    pub pPcData: *mut CUpti_PCSamplingPCData,
+    #[doc = " [r] Number of samples collected across all non user kernels PCs.\n It includes samples for non-user kernels.\n It includes counts for all non selected stall reasons as well.\n CUPTI does not provide PC records for non-user kernels."]
+    pub nonUsrKernelsTotalSamples: u64,
+    #[doc = " [r] Status of the hardware buffer.\n CUPTI returns the error code CUPTI_ERROR_OUT_OF_MEMORY when hardware buffer is full.\n When hardware buffer is full, user will get pc data as 0. To mitigate this issue, one or more of the below options can be tried:\n 1. Increase the hardware buffer size using the attribute CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_HARDWARE_BUFFER_SIZE\n 2. Decrease the thread sleep span using the attribute CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_WORKER_THREAD_PERIODIC_SLEEP_SPAN\n 3. Decrease the sampling frequency using the attribute CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_SAMPLING_PERIOD"]
+    pub hardwareBufferFull: u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingData"][::std::mem::size_of::<CUpti_PCSamplingData>() - 80usize];
+    ["Alignment of CUpti_PCSamplingData"][::std::mem::align_of::<CUpti_PCSamplingData>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingData::size"]
+        [::std::mem::offset_of!(CUpti_PCSamplingData, size) - 0usize];
+    ["Offset of field: CUpti_PCSamplingData::collectNumPcs"]
+        [::std::mem::offset_of!(CUpti_PCSamplingData, collectNumPcs) - 8usize];
+    ["Offset of field: CUpti_PCSamplingData::totalSamples"]
+        [::std::mem::offset_of!(CUpti_PCSamplingData, totalSamples) - 16usize];
+    ["Offset of field: CUpti_PCSamplingData::droppedSamples"]
+        [::std::mem::offset_of!(CUpti_PCSamplingData, droppedSamples) - 24usize];
+    ["Offset of field: CUpti_PCSamplingData::totalNumPcs"]
+        [::std::mem::offset_of!(CUpti_PCSamplingData, totalNumPcs) - 32usize];
+    ["Offset of field: CUpti_PCSamplingData::remainingNumPcs"]
+        [::std::mem::offset_of!(CUpti_PCSamplingData, remainingNumPcs) - 40usize];
+    ["Offset of field: CUpti_PCSamplingData::rangeId"]
+        [::std::mem::offset_of!(CUpti_PCSamplingData, rangeId) - 48usize];
+    ["Offset of field: CUpti_PCSamplingData::pPcData"]
+        [::std::mem::offset_of!(CUpti_PCSamplingData, pPcData) - 56usize];
+    ["Offset of field: CUpti_PCSamplingData::nonUsrKernelsTotalSamples"]
+        [::std::mem::offset_of!(CUpti_PCSamplingData, nonUsrKernelsTotalSamples) - 64usize];
+    ["Offset of field: CUpti_PCSamplingData::hardwareBufferFull"]
+        [::std::mem::offset_of!(CUpti_PCSamplingData, hardwareBufferFull) - 72usize];
+};
+impl Default for CUpti_PCSamplingData {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_INVALID:
+    CUpti_PCSamplingConfigurationAttributeType = 0;
+#[doc = " [rw] Sampling period for PC Sampling.\n DEFAULT - CUPTI defined value based on number of SMs\n Valid values for the sampling\n periods are between 5 to 31 both inclusive. This will set the\n sampling period to (2^samplingPeriod) cycles.\n For e.g. for sampling period = 5 to 31, cycles = 32, 64, 128,..., 2^31\n Value is a uint32_t"]
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_SAMPLING_PERIOD:
+    CUpti_PCSamplingConfigurationAttributeType = 1;
+#[doc = " [w] Number of stall reasons to collect.\n DEFAULT - All stall reasons will be collected\n Value is a size_t\n [w] Stall reasons to collect\n DEFAULT - All stall reasons will be collected\n Input value should be a pointer pointing to array of stall reason indexes\n containing all the stall reason indexes to collect."]
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_STALL_REASON:
+    CUpti_PCSamplingConfigurationAttributeType = 2;
+#[doc = " [rw] Size of SW buffer for raw PC counter data downloaded from HW buffer\n DEFAULT - 1 MB, which can accommodate approximately 5500 PCs\n with all stall reasons\n Approximately it takes 16 Bytes (and some fixed size memory)\n to accommodate one PC with one stall reason\n For e.g. 1 PC with 1 stall reason = 32 Bytes\n          1 PC with 2 stall reason = 48 Bytes\n          1 PC with 4 stall reason = 96 Bytes\n Value is a size_t"]
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_SCRATCH_BUFFER_SIZE:
+    CUpti_PCSamplingConfigurationAttributeType = 3;
+#[doc = " [rw] Size of HW buffer in bytes\n DEFAULT - 512 MB\n If sampling period is too less, HW buffer can overflow\n and drop PC data\n Value is a size_t"]
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_HARDWARE_BUFFER_SIZE:
+    CUpti_PCSamplingConfigurationAttributeType = 4;
+#[doc = " [rw] PC Sampling collection mode\n DEFAULT - CUPTI_PC_SAMPLING_COLLECTION_MODE_CONTINUOUS\n Input value should be of type \\ref CUpti_PCSamplingCollectionMode."]
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_COLLECTION_MODE:
+    CUpti_PCSamplingConfigurationAttributeType = 5;
+#[doc = " [rw] Control over PC Sampling data collection range\n Default - 0\n 1 - Allows user to start and stop PC Sampling using APIs -\n \\ref cuptiPCSamplingStart() - Start PC Sampling\n \\ref cuptiPCSamplingStop() - Stop PC Sampling\n Value is a uint32_t"]
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_ENABLE_START_STOP_CONTROL:
+    CUpti_PCSamplingConfigurationAttributeType = 6;
+#[doc = " [w] Value for output data format\n Default - CUPTI_PC_SAMPLING_OUTPUT_DATA_FORMAT_PARSED\n Input value should be of type \\ref CUpti_PCSamplingOutputDataFormat."]
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_OUTPUT_DATA_FORMAT:
+    CUpti_PCSamplingConfigurationAttributeType = 7;
+#[doc = " [w] Data buffer to hold collected PC Sampling data PARSED_DATA\n Default - none.\n Buffer type is void * which can point to PARSED_DATA\n Refer \\ref CUpti_PCSamplingData for buffer format for PARSED_DATA"]
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_SAMPLING_DATA_BUFFER:
+    CUpti_PCSamplingConfigurationAttributeType = 8;
+#[doc = " [rw] Control sleep time of the worker threads created by CUPTI for various PC sampling operations.\n CUPTI creates multiple worker threads to offload certain operations to these threads. This includes decoding of HW data to\n the CUPTI PC sampling data and correlating PC data to SASS instructions. CUPTI wakes up these threads periodically.\n Default - 100 milliseconds.\n Value is a uint32_t"]
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_WORKER_THREAD_PERIODIC_SLEEP_SPAN:
+    CUpti_PCSamplingConfigurationAttributeType = 9;
+#[doc = " [rw] Control sleep time of the worker threads created by CUPTI for various PC sampling operations.\n CUPTI creates multiple worker threads to offload certain operations to these threads. This includes decoding of HW data to\n the CUPTI PC sampling data and correlating PC data to SASS instructions. CUPTI wakes up these threads periodically.\n Default - 100 milliseconds.\n Value is a uint32_t"]
+pub const CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_FORCE_INT:
+    CUpti_PCSamplingConfigurationAttributeType = 2147483647;
+#[doc = " \\brief PC Sampling configuration attributes\n\n PC Sampling configuration attribute types. These attributes can be read\n using \\ref cuptiPCSamplingGetConfigurationAttribute and can be written\n using \\ref cuptiPCSamplingSetConfigurationAttribute. Attributes marked\n [r] can only be read using \\ref cuptiPCSamplingGetConfigurationAttribute\n [w] can only be written using \\ref cuptiPCSamplingSetConfigurationAttribute\n [rw] can be read using \\ref cuptiPCSamplingGetConfigurationAttribute and\n written using \\ref cuptiPCSamplingSetConfigurationAttribute"]
+pub type CUpti_PCSamplingConfigurationAttributeType = ::std::os::raw::c_uint;
+#[doc = " \\brief PC sampling configuration information structure\n\n This structure provides \\ref CUpti_PCSamplingConfigurationAttributeType which can be configured\n or queried for PC sampling configuration"]
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo {
+    #[doc = " Refer \\ref CUpti_PCSamplingConfigurationAttributeType for all supported attribute types"]
+    pub attributeType: CUpti_PCSamplingConfigurationAttributeType,
+    pub attributeStatus: CUptiResult,
+    pub attributeData: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union CUpti_PCSamplingConfigurationInfo__bindgen_ty_1 {
+    pub invalidData: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_1,
+    pub samplingPeriodData: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2,
+    pub stallReasonData: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3,
+    pub scratchBufferSizeData: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4,
+    pub hardwareBufferSizeData: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5,
+    pub collectionModeData: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6,
+    pub enableStartStopControlData: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7,
+    pub outputDataFormatData: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8,
+    pub samplingDataBufferData: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9,
+    pub workerThreadPeriodicSleepSpanData:
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10,
+}
+#[doc = " Invalid Value"]
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_1 {
+    pub data: [u64; 3usize],
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_1"][::std::mem::size_of::<
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_1,
+    >() - 24usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_1"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_1>()
+            - 8usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_1::data"][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_1,
+        data
+    )
+        - 0usize];
+};
+#[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_SAMPLING_PERIOD"]
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2 {
+    pub samplingPeriod: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2"][::std::mem::size_of::<
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2,
+    >() - 4usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2>()
+            - 4usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2::samplingPeriod",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2,
+        samplingPeriod
+    ) - 0usize];
+};
+#[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_STALL_REASON"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3 {
+    pub stallReasonCount: usize,
+    pub pStallReasonIndex: *mut u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3"][::std::mem::size_of::<
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3,
+    >() - 16usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3>()
+            - 8usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3::stallReasonCount",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3,
+        stallReasonCount
+    ) - 0usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3::pStallReasonIndex",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3,
+        pStallReasonIndex
+    ) - 8usize];
+};
+impl Default for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_SCRATCH_BUFFER_SIZE"]
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4 {
+    pub scratchBufferSize: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4"][::std::mem::size_of::<
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4,
+    >() - 8usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4>()
+            - 8usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4::scratchBufferSize",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4,
+        scratchBufferSize
+    ) - 0usize];
+};
+#[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_HARDWARE_BUFFER_SIZE"]
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5 {
+    pub hardwareBufferSize: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5"][::std::mem::size_of::<
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5,
+    >() - 8usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5>()
+            - 8usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5::hardwareBufferSize",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5,
+        hardwareBufferSize
+    ) - 0usize];
+};
+#[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_COLLECTION_MODE"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6 {
+    pub collectionMode: CUpti_PCSamplingCollectionMode,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6"][::std::mem::size_of::<
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6,
+    >() - 4usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6>()
+            - 4usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6::collectionMode",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6,
+        collectionMode
+    ) - 0usize];
+};
+impl Default for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_ENABLE_START_STOP_CONTROL"]
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7 {
+    pub enableStartStopControl: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7"][::std::mem::size_of::<
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7,
+    >() - 4usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7>()
+            - 4usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7::enableStartStopControl",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7,
+        enableStartStopControl
+    ) - 0usize];
+};
+#[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_OUTPUT_DATA_FORMAT"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8 {
+    pub outputDataFormat: CUpti_PCSamplingOutputDataFormat,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8"][::std::mem::size_of::<
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8,
+    >() - 4usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8>()
+            - 4usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8::outputDataFormat",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8,
+        outputDataFormat
+    ) - 0usize];
+};
+impl Default for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_SAMPLING_DATA_BUFFER"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9 {
+    pub samplingDataBuffer: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9"][::std::mem::size_of::<
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9,
+    >() - 8usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9>()
+            - 8usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9::samplingDataBuffer",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9,
+        samplingDataBuffer
+    ) - 0usize];
+};
+impl Default for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_WORKER_THREAD_PERIODIC_SLEEP_SPAN"]
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10 {
+    pub workerThreadPeriodicSleepSpan: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10"][::std::mem::size_of::<
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10,
+    >() - 4usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10>()
+            - 4usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10::workerThreadPeriodicSleepSpan",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10,
+        workerThreadPeriodicSleepSpan
+    ) - 0usize];
+};
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1"]
+        [::std::mem::size_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1>() - 24usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::invalidData"][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+        invalidData
+    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::samplingPeriodData"][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+        samplingPeriodData
+    )
+        - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::stallReasonData"][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+        stallReasonData
+    )
+        - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::scratchBufferSizeData"][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+        scratchBufferSizeData
+    )
+        - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::hardwareBufferSizeData"][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+        hardwareBufferSizeData
+    )
+        - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::collectionModeData"][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+        collectionModeData
+    )
+        - 0usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::enableStartStopControlData",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+        enableStartStopControlData
+    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::outputDataFormatData"][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+        outputDataFormatData
+    )
+        - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::samplingDataBufferData"][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+        samplingDataBufferData
+    )
+        - 0usize];
+    [
+        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::workerThreadPeriodicSleepSpanData",
+    ][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
+        workerThreadPeriodicSleepSpanData
+    ) - 0usize];
+};
+impl Default for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+impl ::std::fmt::Debug for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1 {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        write!(
+            f,
+            "CUpti_PCSamplingConfigurationInfo__bindgen_ty_1 {{ union }}"
+        )
+    }
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfo"]
+        [::std::mem::size_of::<CUpti_PCSamplingConfigurationInfo>() - 32usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfo"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo::attributeType"]
+        [::std::mem::offset_of!(CUpti_PCSamplingConfigurationInfo, attributeType) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo::attributeStatus"]
+        [::std::mem::offset_of!(CUpti_PCSamplingConfigurationInfo, attributeStatus) - 4usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo::attributeData"]
+        [::std::mem::offset_of!(CUpti_PCSamplingConfigurationInfo, attributeData) - 8usize];
+};
+impl Default for CUpti_PCSamplingConfigurationInfo {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+impl ::std::fmt::Debug for CUpti_PCSamplingConfigurationInfo {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        write!(
+            f,
+            "CUpti_PCSamplingConfigurationInfo {{ attributeType: {:?}, attributeStatus: {:?}, attributeData: {:?} }}",
+            self.attributeType, self.attributeStatus, self.attributeData
+        )
+    }
+}
+#[doc = " \\brief PC sampling configuration structure\n\n This structure configures PC sampling using \\ref cuptiPCSamplingSetConfigurationAttribute\n and queries PC sampling default configuration using \\ref cuptiPCSamplingGetConfigurationAttribute"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingConfigurationInfoParams {
+    #[doc = " [w] Size of the data structure i.e. CUpti_PCSamplingConfigurationInfoParamsSize\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [w] CUcontext"]
+    pub ctx: CUcontext,
+    #[doc = " [w] Number of attributes to configure using \\ref cuptiPCSamplingSetConfigurationAttribute or query\n using \\ref cuptiPCSamplingGetConfigurationAttribute"]
+    pub numAttributes: usize,
+    #[doc = " Refer \\ref CUpti_PCSamplingConfigurationInfo"]
+    pub pPCSamplingConfigurationInfo: *mut CUpti_PCSamplingConfigurationInfo,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingConfigurationInfoParams"]
+        [::std::mem::size_of::<CUpti_PCSamplingConfigurationInfoParams>() - 40usize];
+    ["Alignment of CUpti_PCSamplingConfigurationInfoParams"]
+        [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfoParams>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfoParams::size"]
+        [::std::mem::offset_of!(CUpti_PCSamplingConfigurationInfoParams, size) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfoParams::pPriv"]
+        [::std::mem::offset_of!(CUpti_PCSamplingConfigurationInfoParams, pPriv) - 8usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfoParams::ctx"]
+        [::std::mem::offset_of!(CUpti_PCSamplingConfigurationInfoParams, ctx) - 16usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfoParams::numAttributes"]
+        [::std::mem::offset_of!(CUpti_PCSamplingConfigurationInfoParams, numAttributes) - 24usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfoParams::pPCSamplingConfigurationInfo"][::std::mem::offset_of!(
+        CUpti_PCSamplingConfigurationInfoParams,
+        pPCSamplingConfigurationInfo
+    )
+        - 32usize];
+};
+impl Default for CUpti_PCSamplingConfigurationInfoParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Write PC Sampling configuration attribute.\n\n \\param pParams A pointer to \\ref CUpti_PCSamplingConfigurationInfoParams\n containing PC sampling configuration.\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_OPERATION if this API is called with\n some invalid \\p attrib.\n \\retval CUPTI_ERROR_INVALID_PARAMETER if attribute \\p value is not valid\n or any \\p pParams is not valid\n \\retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device\n does not support the API"]
+    pub fn cuptiPCSamplingSetConfigurationAttribute(
+        pParams: *mut CUpti_PCSamplingConfigurationInfoParams,
+    ) -> CUptiResult;
+}
+unsafe extern "C" {
+    #[doc = " \\brief Read PC Sampling configuration attribute.\n\n \\param pParams A pointer to \\ref CUpti_PCSamplingConfigurationInfoParams\n containing PC sampling configuration.\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_OPERATION if this API is called with\n some invalid attribute.\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p attrib is not valid\n or any \\p pParams is not valid\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT indicates that\n the \\p value buffer is too small to hold the attribute value\n \\retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device\n does not support the API"]
+    pub fn cuptiPCSamplingGetConfigurationAttribute(
+        pParams: *mut CUpti_PCSamplingConfigurationInfoParams,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPCSamplingEnable"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingGetDataParams {
+    #[doc = " [w] Size of the data structure i.e. CUpti_PCSamplingGetDataParamsSize\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [w] CUcontext"]
+    pub ctx: CUcontext,
+    #[doc = " \\param pcSamplingData Data buffer to hold collected PC Sampling data PARSED_DATA\n Buffer type is void * which can point to PARSED_DATA\n Refer \\ref CUpti_PCSamplingData for buffer format for PARSED_DATA"]
+    pub pcSamplingData: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingGetDataParams"]
+        [::std::mem::size_of::<CUpti_PCSamplingGetDataParams>() - 32usize];
+    ["Alignment of CUpti_PCSamplingGetDataParams"]
+        [::std::mem::align_of::<CUpti_PCSamplingGetDataParams>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingGetDataParams::size"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetDataParams, size) - 0usize];
+    ["Offset of field: CUpti_PCSamplingGetDataParams::pPriv"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetDataParams, pPriv) - 8usize];
+    ["Offset of field: CUpti_PCSamplingGetDataParams::ctx"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetDataParams, ctx) - 16usize];
+    ["Offset of field: CUpti_PCSamplingGetDataParams::pcSamplingData"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetDataParams, pcSamplingData) - 24usize];
+};
+impl Default for CUpti_PCSamplingGetDataParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Flush GPU PC sampling data periodically.\n\n Flushing of GPU PC Sampling data is required at following point to maintain uniqueness of PCs:\n For \\brief CUPTI_PC_SAMPLING_COLLECTION_MODE_CONTINUOUS, after every module load-unload-load\n For \\brief CUPTI_PC_SAMPLING_COLLECTION_MODE_KERNEL_SERIALIZED, after every kernel ends\n If configuration option \\brief CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_ENABLE_START_STOP_CONTROL\n is enabled, then after every range end i.e. \\brief cuptiPCSamplingStop()\n\n If application is profiled in \\brief CUPTI_PC_SAMPLING_COLLECTION_MODE_CONTINUOUS, with disabled\n \\brief CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_ENABLE_START_STOP_CONTROL, and there is no module unload,\n user can collect data in two ways:\n Use \\brief cuptiPCSamplingGetData() API periodically\n Use \\brief cuptiPCSamplingDisable() on application exit and read GPU PC sampling data from sampling\n data buffer passed during configuration.\n Note: In case, \\brief cuptiPCSamplingGetData() API is not called periodically, then sampling data buffer\n passed during configuration should be large enough to hold all PCs data.\n       \\brief cuptiPCSamplingGetData() API never does device synchronization.\n       It is possible that when the API is called there is some unconsumed data from the HW buffer. In this case\n CUPTI provides only the data available with it at that moment.\n\n \\param pParams A pointer to \\ref CUpti_PCSamplingGetDataParams\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_OPERATION if this API is called without\n enabling PC sampling.\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device\n \\retval CUPTI_ERROR_OUT_OF_MEMORY indicates that the HW buffer is full\n does not support the API"]
+    pub fn cuptiPCSamplingGetData(pParams: *mut CUpti_PCSamplingGetDataParams) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPCSamplingEnable"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingEnableParams {
+    #[doc = " [w] Size of the data structure i.e. CUpti_PCSamplingEnableParamsSize\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [w] CUcontext"]
+    pub ctx: CUcontext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingEnableParams"]
+        [::std::mem::size_of::<CUpti_PCSamplingEnableParams>() - 24usize];
+    ["Alignment of CUpti_PCSamplingEnableParams"]
+        [::std::mem::align_of::<CUpti_PCSamplingEnableParams>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingEnableParams::size"]
+        [::std::mem::offset_of!(CUpti_PCSamplingEnableParams, size) - 0usize];
+    ["Offset of field: CUpti_PCSamplingEnableParams::pPriv"]
+        [::std::mem::offset_of!(CUpti_PCSamplingEnableParams, pPriv) - 8usize];
+    ["Offset of field: CUpti_PCSamplingEnableParams::ctx"]
+        [::std::mem::offset_of!(CUpti_PCSamplingEnableParams, ctx) - 16usize];
+};
+impl Default for CUpti_PCSamplingEnableParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Enable PC sampling.\n\n \\param pParams A pointer to \\ref CUpti_PCSamplingEnableParams\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device\n does not support the API"]
+    pub fn cuptiPCSamplingEnable(pParams: *mut CUpti_PCSamplingEnableParams) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPCSamplingDisable"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingDisableParams {
+    #[doc = " [w] Size of the data structure i.e. CUpti_PCSamplingDisableParamsSize\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [w] CUcontext"]
+    pub ctx: CUcontext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingDisableParams"]
+        [::std::mem::size_of::<CUpti_PCSamplingDisableParams>() - 24usize];
+    ["Alignment of CUpti_PCSamplingDisableParams"]
+        [::std::mem::align_of::<CUpti_PCSamplingDisableParams>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingDisableParams::size"]
+        [::std::mem::offset_of!(CUpti_PCSamplingDisableParams, size) - 0usize];
+    ["Offset of field: CUpti_PCSamplingDisableParams::pPriv"]
+        [::std::mem::offset_of!(CUpti_PCSamplingDisableParams, pPriv) - 8usize];
+    ["Offset of field: CUpti_PCSamplingDisableParams::ctx"]
+        [::std::mem::offset_of!(CUpti_PCSamplingDisableParams, ctx) - 16usize];
+};
+impl Default for CUpti_PCSamplingDisableParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Disable PC sampling.\n\n For application which doesn't destroy the CUDA context explicitly,\n this API does the PC Sampling tear-down, joins threads and copies PC records in the buffer provided\n during the PC sampling configuration. PC records which can't be accommodated in the buffer are discarded.\n\n \\param pParams A pointer to \\ref CUpti_PCSamplingDisableParams\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device\n does not support the API"]
+    pub fn cuptiPCSamplingDisable(pParams: *mut CUpti_PCSamplingDisableParams) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPCSamplingStart"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingStartParams {
+    #[doc = " [w] Size of the data structure i.e. CUpti_PCSamplingStartParamsSize\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [w] CUcontext"]
+    pub ctx: CUcontext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingStartParams"]
+        [::std::mem::size_of::<CUpti_PCSamplingStartParams>() - 24usize];
+    ["Alignment of CUpti_PCSamplingStartParams"]
+        [::std::mem::align_of::<CUpti_PCSamplingStartParams>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingStartParams::size"]
+        [::std::mem::offset_of!(CUpti_PCSamplingStartParams, size) - 0usize];
+    ["Offset of field: CUpti_PCSamplingStartParams::pPriv"]
+        [::std::mem::offset_of!(CUpti_PCSamplingStartParams, pPriv) - 8usize];
+    ["Offset of field: CUpti_PCSamplingStartParams::ctx"]
+        [::std::mem::offset_of!(CUpti_PCSamplingStartParams, ctx) - 16usize];
+};
+impl Default for CUpti_PCSamplingStartParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Start PC sampling.\n\n User can collect PC Sampling data for user-defined range specified by Start/Stop APIs.\n This API can be used to mark starting of range. Set configuration option\n \\brief CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_ENABLE_START_STOP_CONTROL to use this API.\n\n \\param pParams A pointer to \\ref CUpti_PCSamplingStartParams\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_OPERATION if this API is called with\n incorrect PC Sampling configuration.\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device\n does not support the API"]
+    pub fn cuptiPCSamplingStart(pParams: *mut CUpti_PCSamplingStartParams) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPCSamplingStop"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingStopParams {
+    #[doc = " [w] Size of the data structure i.e. CUpti_PCSamplingStopParamsSize\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [w] CUcontext"]
+    pub ctx: CUcontext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingStopParams"]
+        [::std::mem::size_of::<CUpti_PCSamplingStopParams>() - 24usize];
+    ["Alignment of CUpti_PCSamplingStopParams"]
+        [::std::mem::align_of::<CUpti_PCSamplingStopParams>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingStopParams::size"]
+        [::std::mem::offset_of!(CUpti_PCSamplingStopParams, size) - 0usize];
+    ["Offset of field: CUpti_PCSamplingStopParams::pPriv"]
+        [::std::mem::offset_of!(CUpti_PCSamplingStopParams, pPriv) - 8usize];
+    ["Offset of field: CUpti_PCSamplingStopParams::ctx"]
+        [::std::mem::offset_of!(CUpti_PCSamplingStopParams, ctx) - 16usize];
+};
+impl Default for CUpti_PCSamplingStopParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Stop PC sampling.\n\n User can collect PC Sampling data for user-defined range specified by Start/Stop APIs.\n This API can be used to mark end of range. Set configuration option\n \\brief CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_ENABLE_START_STOP_CONTROL to use this API.\n\n \\param pParams A pointer to \\ref CUpti_PCSamplingStopParams\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_OPERATION if this API is called with\n incorrect PC Sampling configuration.\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device\n does not support the API"]
+    pub fn cuptiPCSamplingStop(pParams: *mut CUpti_PCSamplingStopParams) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPCSamplingGetNumStallReasons"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingGetNumStallReasonsParams {
+    #[doc = " [w] Size of the data structure i.e. CUpti_PCSamplingGetNumStallReasonsParamsSize\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [w] CUcontext"]
+    pub ctx: CUcontext,
+    #[doc = " [r] Number of stall reasons"]
+    pub numStallReasons: *mut usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingGetNumStallReasonsParams"]
+        [::std::mem::size_of::<CUpti_PCSamplingGetNumStallReasonsParams>() - 32usize];
+    ["Alignment of CUpti_PCSamplingGetNumStallReasonsParams"]
+        [::std::mem::align_of::<CUpti_PCSamplingGetNumStallReasonsParams>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingGetNumStallReasonsParams::size"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetNumStallReasonsParams, size) - 0usize];
+    ["Offset of field: CUpti_PCSamplingGetNumStallReasonsParams::pPriv"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetNumStallReasonsParams, pPriv) - 8usize];
+    ["Offset of field: CUpti_PCSamplingGetNumStallReasonsParams::ctx"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetNumStallReasonsParams, ctx) - 16usize];
+    ["Offset of field: CUpti_PCSamplingGetNumStallReasonsParams::numStallReasons"][::std::mem::offset_of!(
+        CUpti_PCSamplingGetNumStallReasonsParams,
+        numStallReasons
+    ) - 24usize];
+};
+impl Default for CUpti_PCSamplingGetNumStallReasonsParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get PC sampling stall reason count.\n\n \\param pParams A pointer to \\ref CUpti_PCSamplingGetNumStallReasonsParams\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device\n does not support the API"]
+    pub fn cuptiPCSamplingGetNumStallReasons(
+        pParams: *mut CUpti_PCSamplingGetNumStallReasonsParams,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPCSamplingGetStallReasons"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PCSamplingGetStallReasonsParams {
+    #[doc = " [w] Size of the data structure i.e. CUpti_PCSamplingGetStallReasonsParamsSize\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [w] CUcontext"]
+    pub ctx: CUcontext,
+    #[doc = " [w] Number of stall reasons"]
+    pub numStallReasons: usize,
+    #[doc = " [r] Stall reason index"]
+    pub stallReasonIndex: *mut u32,
+    #[doc = " [r] Stall reasons name"]
+    pub stallReasons: *mut *mut ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PCSamplingGetStallReasonsParams"]
+        [::std::mem::size_of::<CUpti_PCSamplingGetStallReasonsParams>() - 48usize];
+    ["Alignment of CUpti_PCSamplingGetStallReasonsParams"]
+        [::std::mem::align_of::<CUpti_PCSamplingGetStallReasonsParams>() - 8usize];
+    ["Offset of field: CUpti_PCSamplingGetStallReasonsParams::size"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetStallReasonsParams, size) - 0usize];
+    ["Offset of field: CUpti_PCSamplingGetStallReasonsParams::pPriv"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetStallReasonsParams, pPriv) - 8usize];
+    ["Offset of field: CUpti_PCSamplingGetStallReasonsParams::ctx"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetStallReasonsParams, ctx) - 16usize];
+    ["Offset of field: CUpti_PCSamplingGetStallReasonsParams::numStallReasons"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetStallReasonsParams, numStallReasons) - 24usize];
+    ["Offset of field: CUpti_PCSamplingGetStallReasonsParams::stallReasonIndex"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetStallReasonsParams, stallReasonIndex) - 32usize];
+    ["Offset of field: CUpti_PCSamplingGetStallReasonsParams::stallReasons"]
+        [::std::mem::offset_of!(CUpti_PCSamplingGetStallReasonsParams, stallReasons) - 40usize];
+};
+impl Default for CUpti_PCSamplingGetStallReasonsParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get PC sampling stall reasons.\n\n \\param pParams A pointer to \\ref CUpti_PCSamplingGetStallReasonsParams\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device\n does not support the API"]
+    pub fn cuptiPCSamplingGetStallReasons(
+        pParams: *mut CUpti_PCSamplingGetStallReasonsParams,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiGetSassToSourceCorrelation"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_GetSassToSourceCorrelationParams {
+    #[doc = " [w] Size of the data structure i.e. CUpti_GetSassToSourceCorrelationParamsSize\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Pointer to cubin binary where function belongs."]
+    pub cubin: *const ::std::os::raw::c_void,
+    #[doc = " [w] Function name to which PC belongs."]
+    pub functionName: *const ::std::os::raw::c_char,
+    #[doc = " [w] Size of cubin binary."]
+    pub cubinSize: usize,
+    #[doc = " [r] Line number in the source code."]
+    pub lineNumber: u32,
+    #[doc = " [w] PC offset"]
+    pub pcOffset: u64,
+    #[doc = " [r] Path for the source file."]
+    pub fileName: *mut ::std::os::raw::c_char,
+    #[doc = " [r] Path for the directory of source file."]
+    pub dirName: *mut ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_GetSassToSourceCorrelationParams"]
+        [::std::mem::size_of::<CUpti_GetSassToSourceCorrelationParams>() - 64usize];
+    ["Alignment of CUpti_GetSassToSourceCorrelationParams"]
+        [::std::mem::align_of::<CUpti_GetSassToSourceCorrelationParams>() - 8usize];
+    ["Offset of field: CUpti_GetSassToSourceCorrelationParams::size"]
+        [::std::mem::offset_of!(CUpti_GetSassToSourceCorrelationParams, size) - 0usize];
+    ["Offset of field: CUpti_GetSassToSourceCorrelationParams::cubin"]
+        [::std::mem::offset_of!(CUpti_GetSassToSourceCorrelationParams, cubin) - 8usize];
+    ["Offset of field: CUpti_GetSassToSourceCorrelationParams::functionName"]
+        [::std::mem::offset_of!(CUpti_GetSassToSourceCorrelationParams, functionName) - 16usize];
+    ["Offset of field: CUpti_GetSassToSourceCorrelationParams::cubinSize"]
+        [::std::mem::offset_of!(CUpti_GetSassToSourceCorrelationParams, cubinSize) - 24usize];
+    ["Offset of field: CUpti_GetSassToSourceCorrelationParams::lineNumber"]
+        [::std::mem::offset_of!(CUpti_GetSassToSourceCorrelationParams, lineNumber) - 32usize];
+    ["Offset of field: CUpti_GetSassToSourceCorrelationParams::pcOffset"]
+        [::std::mem::offset_of!(CUpti_GetSassToSourceCorrelationParams, pcOffset) - 40usize];
+    ["Offset of field: CUpti_GetSassToSourceCorrelationParams::fileName"]
+        [::std::mem::offset_of!(CUpti_GetSassToSourceCorrelationParams, fileName) - 48usize];
+    ["Offset of field: CUpti_GetSassToSourceCorrelationParams::dirName"]
+        [::std::mem::offset_of!(CUpti_GetSassToSourceCorrelationParams, dirName) - 56usize];
+};
+impl Default for CUpti_GetSassToSourceCorrelationParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief SASS to Source correlation.\n\n \\param pParams A pointer to \\ref CUpti_GetSassToSourceCorrelationParams\n\n It is expected from user to free allocated memory for fileName and dirName after use.\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if either of the parameters cubin or functionName\n is NULL or cubinSize is zero or size field is not set correctly.\n \\retval CUPTI_ERROR_INVALID_MODULE provided cubin is invalid.\n \\retval CUPTI_ERROR_UNKNOWN an internal error occurred.\n This error code is also used for cases when the function is not present in the module.\n A better error code will be returned in the future release."]
+    pub fn cuptiGetSassToSourceCorrelation(
+        pParams: *mut CUpti_GetSassToSourceCorrelationParams,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiGetCubinCrc"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_GetCubinCrcParams {
+    #[doc = " [w] Size of configuration structure.\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub size: usize,
+    #[doc = " [w] Size of cubin binary."]
+    pub cubinSize: usize,
+    #[doc = " [w] Pointer to cubin binary"]
+    pub cubin: *const ::std::os::raw::c_void,
+    #[doc = " [r] Computed CRC will be stored in it."]
+    pub cubinCrc: u64,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_GetCubinCrcParams"][::std::mem::size_of::<CUpti_GetCubinCrcParams>() - 32usize];
+    ["Alignment of CUpti_GetCubinCrcParams"]
+        [::std::mem::align_of::<CUpti_GetCubinCrcParams>() - 8usize];
+    ["Offset of field: CUpti_GetCubinCrcParams::size"]
+        [::std::mem::offset_of!(CUpti_GetCubinCrcParams, size) - 0usize];
+    ["Offset of field: CUpti_GetCubinCrcParams::cubinSize"]
+        [::std::mem::offset_of!(CUpti_GetCubinCrcParams, cubinSize) - 8usize];
+    ["Offset of field: CUpti_GetCubinCrcParams::cubin"]
+        [::std::mem::offset_of!(CUpti_GetCubinCrcParams, cubin) - 16usize];
+    ["Offset of field: CUpti_GetCubinCrcParams::cubinCrc"]
+        [::std::mem::offset_of!(CUpti_GetCubinCrcParams, cubinCrc) - 24usize];
+};
+impl Default for CUpti_GetCubinCrcParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the CRC of cubin.\n\n This function returns the CRC of provided cubin binary.\n\n \\param pParams A pointer to \\ref CUpti_GetCubinCrcParams\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if parameter cubin is NULL or\n provided cubinSize is zero or size field is not set."]
+    pub fn cuptiGetCubinCrc(pParams: *mut CUpti_GetCubinCrcParams) -> CUptiResult;
+}
+#[doc = " \\brief Function type for callback used by CUPTI to request crc of\n loaded module.\n\n This callback function ask for crc of provided module in function.\n The provided crc will be stored in PC sampling records i.e. in the field 'cubinCrc' of the PC sampling\n struct CUpti_PCSamplingPCData. The CRC is uses during the offline source correlation to uniquely identify the module.\n\n \\param cubin The pointer to cubin binary\n \\param cubinSize The size of cubin binary.\n \\param cubinCrc Returns the computed crc of cubin."]
+pub type CUpti_ComputeCrcCallbackFunc = ::std::option::Option<
+    unsafe extern "C" fn(
+        cubin: *const ::std::os::raw::c_void,
+        cubinSize: usize,
+        cubinCrc: *mut u64,
+    ),
+>;
+unsafe extern "C" {
+    #[doc = " \\brief Register callback function with CUPTI to use\n your own algorithm to compute cubin crc.\n\n This function registers a callback function and it gets called\n from CUPTI when a CUDA module is loaded.\n\n \\param funcComputeCubinCrc callback is invoked when a CUDA module\n is loaded.\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p funcComputeCubinCrc is NULL."]
+    pub fn cuptiRegisterComputeCrcCallback(
+        funcComputeCubinCrc: CUpti_ComputeCrcCallbackFunc,
+    ) -> CUptiResult;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_Object {
+    _unused: [u8; 0],
+}
+#[doc = " The trigger is based off of the SYSCLK frequency, note SYS frequency by default is variable.\n the sample interval (set in the struct CUpti_PmSampling_SetConfig_Params) is in terms of clocks."]
+pub const CUPTI_PM_SAMPLING_TRIGGER_MODE_GPU_SYSCLK_INTERVAL: CUpti_PmSampling_TriggerMode = 0;
+#[doc = " The trigger is based off of a fixed frequency source.\n The sample interval (set in the struct CUpti_PmSampling_SetConfig_Params) is in terms of nanoseconds.\n Note: This trigger mode is not supported on Turing GPU architecture and GA100 GPU.\n It is supported on Ampere GA10x and later GPU architectures."]
+pub const CUPTI_PM_SAMPLING_TRIGGER_MODE_GPU_TIME_INTERVAL: CUpti_PmSampling_TriggerMode = 1;
+#[doc = " The trigger is based off of a fixed frequency source.\n The sample interval (set in the struct CUpti_PmSampling_SetConfig_Params) is in terms of nanoseconds.\n Note: This trigger mode is not supported on Turing GPU architecture and GA100 GPU.\n It is supported on Ampere GA10x and later GPU architectures."]
+pub const CUPTI_PM_SAMPLING_TRIGGER_MODE_COUNT: CUpti_PmSampling_TriggerMode = 2;
+pub type CUpti_PmSampling_TriggerMode = ::std::os::raw::c_uint;
+pub const CUPTI_PM_SAMPLING_DECODE_STOP_REASON_OTHER: CUpti_PmSampling_DecodeStopReason = 0;
+#[doc = " Counter data image is full."]
+pub const CUPTI_PM_SAMPLING_DECODE_STOP_REASON_COUNTER_DATA_FULL:
+    CUpti_PmSampling_DecodeStopReason = 1;
+#[doc = " All the records in the hardware buffer is decoded."]
+pub const CUPTI_PM_SAMPLING_DECODE_STOP_REASON_END_OF_RECORDS: CUpti_PmSampling_DecodeStopReason =
+    2;
+#[doc = " All the records in the hardware buffer is decoded."]
+pub const CUPTI_PM_SAMPLING_DECODE_STOP_REASON_COUNT: CUpti_PmSampling_DecodeStopReason = 3;
+pub type CUpti_PmSampling_DecodeStopReason = ::std::os::raw::c_uint;
+#[doc = " Keep the oldest records in the hardware buffer.\n CUPTI will report error for overflow in case hardware buffer is getting filled up."]
+pub const CUPTI_PM_SAMPLING_HARDWARE_BUFFER_APPEND_MODE_KEEP_OLDEST:
+    CUpti_PmSampling_HardwareBuffer_AppendMode = 0;
+#[doc = " Keep the latest records in the hardware buffer.\n Note: This mode is not supported on Turing GPU architecture.\n It is supported on Ampere and later GPU architectures."]
+pub const CUPTI_PM_SAMPLING_HARDWARE_BUFFER_APPEND_MODE_KEEP_LATEST:
+    CUpti_PmSampling_HardwareBuffer_AppendMode = 1;
+pub type CUpti_PmSampling_HardwareBuffer_AppendMode = ::std::os::raw::c_uint;
+#[doc = " \\brief Params for cuptiPmSamplingSetConfig"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_SetConfig_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] PM sampling object."]
+    pub pPmSamplingObject: *mut CUpti_PmSampling_Object,
+    #[doc = " [in] Size of the config image."]
+    pub configSize: usize,
+    #[doc = " [in] Config image."]
+    pub pConfig: *const u8,
+    #[doc = " [in] The hardware buffer size in which raw PM sampling data\n will be stored. These samples will be decoded to counter data\n image with \\ref cuptiPmSamplingDecodeData call."]
+    pub hardwareBufferSize: usize,
+    #[doc = " [in] For the trigger mode `CUPTI_PM_SAMPLING_TRIGGER_MODE_GPU_SYSCLK_INTERVAL`, sampling interval\n is the number of sys clock cycles. For the trigger mode `CUPTI_PM_SAMPLING_TRIGGER_MODE_GPU_TIME_INTERVAL`,\n sampling interval is in nanoseconds."]
+    pub samplingInterval: u64,
+    #[doc = " [in] Trigger mode.\n Note: CUPTI_PM_SAMPLING_TRIGGER_MODE_GPU_TIME_INTERVAL is not supported in Turing and GA100.\n Supported from GA10x onwards."]
+    pub triggerMode: CUpti_PmSampling_TriggerMode,
+    #[doc = " [in] Append mode for the records in hardware buffer.\n For KEEP_OLDEST mode, all the records will be kept in the buffer and in case hardware buffer is getting filled up.\n overflow will be set to 1 in \\ref CUpti_PmSampling_DecodeData_Params. For KEEP_LATEST mode, the new records will\n overwrite the oldest records in the buffer in case of filled buffer."]
+    pub hwBufferAppendMode: CUpti_PmSampling_HardwareBuffer_AppendMode,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_SetConfig_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_SetConfig_Params>() - 64usize];
+    ["Alignment of CUpti_PmSampling_SetConfig_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_SetConfig_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_SetConfig_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_PmSampling_SetConfig_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_PmSampling_SetConfig_Params::pPmSamplingObject"]
+        [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, pPmSamplingObject) - 16usize];
+    ["Offset of field: CUpti_PmSampling_SetConfig_Params::configSize"]
+        [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, configSize) - 24usize];
+    ["Offset of field: CUpti_PmSampling_SetConfig_Params::pConfig"]
+        [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, pConfig) - 32usize];
+    ["Offset of field: CUpti_PmSampling_SetConfig_Params::hardwareBufferSize"]
+        [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, hardwareBufferSize) - 40usize];
+    ["Offset of field: CUpti_PmSampling_SetConfig_Params::samplingInterval"]
+        [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, samplingInterval) - 48usize];
+    ["Offset of field: CUpti_PmSampling_SetConfig_Params::triggerMode"]
+        [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, triggerMode) - 56usize];
+    ["Offset of field: CUpti_PmSampling_SetConfig_Params::hwBufferAppendMode"]
+        [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, hwBufferAppendMode) - 60usize];
+};
+impl Default for CUpti_PmSampling_SetConfig_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Set the configuration for PM sampling like sampling interval, maximum number of samples\n filled in HW buffer, trigger mode and the config image which has scheduling info for metric collection.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_SetConfig_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_NOT_SUPPORTED for config image which require multiple passes for data collection"]
+    pub fn cuptiPmSamplingSetConfig(pParams: *mut CUpti_PmSampling_SetConfig_Params)
+    -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPmSamplingEnable"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_Enable_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Device index."]
+    pub deviceIndex: usize,
+    #[doc = " [out] PM sampling object."]
+    pub pPmSamplingObject: *mut CUpti_PmSampling_Object,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_Enable_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_Enable_Params>() - 32usize];
+    ["Alignment of CUpti_PmSampling_Enable_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_Enable_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_Enable_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Enable_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_PmSampling_Enable_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Enable_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_PmSampling_Enable_Params::deviceIndex"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Enable_Params, deviceIndex) - 16usize];
+    ["Offset of field: CUpti_PmSampling_Enable_Params::pPmSamplingObject"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Enable_Params, pPmSamplingObject) - 24usize];
+};
+impl Default for CUpti_PmSampling_Enable_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Create a PM sampling object and enable PM sampling on the CUDA device.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_Enable_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_OUT_OF_MEMORY if memory allocation fails while creating the PM sampling object\n \\retval CUPTI_ERROR_INVALID_OPERATION if PM sampling is already enabled on the device\n \\retval CUPTI_ERROR_INSUFFICIENT_PRIVILEGES if the user does not have sufficient privileges to perform the operation\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiPmSamplingEnable(pParams: *mut CUpti_PmSampling_Enable_Params) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPmSamplingDisable"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_Disable_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] PM sampling object."]
+    pub pPmSamplingObject: *mut CUpti_PmSampling_Object,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_Disable_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_Disable_Params>() - 24usize];
+    ["Alignment of CUpti_PmSampling_Disable_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_Disable_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_Disable_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Disable_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_PmSampling_Disable_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Disable_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_PmSampling_Disable_Params::pPmSamplingObject"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Disable_Params, pPmSamplingObject) - 16usize];
+};
+impl Default for CUpti_PmSampling_Disable_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Disable PM sampling on the CUDA device and destroy the PM sampling object.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_Disable_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiPmSamplingDisable(pParams: *mut CUpti_PmSampling_Disable_Params) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPmSamplingStart"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_Start_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] PM sampling object."]
+    pub pPmSamplingObject: *mut CUpti_PmSampling_Object,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_Start_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_Start_Params>() - 24usize];
+    ["Alignment of CUpti_PmSampling_Start_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_Start_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_Start_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Start_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_PmSampling_Start_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Start_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_PmSampling_Start_Params::pPmSamplingObject"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Start_Params, pPmSamplingObject) - 16usize];
+};
+impl Default for CUpti_PmSampling_Start_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Start the PM sampling. The GPU will start collecting the metrics data\n periodically based on trigger type and sampling interval passed in CUpti_PmSampling_SetConfig_Params.\n The collected data will be stored in the hardware buffer.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_Start_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if PM sampling Start is called without enabling PM sampling,\n and PM sampling is already started\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiPmSamplingStart(pParams: *mut CUpti_PmSampling_Start_Params) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPmSamplingStop"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_Stop_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] PM sampling object."]
+    pub pPmSamplingObject: *mut CUpti_PmSampling_Object,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_Stop_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_Stop_Params>() - 24usize];
+    ["Alignment of CUpti_PmSampling_Stop_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_Stop_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_Stop_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Stop_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_PmSampling_Stop_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Stop_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_PmSampling_Stop_Params::pPmSamplingObject"]
+        [::std::mem::offset_of!(CUpti_PmSampling_Stop_Params, pPmSamplingObject) - 16usize];
+};
+impl Default for CUpti_PmSampling_Stop_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Stop the PM sampling. The GPU will stop collecting the metrics data.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_Stop_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if PM sampling Stop is called without enabling PM sampling,\n and PM sampling is already stopped\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiPmSamplingStop(pParams: *mut CUpti_PmSampling_Stop_Params) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPmSamplingDecodeData"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_DecodeData_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] PM sampling object."]
+    pub pPmSamplingObject: *mut CUpti_PmSampling_Object,
+    #[doc = " [in] Counter data image."]
+    pub pCounterDataImage: *mut u8,
+    #[doc = " [in] Size of the counter data image."]
+    pub counterDataImageSize: usize,
+    #[doc = " [out] decode stop reason"]
+    pub decodeStopReason: CUpti_PmSampling_DecodeStopReason,
+    #[doc = " [out] overflow status for hardware buffer.\n To avoid overflow, either increase the maxSamples values in\n \\ref CUpti_PmSampling_SetConfig_Params or reduce the sampling interval."]
+    pub overflow: u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_DecodeData_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_DecodeData_Params>() - 48usize];
+    ["Alignment of CUpti_PmSampling_DecodeData_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_DecodeData_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_DecodeData_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_PmSampling_DecodeData_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_PmSampling_DecodeData_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_PmSampling_DecodeData_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_PmSampling_DecodeData_Params::pPmSamplingObject"]
+        [::std::mem::offset_of!(CUpti_PmSampling_DecodeData_Params, pPmSamplingObject) - 16usize];
+    ["Offset of field: CUpti_PmSampling_DecodeData_Params::pCounterDataImage"]
+        [::std::mem::offset_of!(CUpti_PmSampling_DecodeData_Params, pCounterDataImage) - 24usize];
+    ["Offset of field: CUpti_PmSampling_DecodeData_Params::counterDataImageSize"][::std::mem::offset_of!(
+        CUpti_PmSampling_DecodeData_Params,
+        counterDataImageSize
+    ) - 32usize];
+    ["Offset of field: CUpti_PmSampling_DecodeData_Params::decodeStopReason"]
+        [::std::mem::offset_of!(CUpti_PmSampling_DecodeData_Params, decodeStopReason) - 40usize];
+    ["Offset of field: CUpti_PmSampling_DecodeData_Params::overflow"]
+        [::std::mem::offset_of!(CUpti_PmSampling_DecodeData_Params, overflow) - 44usize];
+};
+impl Default for CUpti_PmSampling_DecodeData_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Decode the metrics data stored in the hardware buffer to the counter data image.\n\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_DecodeData_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if PM sampling DecodeData is called without enabling PM sampling\n \\retval CUPTI_ERROR_OUT_OF_MEMORY if there is record overflow in the hardware buffer\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiPmSamplingDecodeData(
+        pParams: *mut CUpti_PmSampling_DecodeData_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPmSamplingGetCounterData"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_GetCounterAvailability_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Device index."]
+    pub deviceIndex: usize,
+    #[doc = " [inout] Size of the counter availability image. When pCounterAvailabilityImage is NULL,\n this field is used to return the size of the counter availability image."]
+    pub counterAvailabilityImageSize: usize,
+    #[doc = " [out] Counter availability image."]
+    pub pCounterAvailabilityImage: *mut u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_GetCounterAvailability_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_GetCounterAvailability_Params>() - 40usize];
+    ["Alignment of CUpti_PmSampling_GetCounterAvailability_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_GetCounterAvailability_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterAvailability_Params::structSize"][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterAvailability_Params,
+        structSize
+    ) - 0usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterAvailability_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_PmSampling_GetCounterAvailability_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterAvailability_Params::deviceIndex"][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterAvailability_Params,
+        deviceIndex
+    ) - 16usize];
+    [
+        "Offset of field: CUpti_PmSampling_GetCounterAvailability_Params::counterAvailabilityImageSize",
+    ][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterAvailability_Params,
+        counterAvailabilityImageSize
+    ) - 24usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterAvailability_Params::pCounterAvailabilityImage"]
+        [::std::mem::offset_of!(
+            CUpti_PmSampling_GetCounterAvailability_Params,
+            pCounterAvailabilityImage
+        ) - 32usize];
+};
+impl Default for CUpti_PmSampling_GetCounterAvailability_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Query counter availibility information in a buffer which can be used to filter unavailable raw metrics on host.\n Note: This API may fail, if any profiling or sampling session is active on the specified device.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_GetCounterAvailability_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INSUFFICIENT_PRIVILEGES if the user does not have sufficient privileges to perform the operation\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiPmSamplingGetCounterAvailability(
+        pParams: *mut CUpti_PmSampling_GetCounterAvailability_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPmSamplingGetCounterDataSize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_GetCounterDataSize_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] PM sampling object."]
+    pub pPmSamplingObject: *mut CUpti_PmSampling_Object,
+    #[doc = " [in] Names of the metrics to be collected."]
+    pub pMetricNames: *mut *const ::std::os::raw::c_char,
+    #[doc = " [in] Number of metrics to be collected."]
+    pub numMetrics: usize,
+    #[doc = " [in] Maximum number of samples to be stored in the counter data image."]
+    pub maxSamples: u32,
+    #[doc = " [out] Size of the counter data image."]
+    pub counterDataSize: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_GetCounterDataSize_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_GetCounterDataSize_Params>() - 56usize];
+    ["Alignment of CUpti_PmSampling_GetCounterDataSize_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_GetCounterDataSize_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataSize_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_PmSampling_GetCounterDataSize_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataSize_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_PmSampling_GetCounterDataSize_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataSize_Params::pPmSamplingObject"][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterDataSize_Params,
+        pPmSamplingObject
+    ) - 16usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataSize_Params::pMetricNames"][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterDataSize_Params,
+        pMetricNames
+    ) - 24usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataSize_Params::numMetrics"]
+        [::std::mem::offset_of!(CUpti_PmSampling_GetCounterDataSize_Params, numMetrics) - 32usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataSize_Params::maxSamples"]
+        [::std::mem::offset_of!(CUpti_PmSampling_GetCounterDataSize_Params, maxSamples) - 40usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataSize_Params::counterDataSize"][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterDataSize_Params,
+        counterDataSize
+    ) - 48usize];
+};
+impl Default for CUpti_PmSampling_GetCounterDataSize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Query the size of the counter data image which will be used to store the metrics data.\n User need to allocate the memory for the counter data image based on the size returned by this API.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_GetCounterDataSize_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if PM sampling GetCounterDataSize is called without enabling PM sampling\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiPmSamplingGetCounterDataSize(
+        pParams: *mut CUpti_PmSampling_GetCounterDataSize_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPmSamplingCounterDataImageInitialize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_CounterDataImage_Initialize_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] PM sampling object."]
+    pub pPmSamplingObject: *mut CUpti_PmSampling_Object,
+    #[doc = " [in] Size of the counter data image."]
+    pub counterDataSize: usize,
+    #[doc = " [in] Counter data image."]
+    pub pCounterData: *mut u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_CounterDataImage_Initialize_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_CounterDataImage_Initialize_Params>() - 40usize];
+    ["Alignment of CUpti_PmSampling_CounterDataImage_Initialize_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_CounterDataImage_Initialize_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_CounterDataImage_Initialize_Params::structSize"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterDataImage_Initialize_Params,
+        structSize
+    )
+        - 0usize];
+    ["Offset of field: CUpti_PmSampling_CounterDataImage_Initialize_Params::pPriv"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterDataImage_Initialize_Params,
+        pPriv
+    ) - 8usize];
+    ["Offset of field: CUpti_PmSampling_CounterDataImage_Initialize_Params::pPmSamplingObject"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterDataImage_Initialize_Params,
+        pPmSamplingObject
+    )
+        - 16usize];
+    ["Offset of field: CUpti_PmSampling_CounterDataImage_Initialize_Params::counterDataSize"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterDataImage_Initialize_Params,
+        counterDataSize
+    )
+        - 24usize];
+    ["Offset of field: CUpti_PmSampling_CounterDataImage_Initialize_Params::pCounterData"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterDataImage_Initialize_Params,
+        pCounterData
+    )
+        - 32usize];
+};
+impl Default for CUpti_PmSampling_CounterDataImage_Initialize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Initialize the counter data to CUPTI record format for storing the metric data.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_CounterDataImage_Initialize_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if PM sampling CounterDataInitialize is called without enabling PM sampling\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiPmSamplingCounterDataImageInitialize(
+        pParams: *mut CUpti_PmSampling_CounterDataImage_Initialize_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPmSamplingGetCounterDataInfo"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_GetCounterDataInfo_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Counter data image."]
+    pub pCounterDataImage: *const u8,
+    #[doc = " [in] Size of the counter data image."]
+    pub counterDataImageSize: usize,
+    #[doc = " [out] Number of samples in the counter data image."]
+    pub numTotalSamples: usize,
+    #[doc = " [out] Number of populated samples."]
+    pub numPopulatedSamples: usize,
+    #[doc = " [out] Number of samples that have been completed."]
+    pub numCompletedSamples: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_GetCounterDataInfo_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_GetCounterDataInfo_Params>() - 56usize];
+    ["Alignment of CUpti_PmSampling_GetCounterDataInfo_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_GetCounterDataInfo_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataInfo_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_PmSampling_GetCounterDataInfo_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataInfo_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_PmSampling_GetCounterDataInfo_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataInfo_Params::pCounterDataImage"][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterDataInfo_Params,
+        pCounterDataImage
+    ) - 16usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataInfo_Params::counterDataImageSize"][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterDataInfo_Params,
+        counterDataImageSize
+    )
+        - 24usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataInfo_Params::numTotalSamples"][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterDataInfo_Params,
+        numTotalSamples
+    ) - 32usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataInfo_Params::numPopulatedSamples"][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterDataInfo_Params,
+        numPopulatedSamples
+    )
+        - 40usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterDataInfo_Params::numCompletedSamples"][::std::mem::offset_of!(
+        CUpti_PmSampling_GetCounterDataInfo_Params,
+        numCompletedSamples
+    )
+        - 48usize];
+};
+impl Default for CUpti_PmSampling_GetCounterDataInfo_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the counter data info like number of samples, number of populated\n samples and number of completed samples in a counter data image.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_GetCounterDataInfo_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiPmSamplingGetCounterDataInfo(
+        pParams: *mut CUpti_PmSampling_GetCounterDataInfo_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiPmSamplingCounterDataGetSampleInfo"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_PmSampling_CounterData_GetSampleInfo_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] PM sampling object."]
+    pub pPmSamplingObject: *mut CUpti_PmSampling_Object,
+    #[doc = " [in] Counter data image."]
+    pub pCounterDataImage: *const u8,
+    #[doc = " [in] Size of the counter data image."]
+    pub counterDataImageSize: usize,
+    #[doc = " [in] Index of the sample."]
+    pub sampleIndex: usize,
+    #[doc = " [out] Start time of the sample."]
+    pub startTimestamp: u64,
+    #[doc = " [out] End time of the sample."]
+    pub endTimestamp: u64,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_PmSampling_CounterData_GetSampleInfo_Params"]
+        [::std::mem::size_of::<CUpti_PmSampling_CounterData_GetSampleInfo_Params>() - 64usize];
+    ["Alignment of CUpti_PmSampling_CounterData_GetSampleInfo_Params"]
+        [::std::mem::align_of::<CUpti_PmSampling_CounterData_GetSampleInfo_Params>() - 8usize];
+    ["Offset of field: CUpti_PmSampling_CounterData_GetSampleInfo_Params::structSize"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterData_GetSampleInfo_Params,
+        structSize
+    ) - 0usize];
+    ["Offset of field: CUpti_PmSampling_CounterData_GetSampleInfo_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_PmSampling_CounterData_GetSampleInfo_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_PmSampling_CounterData_GetSampleInfo_Params::pPmSamplingObject"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterData_GetSampleInfo_Params,
+        pPmSamplingObject
+    )
+        - 16usize];
+    ["Offset of field: CUpti_PmSampling_CounterData_GetSampleInfo_Params::pCounterDataImage"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterData_GetSampleInfo_Params,
+        pCounterDataImage
+    )
+        - 24usize];
+    ["Offset of field: CUpti_PmSampling_CounterData_GetSampleInfo_Params::counterDataImageSize"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterData_GetSampleInfo_Params,
+        counterDataImageSize
+    )
+        - 32usize];
+    ["Offset of field: CUpti_PmSampling_CounterData_GetSampleInfo_Params::sampleIndex"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterData_GetSampleInfo_Params,
+        sampleIndex
+    )
+        - 40usize];
+    ["Offset of field: CUpti_PmSampling_CounterData_GetSampleInfo_Params::startTimestamp"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterData_GetSampleInfo_Params,
+        startTimestamp
+    )
+        - 48usize];
+    ["Offset of field: CUpti_PmSampling_CounterData_GetSampleInfo_Params::endTimestamp"][::std::mem::offset_of!(
+        CUpti_PmSampling_CounterData_GetSampleInfo_Params,
+        endTimestamp
+    )
+        - 56usize];
+};
+impl Default for CUpti_PmSampling_CounterData_GetSampleInfo_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the sample info (start and end time stamp) for the given sample index.\n Each sample is distinguished by the start and end time stamp.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_CounterData_GetSampleInfo_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiPmSamplingCounterDataGetSampleInfo(
+        pParams: *mut CUpti_PmSampling_CounterData_GetSampleInfo_Params,
+    ) -> CUptiResult;
+}
+pub const CUPTI_METRIC_TYPE_COUNTER: CUpti_MetricType = 0;
+pub const CUPTI_METRIC_TYPE_RATIO: CUpti_MetricType = 1;
+pub const CUPTI_METRIC_TYPE_THROUGHPUT: CUpti_MetricType = 2;
+pub const CUPTI_METRIC_TYPE__COUNT: CUpti_MetricType = 3;
+pub type CUpti_MetricType = ::std::os::raw::c_uint;
+pub const CUPTI_PROFILER_TYPE_RANGE_PROFILER: CUpti_ProfilerType = 0;
+pub const CUPTI_PROFILER_TYPE_PM_SAMPLING: CUpti_ProfilerType = 1;
+pub const CUPTI_PROFILER_TYPE_PROFILER_INVALID: CUpti_ProfilerType = 2;
+pub type CUpti_ProfilerType = ::std::os::raw::c_uint;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_Object {
+    _unused: [u8; 0],
+}
+#[doc = " \\brief Params for cuptiProfilerHostInitialize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_Initialize_Params {
+    #[doc = " [in] Size of the data structure.\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] the profiler kind one from CUpti_ProfilerType"]
+    pub profilerType: CUpti_ProfilerType,
+    #[doc = " [in] accepted for chips supported at the time-of-release."]
+    pub pChipName: *const ::std::os::raw::c_char,
+    #[doc = " [in] buffer with counter availability image - required for future chip support"]
+    pub pCounterAvailabilityImage: *const u8,
+    #[doc = " [out] binary blob allocated by CUPTI and operations associated with this object."]
+    pub pHostObject: *mut CUpti_Profiler_Host_Object,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_Initialize_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_Initialize_Params>() - 48usize];
+    ["Alignment of CUpti_Profiler_Host_Initialize_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_Initialize_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_Initialize_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_Initialize_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_Initialize_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_Initialize_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_Initialize_Params::profilerType"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_Initialize_Params, profilerType) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_Initialize_Params::pChipName"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_Initialize_Params, pChipName) - 24usize];
+    ["Offset of field: CUpti_Profiler_Host_Initialize_Params::pCounterAvailabilityImage"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_Initialize_Params,
+        pCounterAvailabilityImage
+    )
+        - 32usize];
+    ["Offset of field: CUpti_Profiler_Host_Initialize_Params::pHostObject"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_Initialize_Params, pHostObject) - 40usize];
+};
+impl Default for CUpti_Profiler_Host_Initialize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Create and initialize the profiler host object (CUpti_Profiler_Host_Object).\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_Initialize_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostInitialize(
+        pParams: *mut CUpti_Profiler_Host_Initialize_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostDeinitialize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_Deinitialize_Params {
+    #[doc = " [in] Size of the data structure.\n CUPTI client should set the size of the structure. It will be used in CUPTI to check what fields are\n available in the structure. Used to preserve backward compatibility."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] reference to the profiler host object allocated by CUPTI in cuptiProfilerHostInitialize"]
+    pub pHostObject: *mut CUpti_Profiler_Host_Object,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_Deinitialize_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_Deinitialize_Params>() - 24usize];
+    ["Alignment of CUpti_Profiler_Host_Deinitialize_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_Deinitialize_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_Deinitialize_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_Deinitialize_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_Deinitialize_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_Deinitialize_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_Deinitialize_Params::pHostObject"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_Deinitialize_Params, pHostObject) - 16usize];
+};
+impl Default for CUpti_Profiler_Host_Deinitialize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Deinitialize and destroy the profiler host object (CUpti_Profiler_Host_Object).\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_Deinitialize_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostDeinitialize(
+        pParams: *mut CUpti_Profiler_Host_Deinitialize_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostGetSupportedChips"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_GetSupportedChips_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [out] number of supported chips"]
+    pub numChips: usize,
+    #[doc = " [out] list of supported chips"]
+    pub ppChipNames: *const *const ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_GetSupportedChips_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_GetSupportedChips_Params>() - 32usize];
+    ["Alignment of CUpti_Profiler_Host_GetSupportedChips_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_GetSupportedChips_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSupportedChips_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetSupportedChips_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSupportedChips_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetSupportedChips_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSupportedChips_Params::numChips"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetSupportedChips_Params, numChips) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSupportedChips_Params::ppChipNames"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetSupportedChips_Params,
+        ppChipNames
+    ) - 24usize];
+};
+impl Default for CUpti_Profiler_Host_GetSupportedChips_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the list of supported chips.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_GetSupportedChips_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostGetSupportedChips(
+        pParams: *mut CUpti_Profiler_Host_GetSupportedChips_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostGetSupportedMetrics"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_GetBaseMetrics_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] reference to the profiler host object allocated by CUPTI in cuptiProfilerHostInitialize"]
+    pub pHostObject: *mut CUpti_Profiler_Host_Object,
+    #[doc = " [in] metric type (counter, ratio, throughput)"]
+    pub metricType: CUpti_MetricType,
+    #[doc = " [out] list of base metrics supported of queried metric type for the chip"]
+    pub ppMetricNames: *mut *const ::std::os::raw::c_char,
+    #[doc = " [out] number of metrics"]
+    pub numMetrics: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_GetBaseMetrics_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_GetBaseMetrics_Params>() - 48usize];
+    ["Alignment of CUpti_Profiler_Host_GetBaseMetrics_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_GetBaseMetrics_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetBaseMetrics_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetBaseMetrics_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_GetBaseMetrics_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetBaseMetrics_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetBaseMetrics_Params::pHostObject"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetBaseMetrics_Params, pHostObject) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_GetBaseMetrics_Params::metricType"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetBaseMetrics_Params, metricType) - 24usize];
+    ["Offset of field: CUpti_Profiler_Host_GetBaseMetrics_Params::ppMetricNames"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetBaseMetrics_Params,
+        ppMetricNames
+    ) - 32usize];
+    ["Offset of field: CUpti_Profiler_Host_GetBaseMetrics_Params::numMetrics"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetBaseMetrics_Params, numMetrics) - 40usize];
+};
+impl Default for CUpti_Profiler_Host_GetBaseMetrics_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the list of supported base metrics for the chip.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_GetBaseMetrics_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostGetBaseMetrics(
+        pParams: *mut CUpti_Profiler_Host_GetBaseMetrics_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostGetSubMetrics"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_GetSubMetrics_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] reference to the profiler host object allocated by CUPTI in cuptiProfilerHostInitialize"]
+    pub pHostObject: *mut CUpti_Profiler_Host_Object,
+    #[doc = " [in] the metric type for queried metric"]
+    pub metricType: CUpti_MetricType,
+    #[doc = " [in] metric name for which sub-metric will be listed. Metric name can be with or without extension (rollup or submetric)"]
+    pub pMetricName: *const ::std::os::raw::c_char,
+    #[doc = " [out] number of submetrics supported"]
+    pub numOfSubmetrics: usize,
+    #[doc = " [out] list of submetrics supported for the metric."]
+    pub ppSubMetrics: *mut *const ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_GetSubMetrics_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_GetSubMetrics_Params>() - 56usize];
+    ["Alignment of CUpti_Profiler_Host_GetSubMetrics_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_GetSubMetrics_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSubMetrics_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetSubMetrics_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSubMetrics_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetSubMetrics_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSubMetrics_Params::pHostObject"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetSubMetrics_Params, pHostObject) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSubMetrics_Params::metricType"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetSubMetrics_Params, metricType) - 24usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSubMetrics_Params::pMetricName"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetSubMetrics_Params, pMetricName) - 32usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSubMetrics_Params::numOfSubmetrics"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetSubMetrics_Params,
+        numOfSubmetrics
+    ) - 40usize];
+    ["Offset of field: CUpti_Profiler_Host_GetSubMetrics_Params::ppSubMetrics"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetSubMetrics_Params, ppSubMetrics) - 48usize];
+};
+impl Default for CUpti_Profiler_Host_GetSubMetrics_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the list of supported sub-metrics for the metric.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_GetSubMetrics_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_METRIC_NAME if the metric name is not valid or not supported for the chip\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostGetSubMetrics(
+        pParams: *mut CUpti_Profiler_Host_GetSubMetrics_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostGetMetricProperties"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_GetMetricProperties_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] reference to the profiler host object allocated by CUPTI in cuptiProfilerHostInitialize"]
+    pub pHostObject: *mut CUpti_Profiler_Host_Object,
+    #[doc = " [in] metric name for which its properties will be listed. Metric name can be with or without extension (rollup or submetric)"]
+    pub pMetricName: *const ::std::os::raw::c_char,
+    #[doc = " [out] a short description about the metric"]
+    pub pDescription: *const ::std::os::raw::c_char,
+    #[doc = " [out] associated hw unit for the metric"]
+    pub pHwUnit: *const ::std::os::raw::c_char,
+    #[doc = " [out] the dimension of the metric values"]
+    pub pDimUnit: *const ::std::os::raw::c_char,
+    #[doc = " [out] the metric type (counter, ratio or throughput)"]
+    pub metricType: CUpti_MetricType,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_GetMetricProperties_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_GetMetricProperties_Params>() - 64usize];
+    ["Alignment of CUpti_Profiler_Host_GetMetricProperties_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_GetMetricProperties_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMetricProperties_Params::structSize"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMetricProperties_Params,
+        structSize
+    ) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMetricProperties_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetMetricProperties_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMetricProperties_Params::pHostObject"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMetricProperties_Params,
+        pHostObject
+    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMetricProperties_Params::pMetricName"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMetricProperties_Params,
+        pMetricName
+    ) - 24usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMetricProperties_Params::pDescription"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMetricProperties_Params,
+        pDescription
+    ) - 32usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMetricProperties_Params::pHwUnit"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetMetricProperties_Params, pHwUnit) - 40usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMetricProperties_Params::pDimUnit"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMetricProperties_Params,
+        pDimUnit
+    ) - 48usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMetricProperties_Params::metricType"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMetricProperties_Params,
+        metricType
+    ) - 56usize];
+};
+impl Default for CUpti_Profiler_Host_GetMetricProperties_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the properties of the metric.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_GetMetricProperties_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_METRIC_NAME if the metric name is not valid or not supported for the chip\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostGetMetricProperties(
+        pParams: *mut CUpti_Profiler_Host_GetMetricProperties_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostGetRangeName"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_GetRangeName_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] the counter data image where profiling data has been decoded"]
+    pub pCounterDataImage: *const u8,
+    #[doc = " [in] size of counter data image"]
+    pub counterDataImageSize: usize,
+    #[doc = " [in] range index for which the range name will be queried"]
+    pub rangeIndex: usize,
+    #[doc = " [in] used in case of nested ranges, default=\"/\". Range1<delimiter>Range2"]
+    pub delimiter: *const ::std::os::raw::c_char,
+    #[doc = " [out] the range name.\n Note: that the CUPTI allocate the memory internal and\n its user responsibility to free up the allocated memory"]
+    pub pRangeName: *const ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_GetRangeName_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_GetRangeName_Params>() - 56usize];
+    ["Alignment of CUpti_Profiler_Host_GetRangeName_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_GetRangeName_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetRangeName_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetRangeName_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_GetRangeName_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetRangeName_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetRangeName_Params::pCounterDataImage"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetRangeName_Params,
+        pCounterDataImage
+    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_GetRangeName_Params::counterDataImageSize"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetRangeName_Params,
+        counterDataImageSize
+    ) - 24usize];
+    ["Offset of field: CUpti_Profiler_Host_GetRangeName_Params::rangeIndex"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetRangeName_Params, rangeIndex) - 32usize];
+    ["Offset of field: CUpti_Profiler_Host_GetRangeName_Params::delimiter"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetRangeName_Params, delimiter) - 40usize];
+    ["Offset of field: CUpti_Profiler_Host_GetRangeName_Params::pRangeName"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetRangeName_Params, pRangeName) - 48usize];
+};
+impl Default for CUpti_Profiler_Host_GetRangeName_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the range name for the range index stored in the counter data.\n In Range profiler, for Auto range mode the range name will be numeric value\n assigned to the kernel based on execution order. For user range mode, the\n name of range will be based on the range name provided by the user using\n Push range API.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_GetRangeName_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostGetRangeName(
+        pParams: *mut CUpti_Profiler_Host_GetRangeName_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostEvaluateToGpuValues"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_EvaluateToGpuValues_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] reference to the profiler host object allocated by CUPTI in cuptiProfilerHostInitialize"]
+    pub pHostObject: *mut CUpti_Profiler_Host_Object,
+    #[doc = " [in] the counter data image where profiling data has been decoded"]
+    pub pCounterDataImage: *const u8,
+    #[doc = " [in] size of counter data image"]
+    pub counterDataImageSize: usize,
+    #[doc = " [in] range index for which the range name will be queried"]
+    pub rangeIndex: usize,
+    #[doc = " [in] the metrics for which GPU values will be evaluated for the range"]
+    pub ppMetricNames: *mut *const ::std::os::raw::c_char,
+    #[doc = " [in] number of metrics"]
+    pub numMetrics: usize,
+    #[doc = " [out] output value for given metric and range index"]
+    pub pMetricValues: *mut f64,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_EvaluateToGpuValues_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_EvaluateToGpuValues_Params>() - 72usize];
+    ["Alignment of CUpti_Profiler_Host_EvaluateToGpuValues_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_EvaluateToGpuValues_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_EvaluateToGpuValues_Params::structSize"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_EvaluateToGpuValues_Params,
+        structSize
+    ) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_EvaluateToGpuValues_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_EvaluateToGpuValues_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_EvaluateToGpuValues_Params::pHostObject"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_EvaluateToGpuValues_Params,
+        pHostObject
+    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_EvaluateToGpuValues_Params::pCounterDataImage"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_EvaluateToGpuValues_Params,
+        pCounterDataImage
+    )
+        - 24usize];
+    ["Offset of field: CUpti_Profiler_Host_EvaluateToGpuValues_Params::counterDataImageSize"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_EvaluateToGpuValues_Params,
+        counterDataImageSize
+    )
+        - 32usize];
+    ["Offset of field: CUpti_Profiler_Host_EvaluateToGpuValues_Params::rangeIndex"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_EvaluateToGpuValues_Params,
+        rangeIndex
+    ) - 40usize];
+    ["Offset of field: CUpti_Profiler_Host_EvaluateToGpuValues_Params::ppMetricNames"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_EvaluateToGpuValues_Params,
+        ppMetricNames
+    ) - 48usize];
+    ["Offset of field: CUpti_Profiler_Host_EvaluateToGpuValues_Params::numMetrics"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_EvaluateToGpuValues_Params,
+        numMetrics
+    ) - 56usize];
+    ["Offset of field: CUpti_Profiler_Host_EvaluateToGpuValues_Params::pMetricValues"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_EvaluateToGpuValues_Params,
+        pMetricValues
+    ) - 64usize];
+};
+impl Default for CUpti_Profiler_Host_EvaluateToGpuValues_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Evaluate the metric values for the range index stored in the counter data.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_EvaluateToGpuValues_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_METRIC_NAME if the metric name is not valid or not supported for the chip\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostEvaluateToGpuValues(
+        pParams: *mut CUpti_Profiler_Host_EvaluateToGpuValues_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostConfigAddMetrics"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_ConfigAddMetrics_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] reference to the profiler host object allocated by CUPTI in cuptiProfilerHostInitialize"]
+    pub pHostObject: *mut CUpti_Profiler_Host_Object,
+    #[doc = " [in] metric names for which config image will be generated"]
+    pub ppMetricNames: *mut *const ::std::os::raw::c_char,
+    #[doc = " [in] number of metrics"]
+    pub numMetrics: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_ConfigAddMetrics_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_ConfigAddMetrics_Params>() - 40usize];
+    ["Alignment of CUpti_Profiler_Host_ConfigAddMetrics_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_ConfigAddMetrics_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_ConfigAddMetrics_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_ConfigAddMetrics_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_ConfigAddMetrics_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_ConfigAddMetrics_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_ConfigAddMetrics_Params::pHostObject"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_ConfigAddMetrics_Params,
+        pHostObject
+    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_ConfigAddMetrics_Params::ppMetricNames"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_ConfigAddMetrics_Params,
+        ppMetricNames
+    ) - 24usize];
+    ["Offset of field: CUpti_Profiler_Host_ConfigAddMetrics_Params::numMetrics"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_ConfigAddMetrics_Params, numMetrics) - 32usize];
+};
+impl Default for CUpti_Profiler_Host_ConfigAddMetrics_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Add the metrics to the profiler host object for generating the config image.\n The config image will have the required information to schedule the metrics for\n collecting the profiling data.\n Note: PM sampling only supports single pass config image.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_ConfigAddMetrics_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_METRIC_NAME if the metric name is not valid or not supported for the chip\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostConfigAddMetrics(
+        pParams: *mut CUpti_Profiler_Host_ConfigAddMetrics_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostGetConfigImageSize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_GetConfigImageSize_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] reference to the profiler host object allocated by CUPTI in cuptiProfilerHostInitialize"]
+    pub pHostObject: *mut CUpti_Profiler_Host_Object,
+    #[doc = " [out] the size of config image, users need to allocate the buffer for storing"]
+    pub configImageSize: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_GetConfigImageSize_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_GetConfigImageSize_Params>() - 32usize];
+    ["Alignment of CUpti_Profiler_Host_GetConfigImageSize_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_GetConfigImageSize_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetConfigImageSize_Params::structSize"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetConfigImageSize_Params,
+        structSize
+    ) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_GetConfigImageSize_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetConfigImageSize_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetConfigImageSize_Params::pHostObject"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetConfigImageSize_Params,
+        pHostObject
+    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_GetConfigImageSize_Params::configImageSize"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetConfigImageSize_Params,
+        configImageSize
+    )
+        - 24usize];
+};
+impl Default for CUpti_Profiler_Host_GetConfigImageSize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the size of the config image for the metrics added to the profiler host object.\n Users need to allocate the buffer for storing the config image.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_GetConfigImageSize_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostGetConfigImageSize(
+        pParams: *mut CUpti_Profiler_Host_GetConfigImageSize_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostGetConfigImage"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_GetConfigImage_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] reference to the profiler host object allocated by CUPTI in cuptiProfilerHostInitialize"]
+    pub pHostObject: *mut CUpti_Profiler_Host_Object,
+    #[doc = " [in] Number of bytes allocated for pBuffer"]
+    pub configImageSize: usize,
+    #[doc = " [out] Buffer receiving the config image"]
+    pub pConfigImage: *mut u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_GetConfigImage_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_GetConfigImage_Params>() - 40usize];
+    ["Alignment of CUpti_Profiler_Host_GetConfigImage_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_GetConfigImage_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetConfigImage_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetConfigImage_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_GetConfigImage_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetConfigImage_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetConfigImage_Params::pHostObject"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetConfigImage_Params, pHostObject) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_GetConfigImage_Params::configImageSize"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetConfigImage_Params,
+        configImageSize
+    ) - 24usize];
+    ["Offset of field: CUpti_Profiler_Host_GetConfigImage_Params::pConfigImage"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetConfigImage_Params, pConfigImage) - 32usize];
+};
+impl Default for CUpti_Profiler_Host_GetConfigImage_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the config image for the metrics added to the profiler host object.\n User will pass the allocated buffer to store the config image.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_GetConfigImage_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostGetConfigImage(
+        pParams: *mut CUpti_Profiler_Host_GetConfigImage_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostGetNumOfPasses"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_GetNumOfPasses_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Number of bytes allocated for pConfigImage"]
+    pub configImageSize: usize,
+    #[doc = " [in] the config image buffer"]
+    pub pConfigImage: *mut u8,
+    #[doc = " [out] number of passes required for profiling scheduled metrics in the config image"]
+    pub numOfPasses: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_GetNumOfPasses_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Host_GetNumOfPasses_Params>() - 40usize];
+    ["Alignment of CUpti_Profiler_Host_GetNumOfPasses_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Host_GetNumOfPasses_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetNumOfPasses_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetNumOfPasses_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_GetNumOfPasses_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetNumOfPasses_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetNumOfPasses_Params::configImageSize"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetNumOfPasses_Params,
+        configImageSize
+    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_GetNumOfPasses_Params::pConfigImage"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetNumOfPasses_Params, pConfigImage) - 24usize];
+    ["Offset of field: CUpti_Profiler_Host_GetNumOfPasses_Params::numOfPasses"]
+        [::std::mem::offset_of!(CUpti_Profiler_Host_GetNumOfPasses_Params, numOfPasses) - 32usize];
+};
+impl Default for CUpti_Profiler_Host_GetNumOfPasses_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the number of passes required for profiling the scheduled metrics in the config image.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_GetNumOfPasses_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostGetNumOfPasses(
+        pParams: *mut CUpti_Profiler_Host_GetNumOfPasses_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerHostGetMaxNumHardwareMetricsPerPass"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] the profiler kind one from CUpti_ProfilerType"]
+    pub profilerType: CUpti_ProfilerType,
+    #[doc = " [in] accepted for chips supported at the time-of-release."]
+    pub pChipName: *const ::std::os::raw::c_char,
+    #[doc = " [in] buffer with counter availability image - required for future chip support"]
+    pub pCounterAvailabilityImage: *mut u8,
+    #[doc = " [out] maximum number of metrics that can be scheduled in a pass"]
+    pub maxMetricsPerPass: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params"][::std::mem::size_of::<
+        CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
+    >() - 48usize];
+    ["Alignment of CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params"][::std::mem::align_of::<
+        CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
+    >() - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::structSize"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
+        structSize
+    )
+        - 0usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::pPriv"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
+        pPriv
+    )
+        - 8usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::profilerType"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
+        profilerType
+    )
+        - 16usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::pChipName"][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
+        pChipName
+    )
+        - 24usize];
+    [
+        "Offset of field: CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::pCounterAvailabilityImage",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
+        pCounterAvailabilityImage
+    ) - 32usize];
+    [
+        "Offset of field: CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::maxMetricsPerPass",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
+        maxMetricsPerPass
+    ) - 40usize];
+};
+impl Default for CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the maximum number of hardware metrics (metric names which doesn't include _sass_ keyword)\n that can be scheduled in a single pass for a chip. While this represents a theoretical upper limit,\n practical constraints may prevent reaching this threshold for a specific set of metrics. Furthermore,\n the maximum achievable value is contingent upon the characteristics and architecture of the chip in question.\n\n Use cuptiProfilerHostGetNumOfPasses API for getting the actual number of passes required for the\n for collecting the profiling data for the scheduled metrics in a config image.\n\n \\param pParams A pointer to \\ref CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiProfilerHostGetMaxNumHardwareMetricsPerPass(
+        pParams: *mut CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
+    ) -> CUptiResult;
+}
+#[doc = " Invalid value"]
+pub const CUPTI_Range_INVALID: CUpti_ProfilerRange = 0;
+#[doc = " Ranges are auto defined around each kernel in a profiling session"]
+pub const CUPTI_AutoRange: CUpti_ProfilerRange = 1;
+#[doc = " A range in which metric data to be collected is defined by the user"]
+pub const CUPTI_UserRange: CUpti_ProfilerRange = 2;
+#[doc = " Range count"]
+pub const CUPTI_Range_COUNT: CUpti_ProfilerRange = 3;
+#[doc = " \\brief Profiler range attribute\n\n A metric enabled in the session's configuration is collected separately per unique range-stack in the pass.\n This is an attribute to collect metrics around each kernel in a profiling session or in an user defined range."]
+pub type CUpti_ProfilerRange = ::std::os::raw::c_uint;
+#[doc = " Invalid Value"]
+pub const CUPTI_Replay_INVALID: CUpti_ProfilerReplayMode = 0;
+#[doc = " Replay is done by CUPTI user around the process"]
+pub const CUPTI_ApplicationReplay: CUpti_ProfilerReplayMode = 1;
+#[doc = " Replay is done around kernel implicitly by CUPTI"]
+pub const CUPTI_KernelReplay: CUpti_ProfilerReplayMode = 2;
+#[doc = " Replay is done by CUPTI user within a process"]
+pub const CUPTI_UserReplay: CUpti_ProfilerReplayMode = 3;
+#[doc = " Replay count"]
+pub const CUPTI_Replay_COUNT: CUpti_ProfilerReplayMode = 4;
+#[doc = " \\brief Profiler replay attribute\n\n For metrics which require multipass collection, a replay of the GPU kernel(s) is required.\n This is an attribute which specify how the replay of the kernel(s) to be measured is done."]
+pub type CUpti_ProfilerReplayMode = ::std::os::raw::c_uint;
+#[doc = " \\brief Default parameter for cuptiProfilerInitialize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_Initialize_Params {
+    #[doc = "!< [in] CUpti_Profiler_Initialize_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_Initialize_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_Initialize_Params>() - 16usize];
+    ["Alignment of CUpti_Profiler_Initialize_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_Initialize_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_Initialize_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_Initialize_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_Initialize_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_Initialize_Params, pPriv) - 8usize];
+};
+impl Default for CUpti_Profiler_Initialize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief Default parameter for cuptiProfilerDeInitialize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_DeInitialize_Params {
+    #[doc = "!< [in] CUpti_Profiler_DeInitialize_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_DeInitialize_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_DeInitialize_Params>() - 16usize];
+    ["Alignment of CUpti_Profiler_DeInitialize_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_DeInitialize_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_DeInitialize_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeInitialize_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_DeInitialize_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeInitialize_Params, pPriv) - 8usize];
+};
+impl Default for CUpti_Profiler_DeInitialize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Initializes the profiler interface\n\n Loads the required libraries in the process address space.\n Sets up the hooks with the CUDA driver."]
+    pub fn cuptiProfilerInitialize(pParams: *mut CUpti_Profiler_Initialize_Params) -> CUptiResult;
+}
+unsafe extern "C" {
+    #[doc = " \\brief DeInitializes the profiler interface"]
+    pub fn cuptiProfilerDeInitialize(
+        pParams: *mut CUpti_Profiler_DeInitialize_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Input parameter to define the counterDataImage"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_CounterDataImageOptions {
+    #[doc = "!< [in] CUpti_Profiler_CounterDataImageOptions_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "< [in] Address of CounterDataPrefix generated from NVPW_CounterDataBuilder_GetCounterDataPrefix().\nMust be align(8)."]
+    pub pCounterDataPrefix: *const u8,
+    #[doc = "!< [in] Size of CounterDataPrefix generated from NVPW_CounterDataBuilder_GetCounterDataPrefix()."]
+    pub counterDataPrefixSize: usize,
+    #[doc = "!< [in] Maximum number of ranges that can be profiled"]
+    pub maxNumRanges: u32,
+    #[doc = "!< [in] Maximum number of RangeTree nodes; must be >= maxNumRanges"]
+    pub maxNumRangeTreeNodes: u32,
+    #[doc = "!< [in] Maximum string length of each RangeName, including the trailing NULL character"]
+    pub maxRangeNameLength: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_CounterDataImageOptions"]
+        [::std::mem::size_of::<CUpti_Profiler_CounterDataImageOptions>() - 48usize];
+    ["Alignment of CUpti_Profiler_CounterDataImageOptions"]
+        [::std::mem::align_of::<CUpti_Profiler_CounterDataImageOptions>() - 8usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImageOptions::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_CounterDataImageOptions, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImageOptions::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_CounterDataImageOptions, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImageOptions::pCounterDataPrefix"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImageOptions,
+        pCounterDataPrefix
+    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImageOptions::counterDataPrefixSize"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImageOptions,
+        counterDataPrefixSize
+    ) - 24usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImageOptions::maxNumRanges"]
+        [::std::mem::offset_of!(CUpti_Profiler_CounterDataImageOptions, maxNumRanges) - 32usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImageOptions::maxNumRangeTreeNodes"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImageOptions,
+        maxNumRangeTreeNodes
+    ) - 36usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImageOptions::maxRangeNameLength"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImageOptions,
+        maxRangeNameLength
+    ) - 40usize];
+};
+impl Default for CUpti_Profiler_CounterDataImageOptions {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief Params for cuptiProfilerCounterDataImageCalculateSize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_CounterDataImage_CalculateSize_Params {
+    #[doc = "!< [in] CUpti_Profiler_CounterDataImage_CalculateSize_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] CUpti_Profiler_CounterDataImageOptions_STRUCT_SIZE"]
+    pub sizeofCounterDataImageOptions: usize,
+    #[doc = "!< [in] Pointer to Counter Data Image Options"]
+    pub pOptions: *const CUpti_Profiler_CounterDataImageOptions,
+    #[doc = "!< [out]"]
+    pub counterDataImageSize: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_CounterDataImage_CalculateSize_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_CounterDataImage_CalculateSize_Params>() - 40usize];
+    ["Alignment of CUpti_Profiler_CounterDataImage_CalculateSize_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_CounterDataImage_CalculateSize_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateSize_Params::structSize"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_CalculateSize_Params,
+        structSize
+    )
+        - 0usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateSize_Params::pPriv"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_CalculateSize_Params,
+        pPriv
+    ) - 8usize];
+    [
+        "Offset of field: CUpti_Profiler_CounterDataImage_CalculateSize_Params::sizeofCounterDataImageOptions",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_CalculateSize_Params,
+        sizeofCounterDataImageOptions
+    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateSize_Params::pOptions"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_CalculateSize_Params,
+        pOptions
+    )
+        - 24usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateSize_Params::counterDataImageSize"]
+        [::std::mem::offset_of!(
+            CUpti_Profiler_CounterDataImage_CalculateSize_Params,
+            counterDataImageSize
+        ) - 32usize];
+};
+impl Default for CUpti_Profiler_CounterDataImage_CalculateSize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief Params for cuptiProfilerCounterDataImageInitialize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_CounterDataImage_Initialize_Params {
+    #[doc = "!< [in] CUpti_Profiler_CounterDataImage_Initialize_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] CUpti_Profiler_CounterDataImageOptions_STRUCT_SIZE"]
+    pub sizeofCounterDataImageOptions: usize,
+    #[doc = "!< [in] Pointer to Counter Data Image Options"]
+    pub pOptions: *const CUpti_Profiler_CounterDataImageOptions,
+    #[doc = "!< [in] Size calculated from cuptiProfilerCounterDataImageCalculateSize"]
+    pub counterDataImageSize: usize,
+    #[doc = "!< [in] The buffer to be initialized."]
+    pub pCounterDataImage: *mut u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_CounterDataImage_Initialize_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_CounterDataImage_Initialize_Params>() - 48usize];
+    ["Alignment of CUpti_Profiler_CounterDataImage_Initialize_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_CounterDataImage_Initialize_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_Initialize_Params::structSize"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_Initialize_Params,
+        structSize
+    ) - 0usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_Initialize_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_CounterDataImage_Initialize_Params, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_Profiler_CounterDataImage_Initialize_Params::sizeofCounterDataImageOptions",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_Initialize_Params,
+        sizeofCounterDataImageOptions
+    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_Initialize_Params::pOptions"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_Initialize_Params,
+        pOptions
+    ) - 24usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_Initialize_Params::counterDataImageSize"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_Initialize_Params,
+        counterDataImageSize
+    )
+        - 32usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_Initialize_Params::pCounterDataImage"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_Initialize_Params,
+        pCounterDataImage
+    )
+        - 40usize];
+};
+impl Default for CUpti_Profiler_CounterDataImage_Initialize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief A CounterData image allocates space for values for each counter for each range.\n\n User borne the resposibility of managing the counterDataImage allocations.\n CounterDataPrefix contains meta data about the metrics that will be stored in counterDataImage.\n Use these APIs to calculate the allocation size and initialize counterData image.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerCounterDataImageCalculateSize(
+        pParams: *mut CUpti_Profiler_CounterDataImage_CalculateSize_Params,
+    ) -> CUptiResult;
+}
+unsafe extern "C" {
+    pub fn cuptiProfilerCounterDataImageInitialize(
+        pParams: *mut CUpti_Profiler_CounterDataImage_Initialize_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerCounterDataImageCalculateScratchBufferSize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params {
+    #[doc = "!< [in] CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] size calculated from cuptiProfilerCounterDataImageCalculateSize"]
+    pub counterDataImageSize: usize,
+    #[doc = "!< [in]"]
+    pub pCounterDataImage: *mut u8,
+    #[doc = "!< [out]"]
+    pub counterDataScratchBufferSize: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params>(
+        ) - 40usize];
+    ["Alignment of CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params>(
+        ) - 8usize];
+    [
+        "Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::structSize",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
+        structSize
+    ) - 0usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::pPriv"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
+        pPriv
+    )
+        - 8usize];
+    [
+        "Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::counterDataImageSize",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
+        counterDataImageSize
+    ) - 16usize];
+    [
+        "Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::pCounterDataImage",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
+        pCounterDataImage
+    ) - 24usize];
+    [
+        "Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::counterDataScratchBufferSize",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
+        counterDataScratchBufferSize
+    ) - 32usize];
+};
+impl Default for CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief Params for cuptiProfilerCounterDataImageInitializeScratchBuffer"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params {
+    #[doc = "!< [in] CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] size calculated from cuptiProfilerCounterDataImageCalculateSize"]
+    pub counterDataImageSize: usize,
+    #[doc = "!< [in]"]
+    pub pCounterDataImage: *mut u8,
+    #[doc = "!< [in] size calculated using cuptiProfilerCounterDataImageCalculateScratchBufferSize"]
+    pub counterDataScratchBufferSize: usize,
+    #[doc = "!< [in] the scratch buffer to be initialized."]
+    pub pCounterDataScratchBuffer: *mut u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params"][::std::mem::size_of::<
+        CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
+    >() - 48usize];
+    ["Alignment of CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params>()
+            - 8usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::structSize"]
+        [::std::mem::offset_of!(
+            CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
+            structSize
+        ) - 0usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::pPriv"][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
+        pPriv
+    )
+        - 8usize];
+    [
+        "Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::counterDataImageSize",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
+        counterDataImageSize
+    ) - 16usize];
+    [
+        "Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::pCounterDataImage",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
+        pCounterDataImage
+    ) - 24usize];
+    [
+        "Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::counterDataScratchBufferSize",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
+        counterDataScratchBufferSize
+    ) - 32usize];
+    [
+        "Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::pCounterDataScratchBuffer",
+    ][::std::mem::offset_of!(
+        CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
+        pCounterDataScratchBuffer
+    ) - 40usize];
+};
+impl Default for CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief A temporary storage for CounterData image needed for internal operations\n\n Use these APIs to calculate the allocation size and initialize counterData image scratch buffer.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerCounterDataImageCalculateScratchBufferSize(
+        pParams: *mut CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
+    ) -> CUptiResult;
+}
+unsafe extern "C" {
+    pub fn cuptiProfilerCounterDataImageInitializeScratchBuffer(
+        pParams: *mut CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerBeginSession"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_BeginSession_Params {
+    #[doc = "!< [in] CUpti_Profiler_BeginSession_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+    #[doc = "!< [in] size calculated from cuptiProfilerCounterDataImageCalculateSize"]
+    pub counterDataImageSize: usize,
+    #[doc = "!< [in] address of CounterDataImage"]
+    pub pCounterDataImage: *mut u8,
+    #[doc = "!< [in] size calculated from cuptiProfilerCounterDataImageInitializeScratchBuffer"]
+    pub counterDataScratchBufferSize: usize,
+    #[doc = "!< [in] address of CounterDataImage scratch buffer"]
+    pub pCounterDataScratchBuffer: *mut u8,
+    #[doc = "!< [in] [optional]"]
+    pub bDumpCounterDataInFile: u8,
+    #[doc = "!< [in] [optional]"]
+    pub pCounterDataFilePath: *const ::std::os::raw::c_char,
+    #[doc = "!< [in] CUpti_ProfilerRange"]
+    pub range: CUpti_ProfilerRange,
+    #[doc = "!< [in] CUpti_ProfilerReplayMode"]
+    pub replayMode: CUpti_ProfilerReplayMode,
+    #[doc = "!< [in] Maximum number of ranges that can be recorded in a single pass."]
+    pub maxRangesPerPass: usize,
+    #[doc = "!< [in] Maximum number of kernel launches that can be recorded in a single pass; must be >= maxRangesPerPass."]
+    pub maxLaunchesPerPass: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_BeginSession_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_BeginSession_Params>() - 96usize];
+    ["Alignment of CUpti_Profiler_BeginSession_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_BeginSession_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginSession_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginSession_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginSession_Params, ctx) - 16usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::counterDataImageSize"][::std::mem::offset_of!(
+        CUpti_Profiler_BeginSession_Params,
+        counterDataImageSize
+    ) - 24usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::pCounterDataImage"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginSession_Params, pCounterDataImage) - 32usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::counterDataScratchBufferSize"][::std::mem::offset_of!(
+        CUpti_Profiler_BeginSession_Params,
+        counterDataScratchBufferSize
+    )
+        - 40usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::pCounterDataScratchBuffer"][::std::mem::offset_of!(
+        CUpti_Profiler_BeginSession_Params,
+        pCounterDataScratchBuffer
+    ) - 48usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::bDumpCounterDataInFile"][::std::mem::offset_of!(
+        CUpti_Profiler_BeginSession_Params,
+        bDumpCounterDataInFile
+    ) - 56usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::pCounterDataFilePath"][::std::mem::offset_of!(
+        CUpti_Profiler_BeginSession_Params,
+        pCounterDataFilePath
+    ) - 64usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::range"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginSession_Params, range) - 72usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::replayMode"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginSession_Params, replayMode) - 76usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::maxRangesPerPass"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginSession_Params, maxRangesPerPass) - 80usize];
+    ["Offset of field: CUpti_Profiler_BeginSession_Params::maxLaunchesPerPass"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginSession_Params, maxLaunchesPerPass) - 88usize];
+};
+impl Default for CUpti_Profiler_BeginSession_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief Params for cuptiProfilerEndSession"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_EndSession_Params {
+    #[doc = "!< [in] CUpti_Profiler_EndSession_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_EndSession_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_EndSession_Params>() - 24usize];
+    ["Alignment of CUpti_Profiler_EndSession_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_EndSession_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_EndSession_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_EndSession_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_EndSession_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_EndSession_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_EndSession_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_EndSession_Params, ctx) - 16usize];
+};
+impl Default for CUpti_Profiler_EndSession_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Begin profiling session sets up the profiling on the device\n\n Although, it doesn't start the profiling but GPU resources needed for profiling are allocated.\n Outside of a session, the GPU will return to its normal operating state.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerBeginSession(
+        pParams: *mut CUpti_Profiler_BeginSession_Params,
+    ) -> CUptiResult;
+}
+unsafe extern "C" {
+    #[doc = " \\brief Ends profiling session\n\n Frees up the GPU resources acquired for profiling.\n Outside of a session, the GPU will return to it's normal operating state.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerEndSession(pParams: *mut CUpti_Profiler_EndSession_Params) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerSetConfig"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_SetConfig_Params {
+    #[doc = "!< [in] CUpti_Profiler_SetConfig_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+    #[doc = "!< [in] Config created by NVPW_RawMetricsConfig_GetConfigImage(). Must be align(8)."]
+    pub pConfig: *const u8,
+    #[doc = "!< [in] size of config"]
+    pub configSize: usize,
+    #[doc = "!< [in] the lowest nesting level to be profiled; must be >= 1"]
+    pub minNestingLevel: u16,
+    #[doc = "!< [in] the number of nesting levels to profile; must be >= 1"]
+    pub numNestingLevels: u16,
+    #[doc = "!< [in] Set this to zero for in-app replay; set this to the output of EndPass() for application replay"]
+    pub passIndex: usize,
+    #[doc = "!< [in] Set this to minNestingLevel for in-app replay; set this to the output of EndPass() for application"]
+    pub targetNestingLevel: u16,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_SetConfig_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_SetConfig_Params>() - 64usize];
+    ["Alignment of CUpti_Profiler_SetConfig_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_SetConfig_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_SetConfig_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_SetConfig_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_SetConfig_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_SetConfig_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_SetConfig_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_SetConfig_Params, ctx) - 16usize];
+    ["Offset of field: CUpti_Profiler_SetConfig_Params::pConfig"]
+        [::std::mem::offset_of!(CUpti_Profiler_SetConfig_Params, pConfig) - 24usize];
+    ["Offset of field: CUpti_Profiler_SetConfig_Params::configSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_SetConfig_Params, configSize) - 32usize];
+    ["Offset of field: CUpti_Profiler_SetConfig_Params::minNestingLevel"]
+        [::std::mem::offset_of!(CUpti_Profiler_SetConfig_Params, minNestingLevel) - 40usize];
+    ["Offset of field: CUpti_Profiler_SetConfig_Params::numNestingLevels"]
+        [::std::mem::offset_of!(CUpti_Profiler_SetConfig_Params, numNestingLevels) - 42usize];
+    ["Offset of field: CUpti_Profiler_SetConfig_Params::passIndex"]
+        [::std::mem::offset_of!(CUpti_Profiler_SetConfig_Params, passIndex) - 48usize];
+    ["Offset of field: CUpti_Profiler_SetConfig_Params::targetNestingLevel"]
+        [::std::mem::offset_of!(CUpti_Profiler_SetConfig_Params, targetNestingLevel) - 56usize];
+};
+impl Default for CUpti_Profiler_SetConfig_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief Params for cuptiProfilerUnsetConfig"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_UnsetConfig_Params {
+    #[doc = "!< [in] CUpti_Profiler_UnsetConfig_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_UnsetConfig_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_UnsetConfig_Params>() - 24usize];
+    ["Alignment of CUpti_Profiler_UnsetConfig_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_UnsetConfig_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_UnsetConfig_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_UnsetConfig_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_UnsetConfig_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_UnsetConfig_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_UnsetConfig_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_UnsetConfig_Params, ctx) - 16usize];
+};
+impl Default for CUpti_Profiler_UnsetConfig_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Set metrics configuration to be profiled\n\n Use these APIs to set the config to profile in a session. It can be used for advanced cases such as where multiple\n configurations are collected into a single CounterData Image on the need basis, without restarting the session.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerSetConfig(pParams: *mut CUpti_Profiler_SetConfig_Params) -> CUptiResult;
+}
+unsafe extern "C" {
+    #[doc = " \\brief Unset metrics configuration profiled\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerUnsetConfig(pParams: *mut CUpti_Profiler_UnsetConfig_Params)
+    -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerBeginPass"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_BeginPass_Params {
+    #[doc = "!< [in] CUpti_Profiler_BeginPass_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_BeginPass_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_BeginPass_Params>() - 24usize];
+    ["Alignment of CUpti_Profiler_BeginPass_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_BeginPass_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_BeginPass_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginPass_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_BeginPass_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginPass_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_BeginPass_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_BeginPass_Params, ctx) - 16usize];
+};
+impl Default for CUpti_Profiler_BeginPass_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief Params for cuptiProfilerEndPass"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_EndPass_Params {
+    #[doc = "!< [in] CUpti_Profiler_EndPass_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+    pub targetNestingLevel: u16,
+    #[doc = "!< [out] The passIndex that will be collected by the *next* BeginPass"]
+    pub passIndex: usize,
+    #[doc = "!< [out] becomes true when the last pass has been queued to the GPU"]
+    pub allPassesSubmitted: u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_EndPass_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_EndPass_Params>() - 48usize];
+    ["Alignment of CUpti_Profiler_EndPass_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_EndPass_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_EndPass_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_EndPass_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_EndPass_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_EndPass_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_EndPass_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_EndPass_Params, ctx) - 16usize];
+    ["Offset of field: CUpti_Profiler_EndPass_Params::targetNestingLevel"]
+        [::std::mem::offset_of!(CUpti_Profiler_EndPass_Params, targetNestingLevel) - 24usize];
+    ["Offset of field: CUpti_Profiler_EndPass_Params::passIndex"]
+        [::std::mem::offset_of!(CUpti_Profiler_EndPass_Params, passIndex) - 32usize];
+    ["Offset of field: CUpti_Profiler_EndPass_Params::allPassesSubmitted"]
+        [::std::mem::offset_of!(CUpti_Profiler_EndPass_Params, allPassesSubmitted) - 40usize];
+};
+impl Default for CUpti_Profiler_EndPass_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Replay API: used for multipass collection.\n\n These APIs are used if user chooses to replay by itself \\ref CUPTI_UserReplay or \\ref CUPTI_ApplicationReplay\n for multipass collection of the metrics configurations.\n It's a no-op in case of \\ref CUPTI_KernelReplay.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerBeginPass(pParams: *mut CUpti_Profiler_BeginPass_Params) -> CUptiResult;
+}
+unsafe extern "C" {
+    #[doc = " \\brief Replay API: used for multipass collection.\n\n These APIs are used if user chooses to replay by itself \\ref CUPTI_UserReplay or \\ref CUPTI_ApplicationReplay\n for multipass collection of the metrics configurations.\n Its a no-op in case of \\ref CUPTI_KernelReplay.\n Returns information for next pass.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerEndPass(pParams: *mut CUpti_Profiler_EndPass_Params) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerEnableProfiling"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_EnableProfiling_Params {
+    #[doc = "!< [in] CUpti_Profiler_EnableProfiling_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_EnableProfiling_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_EnableProfiling_Params>() - 24usize];
+    ["Alignment of CUpti_Profiler_EnableProfiling_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_EnableProfiling_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_EnableProfiling_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_EnableProfiling_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_EnableProfiling_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_EnableProfiling_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_EnableProfiling_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_EnableProfiling_Params, ctx) - 16usize];
+};
+impl Default for CUpti_Profiler_EnableProfiling_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief Params for cuptiProfilerDisableProfiling"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_DisableProfiling_Params {
+    #[doc = "!< [in] CUpti_Profiler_DisableProfiling_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_DisableProfiling_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_DisableProfiling_Params>() - 24usize];
+    ["Alignment of CUpti_Profiler_DisableProfiling_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_DisableProfiling_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_DisableProfiling_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_DisableProfiling_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_DisableProfiling_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_DisableProfiling_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_DisableProfiling_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_DisableProfiling_Params, ctx) - 16usize];
+};
+impl Default for CUpti_Profiler_DisableProfiling_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Enables Profiling\n\n In \\ref CUPTI_AutoRange, these APIs are used to enable/disable profiling for the kernels to be executed in\n a profiling session.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerEnableProfiling(
+        pParams: *mut CUpti_Profiler_EnableProfiling_Params,
+    ) -> CUptiResult;
+}
+unsafe extern "C" {
+    #[doc = " \\brief Disable Profiling\n\n In \\ref CUPTI_AutoRange, these APIs are used to enable/disable profiling for the kernels to be executed in\n a profiling session.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerDisableProfiling(
+        pParams: *mut CUpti_Profiler_DisableProfiling_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerIsPassCollected"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_IsPassCollected_Params {
+    #[doc = "!< [in] CUpti_Profiler_IsPassCollected_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+    #[doc = "!< [out] number of ranges whose data was dropped in the processed pass"]
+    pub numRangesDropped: usize,
+    #[doc = "!< [out] number of bytes not written to TraceBuffer due to buffer full"]
+    pub numTraceBytesDropped: usize,
+    #[doc = "!< [out] true if a pass was successfully decoded"]
+    pub onePassCollected: u8,
+    #[doc = "!< [out] becomes true when the last pass has been decoded"]
+    pub allPassesCollected: u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_IsPassCollected_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_IsPassCollected_Params>() - 48usize];
+    ["Alignment of CUpti_Profiler_IsPassCollected_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_IsPassCollected_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_IsPassCollected_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_IsPassCollected_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_IsPassCollected_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_IsPassCollected_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_IsPassCollected_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_IsPassCollected_Params, ctx) - 16usize];
+    ["Offset of field: CUpti_Profiler_IsPassCollected_Params::numRangesDropped"]
+        [::std::mem::offset_of!(CUpti_Profiler_IsPassCollected_Params, numRangesDropped) - 24usize];
+    ["Offset of field: CUpti_Profiler_IsPassCollected_Params::numTraceBytesDropped"][::std::mem::offset_of!(
+        CUpti_Profiler_IsPassCollected_Params,
+        numTraceBytesDropped
+    ) - 32usize];
+    ["Offset of field: CUpti_Profiler_IsPassCollected_Params::onePassCollected"]
+        [::std::mem::offset_of!(CUpti_Profiler_IsPassCollected_Params, onePassCollected) - 40usize];
+    ["Offset of field: CUpti_Profiler_IsPassCollected_Params::allPassesCollected"][::std::mem::offset_of!(
+        CUpti_Profiler_IsPassCollected_Params,
+        allPassesCollected
+    ) - 41usize];
+};
+impl Default for CUpti_Profiler_IsPassCollected_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Asynchronous call to query if the submitted pass to GPU is collected\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerIsPassCollected(
+        pParams: *mut CUpti_Profiler_IsPassCollected_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerFlushCounterData"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_FlushCounterData_Params {
+    #[doc = "!< [in] CUpti_Profiler_FlushCounterData_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+    #[doc = "!< [out] number of ranges whose data was dropped in the processed passes"]
+    pub numRangesDropped: usize,
+    #[doc = "!< [out] number of bytes not written to TraceBuffer due to buffer full"]
+    pub numTraceBytesDropped: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_FlushCounterData_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_FlushCounterData_Params>() - 40usize];
+    ["Alignment of CUpti_Profiler_FlushCounterData_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_FlushCounterData_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_FlushCounterData_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_FlushCounterData_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_FlushCounterData_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_FlushCounterData_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_FlushCounterData_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_FlushCounterData_Params, ctx) - 16usize];
+    ["Offset of field: CUpti_Profiler_FlushCounterData_Params::numRangesDropped"][::std::mem::offset_of!(
+        CUpti_Profiler_FlushCounterData_Params,
+        numRangesDropped
+    ) - 24usize];
+    ["Offset of field: CUpti_Profiler_FlushCounterData_Params::numTraceBytesDropped"][::std::mem::offset_of!(
+        CUpti_Profiler_FlushCounterData_Params,
+        numTraceBytesDropped
+    ) - 32usize];
+};
+impl Default for CUpti_Profiler_FlushCounterData_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Decode all the submitted passes\n\n Flush Counter data API to ensure every pass is decoded into the counterDataImage passed at beginSession.\n This will cause the CPU/GPU sync to collect all the undecoded pass.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerFlushCounterData(
+        pParams: *mut CUpti_Profiler_FlushCounterData_Params,
+    ) -> CUptiResult;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_PushRange_Params {
+    #[doc = "!< [in] CUpti_Profiler_PushRange_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+    #[doc = "!< [in] specifies the range for subsequent launches; must not be NULL"]
+    pub pRangeName: *const ::std::os::raw::c_char,
+    #[doc = "!< [in] assign to strlen(pRangeName) if known; if set to zero, the library will call strlen()"]
+    pub rangeNameLength: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_PushRange_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_PushRange_Params>() - 40usize];
+    ["Alignment of CUpti_Profiler_PushRange_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_PushRange_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_PushRange_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_PushRange_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_PushRange_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_PushRange_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_PushRange_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_PushRange_Params, ctx) - 16usize];
+    ["Offset of field: CUpti_Profiler_PushRange_Params::pRangeName"]
+        [::std::mem::offset_of!(CUpti_Profiler_PushRange_Params, pRangeName) - 24usize];
+    ["Offset of field: CUpti_Profiler_PushRange_Params::rangeNameLength"]
+        [::std::mem::offset_of!(CUpti_Profiler_PushRange_Params, rangeNameLength) - 32usize];
+};
+impl Default for CUpti_Profiler_PushRange_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_PopRange_Params {
+    #[doc = "!< [in] CUpti_Profiler_PopRange_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_PopRange_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_PopRange_Params>() - 24usize];
+    ["Alignment of CUpti_Profiler_PopRange_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_PopRange_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_PopRange_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_PopRange_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_PopRange_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_PopRange_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_PopRange_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_PopRange_Params, ctx) - 16usize];
+};
+impl Default for CUpti_Profiler_PopRange_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Range API's : Push user range\n\n Counter data is collected per unique range-stack. Identified by a string label passsed by the user.\n It's an invalid operation in case of \\ref CUPTI_AutoRange.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerPushRange(pParams: *mut CUpti_Profiler_PushRange_Params) -> CUptiResult;
+}
+unsafe extern "C" {
+    #[doc = " \\brief Range API's : Pop user range\n\n Counter data is collected per unique range-stack. Identified by a string label passsed by the user.\n It's an invalid operation in case of \\ref CUPTI_AutoRange.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
+    pub fn cuptiProfilerPopRange(pParams: *mut CUpti_Profiler_PopRange_Params) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiProfilerGetCounterAvailability"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_GetCounterAvailability_Params {
+    #[doc = "!< [in] CUpti_Profiler_GetCounterAvailability_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub ctx: CUcontext,
+    #[doc = "!< [in/out] If `pCounterAvailabilityImage` is NULL, then the required size is returned in\n!< `counterAvailabilityImageSize`, otherwise `counterAvailabilityImageSize` should be set to the size of\n!< `pCounterAvailabilityImage`, and on return it would be overwritten with number of actual bytes copied"]
+    pub counterAvailabilityImageSize: usize,
+    #[doc = "!< [in] buffer receiving counter availability image, may be NULL"]
+    pub pCounterAvailabilityImage: *mut u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_GetCounterAvailability_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_GetCounterAvailability_Params>() - 40usize];
+    ["Alignment of CUpti_Profiler_GetCounterAvailability_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_GetCounterAvailability_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_GetCounterAvailability_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_GetCounterAvailability_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_GetCounterAvailability_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_GetCounterAvailability_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_GetCounterAvailability_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_Profiler_GetCounterAvailability_Params, ctx) - 16usize];
+    ["Offset of field: CUpti_Profiler_GetCounterAvailability_Params::counterAvailabilityImageSize"]
+        [::std::mem::offset_of!(
+            CUpti_Profiler_GetCounterAvailability_Params,
+            counterAvailabilityImageSize
+        ) - 24usize];
+    ["Offset of field: CUpti_Profiler_GetCounterAvailability_Params::pCounterAvailabilityImage"][::std::mem::offset_of!(
+        CUpti_Profiler_GetCounterAvailability_Params,
+        pCounterAvailabilityImage
+    )
+        - 32usize];
+};
+impl Default for CUpti_Profiler_GetCounterAvailability_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Query counter availibility\n\n Use this API to query counter availability information in a buffer which can be used to filter unavailable raw metrics on host.\n Note: This API may fail, if any profiling or sampling session is active on the specified context or its device."]
+    pub fn cuptiProfilerGetCounterAvailability(
+        pParams: *mut CUpti_Profiler_GetCounterAvailability_Params,
+    ) -> CUptiResult;
+}
+#[doc = "!< Configuration support level unknown - either detection code errored out before setting this value, or unable to determine it"]
+pub const CUPTI_PROFILER_CONFIGURATION_UNKNOWN: CUpti_Profiler_Support_Level = 0;
+#[doc = "!< Profiling is unavailable.  For specific feature fields, this means that the current configuration of this feature does not work with profiling.  For instance, SLI-enabled devices do not support profiling, and this value would be returned for SLI on an SLI-enabled device."]
+pub const CUPTI_PROFILER_CONFIGURATION_UNSUPPORTED: CUpti_Profiler_Support_Level = 1;
+#[doc = "!< Profiling would be available for this configuration, but was disabled by the system"]
+pub const CUPTI_PROFILER_CONFIGURATION_DISABLED: CUpti_Profiler_Support_Level = 2;
+#[doc = "!< Profiling is supported.  For specific feature fields, this means that the current configuration of this feature works with profiling.  For instance, SLI-enabled devices do not support profiling, and this value would only be returned for devices which are not SLI-enabled."]
+pub const CUPTI_PROFILER_CONFIGURATION_SUPPORTED: CUpti_Profiler_Support_Level = 3;
+#[doc = " Generic support level enum for CUPTI"]
+pub type CUpti_Profiler_Support_Level = ::std::os::raw::c_uint;
+#[doc = "!< CUPTI APIs for range based profiling (cuptiProfiler*)"]
+pub const CUPTI_PROFILER_RANGE_PROFILING: CUpti_Profiler_API = 0;
+#[doc = "!< CUPTI APIs collecting pc sampling data (cuptiPcSampling*)"]
+pub const CUPTI_PROFILER_PC_SAMPLING: CUpti_Profiler_API = 1;
+#[doc = "!< CUPTI APIs collecting SASS metrics data (cuptiSassMetrics*)"]
+pub const CUPTI_PROFILER_SASS_METRICS: CUpti_Profiler_API = 2;
+#[doc = "!< CUPTI APIs collecting PM Sampling data (cuptiPmSampling*)"]
+pub const CUPTI_PROFILER_PM_SAMPLING: CUpti_Profiler_API = 3;
+pub const CUPTI_PROFILER_UNKNOWN: CUpti_Profiler_API = 4;
+#[doc = " \\brief Profiler API types"]
+pub type CUpti_Profiler_API = ::std::os::raw::c_uint;
+#[doc = " \\brief Params for cuptiProfilerDeviceSupported"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Profiler_DeviceSupported_Params {
+    #[doc = "!< [in] Must be CUpti_Profiler_DeviceSupported_Params_STRUCT_SIZE"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in] if NULL, the current CUcontext is used"]
+    pub cuDevice: CUdevice,
+    #[doc = "!< [out] overall SUPPORTED / UNSUPPORTED flag representing whether Profiling and PC Sampling APIs work on the given device and configuration. SUPPORTED if all following flags are SUPPORTED, UNSUPPORTED otherwise."]
+    pub isSupported: CUpti_Profiler_Support_Level,
+    #[doc = "!< [out] SUPPORTED if the device architecture level supports the Profiling API (Compute Capability >= 7.0), UNSUPPORTED otherwise"]
+    pub architecture: CUpti_Profiler_Support_Level,
+    #[doc = "!< [out] SUPPORTED if SLI is not enabled, UNSUPPORTED otherwise"]
+    pub sli: CUpti_Profiler_Support_Level,
+    #[doc = "!< [out] SUPPORTED if vGPU is supported and profiling is enabled, DISABLED if profiling is supported but not enabled, UNSUPPORTED otherwise"]
+    pub vGpu: CUpti_Profiler_Support_Level,
+    #[doc = "!< [out] SUPPORTED if confidential compute is not enabled, UNSUPPORTED otherwise"]
+    pub confidentialCompute: CUpti_Profiler_Support_Level,
+    #[doc = "!< [out] SUPPORTED if not NVIDIA Crypto Mining Processors (CMP), UNSUPPORTED otherwise"]
+    pub cmp: CUpti_Profiler_Support_Level,
+    #[doc = "!< [out] SUPPORTED if WSL supported, UNSUPPORTED otherwise"]
+    pub wsl: CUpti_Profiler_Support_Level,
+    #[doc = "!< [in] the CUPTI API type for which device support will be checked"]
+    pub api: CUpti_Profiler_API,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Profiler_DeviceSupported_Params"]
+        [::std::mem::size_of::<CUpti_Profiler_DeviceSupported_Params>() - 56usize];
+    ["Alignment of CUpti_Profiler_DeviceSupported_Params"]
+        [::std::mem::align_of::<CUpti_Profiler_DeviceSupported_Params>() - 8usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeviceSupported_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeviceSupported_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::cuDevice"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeviceSupported_Params, cuDevice) - 16usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::isSupported"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeviceSupported_Params, isSupported) - 20usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::architecture"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeviceSupported_Params, architecture) - 24usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::sli"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeviceSupported_Params, sli) - 28usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::vGpu"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeviceSupported_Params, vGpu) - 32usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::confidentialCompute"][::std::mem::offset_of!(
+        CUpti_Profiler_DeviceSupported_Params,
+        confidentialCompute
+    ) - 36usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::cmp"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeviceSupported_Params, cmp) - 40usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::wsl"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeviceSupported_Params, wsl) - 44usize];
+    ["Offset of field: CUpti_Profiler_DeviceSupported_Params::api"]
+        [::std::mem::offset_of!(CUpti_Profiler_DeviceSupported_Params, api) - 48usize];
+};
+impl Default for CUpti_Profiler_DeviceSupported_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Query device compatibility with Profiling API\n\n Use this call to determine whether a compute device and configuration are compatible with the Profiling API.\n If the configuration does not support profiling, one of several flags will indicate why."]
+    pub fn cuptiProfilerDeviceSupported(
+        pParams: *mut CUpti_Profiler_DeviceSupported_Params,
+    ) -> CUptiResult;
 }

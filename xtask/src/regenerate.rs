@@ -32,6 +32,7 @@ impl Regenerate {
             .blocklist_type("CUctx_st");
 
         builder
+            .clang_args(["-x", "c++"])
             .clang_args(&self.rest)
             .header(&self.input)
             .generate()?
