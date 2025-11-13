@@ -66,6 +66,14 @@ impl HostProfiler {
         Ok(Self { raw })
     }
 
+    pub fn as_raw(&self) -> *const CUpti_Profiler_Host_Object {
+        self.raw.as_ptr()
+    }
+
+    pub fn as_raw_mut(&mut self) -> *mut CUpti_Profiler_Host_Object {
+        self.raw.as_ptr()
+    }
+
     /// Get a list of supported chip names.
     ///
     /// # Errors
@@ -296,7 +304,7 @@ impl ConfigImage {
 /// This is used by CUPTI to filter out unavailable metrics on the host. For
 /// users of the API it is effectivly just an opaque blob of bytes.
 #[derive(Clone)]
-pub struct CounterAvailabilityImage(Vec<u8>);
+pub struct CounterAvailabilityImage(pub(crate) Vec<u8>);
 
 impl CounterAvailabilityImage {
     fn get_impl(context: Option<&Context>) -> Result<Self> {
