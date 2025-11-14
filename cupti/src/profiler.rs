@@ -4,6 +4,7 @@ use std::ptr::NonNull;
 use c_enum::c_enum;
 use cupti_sys::*;
 
+use crate::pmsampling::CounterDataImage;
 use crate::{Context, Error, Result};
 
 c_enum! {
@@ -222,7 +223,7 @@ impl HostProfiler {
     /// - [`Error::Unknown`] for any internal error.
     pub fn evaluate_to_gpu_values(
         &self,
-        counter_data: &[u8],
+        counter_data: &CounterDataImage,
         range_index: usize,
         metric_names: &[&CStr],
     ) -> Result<Vec<f64>> {
@@ -232,8 +233,8 @@ impl HostProfiler {
         let mut params = CUpti_Profiler_Host_EvaluateToGpuValues_Params::default();
         params.structSize = std::mem::size_of_val(&params);
         params.pHostObject = self.raw.as_ptr();
-        params.pCounterDataImage = counter_data.as_ptr();
-        params.counterDataImageSize = counter_data.len();
+        params.pCounterDataImage = counter_data.as_bytes().as_ptr();
+        params.counterDataImageSize = counter_data.as_bytes().len();
         params.rangeIndex = range_index;
         params.ppMetricNames = metric_names.as_mut_ptr();
         params.numMetrics = metric_names.len();

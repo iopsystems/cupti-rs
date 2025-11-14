@@ -1,4 +1,11 @@
-//! cupti_pmsampling.h
+//! Performance monitor sampling API.
+//!
+//! This module is a wrapper around the functions in `cupti_pmsampling.h`. It
+//! allows youto collect a set of metrics by sampling the GPU's performance
+//! monitors periodically at fixed intervals. Each sample is composed of metric
+//! values and the GPU timestamp when it was collected in nanoseconds.
+//! 
+//! This APIs here are supported on Turing and later GPU architectures.
 
 use std::ffi::CStr;
 use std::ptr::NonNull;
@@ -281,20 +288,14 @@ pub struct DecodeStatus {
     pub stop_reason: DecodeStopReason,
     /// Overflow status for hardware buffer.
     ///
-    /// To avoid overflow, either increase the hardware buffer size in [`PmSampler::set_config`]
-    /// or reduce the sampling interval.
+    /// To avoid overflow, either increase the hardware buffer size in
+    /// [`PmSampler::set_config`] or reduce the sampling interval.
     pub overflow: u8,
 }
 
-/// Time information for a PM sampling sample.
-#[derive(Copy, Clone, Debug)]
-pub struct SampleInfo {
-    /// Start time of the sample
-    pub start_timestamp: u64,
-    /// End time of the sample
-    pub end_timestamp: u64,
-}
-
+/// A buffer storing decoded counter data.
+/// 
+/// You will need to create one of these before
 pub struct CounterDataImage(Vec<u8>);
 
 impl CounterDataImage {
@@ -313,7 +314,7 @@ impl CounterDataImage {
     /// - [`Error::InvalidParameter`] if any parameter is not valid
     /// - [`Error::InvalidOperation`] if called without enabling PM sampling
     /// - [`Error::Unknown`] for any internal error
-    pub fn new(sampler: &PmSampler, metric_names: Vec<&CStr>, max_samples: u32) -> Result<Self> {
+    pub fn new(sampler: &PmSampler, metric_names: &[&CStr], max_samples: u32) -> Result<Self> {
         let mut metric_names = metric_names
             .iter()
             .copied()
@@ -348,7 +349,8 @@ impl CounterDataImage {
         &self.0
     }
 
-    /// Get the counter data info like number of samples, number of populated samples and number of completed samples in a counter data image.
+    /// Get the counter data info like number of samples, number of populated
+    /// samples and number of completed samples in a counter data image.
     ///
     /// # Errors
     ///
@@ -369,7 +371,8 @@ impl CounterDataImage {
         })
     }
 
-    /// Get the sample info (start and end time stamp) for the given sample index.
+    /// Get the sample info (start and end time stamp) for the given sample
+    /// index.
     ///
     /// Each sample is distinguished by the start and end time stamp.
     ///
@@ -397,6 +400,15 @@ impl CounterDataImage {
             end_timestamp: params.endTimestamp,
         })
     }
+}
+
+/// Time information for a PM sampling sample.
+#[derive(Copy, Clone, Debug)]
+pub struct SampleInfo {
+    /// Start time of the sample
+    pub start_timestamp: u64,
+    /// End time of the sample
+    pub end_timestamp: u64,
 }
 
 /// Information about samples in a counter data image.
