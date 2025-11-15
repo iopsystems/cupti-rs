@@ -4,7 +4,7 @@
 //! allows youto collect a set of metrics by sampling the GPU's performance
 //! monitors periodically at fixed intervals. Each sample is composed of metric
 //! values and the GPU timestamp when it was collected in nanoseconds.
-//! 
+//!
 //! This APIs here are supported on Turing and later GPU architectures.
 
 use std::ffi::CStr;
@@ -14,6 +14,7 @@ use c_enum::c_enum;
 use cupti_sys::*;
 
 use crate::profiler::*;
+use crate::util::CStringSlice;
 use crate::{Error, Result};
 
 c_enum! {
@@ -80,12 +81,100 @@ c_enum! {
     }
 }
 
-/// Collect a set of metrics from GPU performance monitors.
-pub struct PmSampler {
-    raw: NonNull<CUpti_PmSampling_Object>,
+pub struct SamplerBuilder {
+    host: HostProfiler,
 }
 
-impl PmSampler {
+impl SamplerBuilder {
+    /// Create and initialize a new profiler host object for PM sampling.
+    ///
+    /// # Parameters
+    ///
+    /// - `chip_name`: The chip name (accepted for chips supported at the
+    ///   time-of-release)
+    /// - `counter_availability_image`: Buffer with counter availability image
+    ///   (required for future chip support)
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::InvalidParameter`] if any parameter is not valid
+    /// - [`Error::Unknown`] for any internal error
+    pub fn new(
+        chip_name: &CStr,
+        counter_availability_image: &CounterAvailabilityImage,
+    ) -> Result<Self> {
+        let host = HostProfiler::new(
+            ProfilerType::PmSampling,
+            chip_name,
+            counter_availability_image,
+        )?;
+        Ok(Self { host })
+    }
+
+    /// Get a list of the supported base metrics for the chip.
+    ///
+    /// # Params
+    /// - `ty` - metric type (counter, ratio, throughput)
+    ///
+    /// # Errors
+    /// - [`Error::InvalidParameter`] if `ty` is not a valid metric type.
+    /// - [`Error::Unknown`] for any internal error.
+    pub fn get_base_metrics(&self, ty: MetricType) -> Result<&'static CStringSlice> {
+        self.host.get_base_metrics(ty)
+    }
+
+    /// Get the list of supported sub-metrics for the metric.
+    ///
+    /// # Params
+    /// - `ty` - the metric type for the queried metric
+    /// - `name` - metric name for which sub-metric will be listed. This can be
+    ///   with or without the extension (rollup or submetric).
+    ///
+    /// # Errors
+    /// - [`Error::InvalidParameter`] if `ty` is not a valid metric type.
+    /// - [`Error::InvalidMetricName`] if the metric name is not valid or not
+    ///   supported for the chip.
+    pub fn get_submetrics(&self, ty: MetricType, name: &CStr) -> Result<&'static CStringSlice> {
+        self.host.get_submetrics(ty, name)
+    }
+
+    /// Get the properties of the metric.
+    ///
+    /// # Parameters
+    /// - `name` - The metric name for which its properties will be listed. The
+    ///   name can be with or without extension (rollup or submetric).
+    ///
+    /// # Errors
+    /// - [`Error::InvalidMetricName`] if the metric name is not valid or not
+    ///   supported for the chip.
+    /// - [`Error::Unknown`] for any internal error.
+    pub fn get_metric_properties(&self, name: &CStr) -> Result<MetricProperties> {
+        self.host.get_metric_properties(name)
+    }
+
+    /// Add metrics to the profiler host object for generating the config image.
+    ///
+    /// The config image will have the required information to schedule the
+    /// metrics for collecting the profiling data.
+    ///
+    /// # Parameters
+    ///
+    /// - `metric_names`: Metric names for which config image will be generated
+    ///
+    /// # Notes
+    ///
+    /// PM sampling only supports single pass config image.
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::InvalidParameter`] if any parameter is not valid
+    /// - [`Error::InvalidMetricName`] if the metric name is not valid or not
+    ///   supported for the chip
+    /// - [`Error::Unknown`] for any internal error
+    pub fn add_metrics(&mut self, metric_names: &CStringSlice) -> Result<()> {
+        self.host.add_metrics(metric_names)
+    }
+
     /// Create a PM sampling object and enable PM sampling on the CUDA device.
     ///
     /// # Parameters
@@ -102,26 +191,41 @@ impl PmSampler {
     /// - [`Error::InsufficientPrivileges`] if the user does not have sufficient
     ///   privileges to perform the operation
     /// - [`Error::Unknown`] for any internal error
-    pub fn new(device_index: usize) -> Result<Self> {
+    pub fn build(self, device_index: usize) -> Result<Sampler> {
+        let image = self.host.get_config_image()?;
+
         let mut params = CUpti_PmSampling_Enable_Params::default();
         params.structSize = std::mem::size_of_val(&params);
         params.deviceIndex = device_index;
 
         Error::result(unsafe { cuptiPmSamplingEnable(&mut params) })?;
 
-        Ok(match NonNull::new(params.pPmSamplingObject) {
-            Some(raw) => Self { raw },
-            None => panic!("cuptiPmSamplingEnable succeeded but returne a null pointer"),
+        let raw = NonNull::new(params.pPmSamplingObject).unwrap_or_else(|| {
+            panic!("cuptiPmSamplingEnable succeeded but returne a null pointer")
+        });
+
+        Ok(Sampler {
+            raw,
+            host: self.host,
+            config_image: image,
         })
     }
+}
 
+/// Collect a set of metrics from GPU performance monitors.
+pub struct Sampler {
+    raw: NonNull<CUpti_PmSampling_Object>,
+    host: HostProfiler,
+    config_image: ConfigImage,
+}
+
+impl Sampler {
     /// Set the configuration for PM sampling like sampling interval, hardware
     /// buffer size, trigger mode and the config image which has scheduling info
     /// for metric collection.
     ///
     /// # Parameters
     ///
-    /// - `config`: Config image
     /// - `hardware_buffer_size`: The hardware buffer size in which raw PM
     ///   sampling data will be stored. These samples will be decoded to counter
     ///   data image with [`decode_data`] call
@@ -147,7 +251,6 @@ impl PmSampler {
     /// [`decode_data`]: Self::decode_data
     pub fn set_config(
         &mut self,
-        config: &ConfigImage,
         hardware_buffer_size: usize,
         sampling_interval: u64,
         trigger_mode: TriggerMode,
@@ -155,9 +258,9 @@ impl PmSampler {
     ) -> Result<()> {
         let mut params = CUpti_PmSampling_SetConfig_Params::default();
         params.structSize = std::mem::size_of_val(&params);
-        params.configSize = config.as_bytes().len();
+        params.configSize = self.config_image.as_bytes().len();
         params.pPmSamplingObject = self.raw.as_ptr();
-        params.pConfig = config.as_bytes().as_ptr();
+        params.pConfig = self.config_image.as_bytes().as_ptr();
         params.hardwareBufferSize = hardware_buffer_size;
         params.samplingInterval = sampling_interval;
         params.triggerMode = trigger_mode.into();
@@ -271,7 +374,7 @@ impl PmSampler {
     }
 }
 
-impl Drop for PmSampler {
+impl Drop for Sampler {
     fn drop(&mut self) {
         let mut params = CUpti_PmSampling_Disable_Params::default();
         params.structSize = std::mem::size_of_val(&params);
@@ -294,7 +397,7 @@ pub struct DecodeStatus {
 }
 
 /// A buffer storing decoded counter data.
-/// 
+///
 /// You will need to create one of these before
 pub struct CounterDataImage(Vec<u8>);
 
@@ -314,7 +417,7 @@ impl CounterDataImage {
     /// - [`Error::InvalidParameter`] if any parameter is not valid
     /// - [`Error::InvalidOperation`] if called without enabling PM sampling
     /// - [`Error::Unknown`] for any internal error
-    pub fn new(sampler: &PmSampler, metric_names: &[&CStr], max_samples: u32) -> Result<Self> {
+    pub fn new(sampler: &Sampler, metric_names: &[&CStr], max_samples: u32) -> Result<Self> {
         let mut metric_names = metric_names
             .iter()
             .copied()
@@ -385,7 +488,7 @@ impl CounterDataImage {
     ///
     /// - [`Error::InvalidParameter`] if any parameter is not valid
     /// - [`Error::Unknown`] for any internal error
-    pub fn get_sample_info(&self, sampler: &PmSampler, sample_index: usize) -> Result<SampleInfo> {
+    pub fn get_sample_info(&self, sampler: &Sampler, sample_index: usize) -> Result<SampleInfo> {
         let mut params = CUpti_PmSampling_CounterData_GetSampleInfo_Params::default();
         params.structSize = std::mem::size_of_val(&params);
         params.pPmSamplingObject = sampler.raw.as_ptr();
@@ -399,6 +502,32 @@ impl CounterDataImage {
             start_timestamp: params.startTimestamp,
             end_timestamp: params.endTimestamp,
         })
+    }
+
+    /// Evaluate the metric values for the range index stored in the counter
+    /// data.
+    ///
+    /// # Params
+    /// - `sampler` - the PM sampler.
+    /// - `range_index` - the range index for which the range name will be
+    ///   queried.
+    /// - `metric_names` - the metrics for which GPU values will be evaluated
+    ///   for the range.
+    ///
+    /// # Errors
+    /// - [`Error::InvalidParameter`] if any of the parameters is not valid.
+    /// - [`Error::InvalidMetricName`] if the metric name is not valid or not
+    ///   supported.
+    /// - [`Error::Unknown`] for any internal error.
+    pub fn evaluate(
+        &self,
+        sampler: &Sampler,
+        range_index: usize,
+        metric_names: &CStringSlice,
+    ) -> Result<Vec<f64>> {
+        sampler
+            .host
+            .evaluate_to_gpu_values(&self, range_index, metric_names)
     }
 }
 

@@ -1,10 +1,12 @@
 use std::ffi::CStr;
+use std::mem::ManuallyDrop;
 use std::ptr::NonNull;
 
 use c_enum::c_enum;
 use cupti_sys::*;
 
 use crate::pmsampling::CounterDataImage;
+use crate::util::CStringSlice;
 use crate::{Context, Error, Result};
 
 c_enum! {
@@ -75,24 +77,25 @@ impl HostProfiler {
         self.raw.as_ptr()
     }
 
+    pub fn into_raw(self) -> *mut CUpti_Profiler_Host_Object {
+        let mut this = ManuallyDrop::new(self);
+        this.as_raw_mut()
+    }
+
     /// Get a list of supported chip names.
     ///
     /// # Errors
     /// - [`Error::Unknown`] for any internal error.
-    pub fn supported_chips() -> Result<Vec<&'static CStr>> {
+    pub fn supported_chips() -> Result<&'static CStringSlice> {
         let mut params = CUpti_Profiler_Host_GetSupportedChips_Params::default();
         params.structSize = std::mem::size_of_val(&params);
 
         Error::result(unsafe { cuptiProfilerHostGetSupportedChips(&mut params) })?;
 
         let slice = unsafe { std::slice::from_raw_parts(params.ppChipNames, params.numChips) };
-        let names = slice
-            .iter()
-            .copied()
-            .map(|p| unsafe { CStr::from_ptr(p) })
-            .collect();
+        let slice = unsafe { CStringSlice::from_raw_slice(slice) };
 
-        Ok(names)
+        Ok(slice)
     }
 
     /// Get a list of the supported base metrics for the chip.
@@ -103,7 +106,7 @@ impl HostProfiler {
     /// # Errors
     /// - [`Error::InvalidParameter`] if `ty` is not a valid metric type.
     /// - [`Error::Unknown`] for any internal error.
-    pub fn get_base_metrics(&self, ty: MetricType) -> Result<Vec<&'static CStr>> {
+    pub fn get_base_metrics(&self, ty: MetricType) -> Result<&'static CStringSlice> {
         let mut params = CUpti_Profiler_Host_GetBaseMetrics_Params::default();
         params.structSize = std::mem::size_of_val(&params);
         params.pHostObject = self.raw.as_ptr();
@@ -112,13 +115,9 @@ impl HostProfiler {
         Error::result(unsafe { cuptiProfilerHostGetBaseMetrics(&mut params) })?;
 
         let slice = unsafe { std::slice::from_raw_parts(params.ppMetricNames, params.numMetrics) };
-        let names = slice
-            .iter()
-            .copied()
-            .map(|p| unsafe { CStr::from_ptr(p) })
-            .collect();
+        let slice = unsafe { CStringSlice::from_raw_slice(slice) };
 
-        Ok(names)
+        Ok(slice)
     }
 
     /// Get the list of supported sub-metrics for the metric.
@@ -132,7 +131,7 @@ impl HostProfiler {
     /// - [`Error::InvalidParameter`] if `ty` is not a valid metric type.
     /// - [`Error::InvalidMetricName`] if the metric name is not valid or not
     ///   supported for the chip.
-    pub fn get_submetrics(&self, ty: MetricType, name: &CStr) -> Result<Vec<&'static CStr>> {
+    pub fn get_submetrics(&self, ty: MetricType, name: &CStr) -> Result<&'static CStringSlice> {
         let mut params = CUpti_Profiler_Host_GetSubMetrics_Params::default();
         params.structSize = std::mem::size_of_val(&params);
         params.pHostObject = self.raw.as_ptr();
@@ -143,13 +142,9 @@ impl HostProfiler {
 
         let slice =
             unsafe { std::slice::from_raw_parts(params.ppSubMetrics, params.numOfSubmetrics) };
-        let names = slice
-            .iter()
-            .copied()
-            .map(|p| unsafe { CStr::from_ptr(p) })
-            .collect();
+        let slice = unsafe { CStringSlice::from_raw_slice(slice) };
 
-        Ok(names)
+        Ok(slice)
     }
 
     /// Get the properties of the metric.
@@ -205,6 +200,34 @@ impl HostProfiler {
         Ok(ConfigImage(data))
     }
 
+    /// Add metrics to the profiler host object for generating the config image.
+    ///
+    /// The config image will have the required information to schedule the metrics for
+    /// collecting the profiling data.
+    ///
+    /// # Parameters
+    ///
+    /// - `metric_names`: Metric names for which config image will be generated
+    ///
+    /// # Notes
+    ///
+    /// PM sampling only supports single pass config image.
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::InvalidParameter`] if any parameter is not valid
+    /// - [`Error::InvalidMetricName`] if the metric name is not valid or not supported for the chip
+    /// - [`Error::Unknown`] for any internal error
+    pub fn add_metrics(&mut self, metric_names: &CStringSlice) -> Result<()> {
+        let mut params = CUpti_Profiler_Host_ConfigAddMetrics_Params::default();
+        params.structSize = std::mem::size_of_val(&params);
+        params.pHostObject = self.raw.as_ptr();
+        params.ppMetricNames = metric_names.as_raw_slice().as_ptr() as *mut _;
+        params.numMetrics = metric_names.as_raw_slice().len();
+
+        Error::result(unsafe { cuptiProfilerHostConfigAddMetrics(&mut params) })
+    }
+
     /// Evaluate the metric values for the range index stored in the counter
     /// data.
     ///
@@ -225,9 +248,8 @@ impl HostProfiler {
         &self,
         counter_data: &CounterDataImage,
         range_index: usize,
-        metric_names: &[&CStr],
+        metric_names: &CStringSlice,
     ) -> Result<Vec<f64>> {
-        let mut metric_names = metric_names.iter().map(|c| c.as_ptr()).collect::<Vec<_>>();
         let mut metric_values = Vec::with_capacity(metric_names.len());
 
         let mut params = CUpti_Profiler_Host_EvaluateToGpuValues_Params::default();
@@ -236,8 +258,8 @@ impl HostProfiler {
         params.pCounterDataImage = counter_data.as_bytes().as_ptr();
         params.counterDataImageSize = counter_data.as_bytes().len();
         params.rangeIndex = range_index;
-        params.ppMetricNames = metric_names.as_mut_ptr();
-        params.numMetrics = metric_names.len();
+        params.ppMetricNames = metric_names.as_raw_slice().as_ptr() as *mut _;
+        params.numMetrics = metric_names.as_raw_slice().len();
         params.pMetricValues = metric_values.spare_capacity_mut().as_mut_ptr() as *mut _;
 
         Error::result(unsafe { cuptiProfilerHostEvaluateToGpuValues(&mut params) })?;
