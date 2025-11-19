@@ -9,7 +9,6 @@ use std::time::Duration;
 use anyhow::{Context, bail};
 use clap::Parser;
 use cupti::pmsampling::*;
-use cupti::profiler::MetricType;
 use cupti::{CStringList, get_device_chip_name};
 
 /// PM Sampling example - collect GPU performance metrics at regular intervals
@@ -31,10 +30,6 @@ struct Args {
     /// Maximum number of samples to collect
     #[arg(short, long, default_value_t = 100)]
     max_samples: u32,
-
-    /// List available metrics and exit
-    #[arg(long)]
-    list_metrics: bool,
 
     /// Metrics to collect (comma-separated)
     #[arg(short, long, default_value = "sm__cycles_elapsed.avg,sm__warps_active.avg.pct_of_peak_sustained_active")]
@@ -63,12 +58,6 @@ fn main() -> anyhow::Result<()> {
     // Create a sampler builder
     let mut builder = Sampler::builder(&chip_name, &counter_availability)
         .context("failed to create sampler builder")?;
-
-    // If --list-metrics is specified, print available metrics and exit
-    if args.list_metrics {
-        print_available_metrics(&builder)?;
-        return Ok(());
-    }
 
     // Parse the metrics from command line argument
     let metric_names: CStringList = args
@@ -134,12 +123,6 @@ fn main() -> anyhow::Result<()> {
     // For this example, we'll just sleep to allow time for samples to be collected
     println!("Running workload (sleeping for 100ms)...");
     std::thread::sleep(Duration::from_millis(100));
-
-    // Optionally, you could trigger some GPU activity here using cudarc or cuda-sys
-    // Example (if cuda-sys is available):
-    // unsafe {
-    //     cuda_sys::cuDeviceSynchronize();
-    // }
 
     // Stop sampling
     sampler.stop().context("failed to stop sampling")?;
@@ -208,47 +191,6 @@ fn main() -> anyhow::Result<()> {
 
     println!("{}", "-".repeat(80));
     println!("PM sampling example completed successfully!");
-
-    Ok(())
-}
-
-/// Print available metrics for the chip
-fn print_available_metrics(builder: &SamplerBuilder) -> anyhow::Result<()> {
-    println!("\nAvailable Counter Metrics:");
-    println!("{}", "=".repeat(60));
-
-    let counters = builder
-        .get_base_metrics(MetricType::Counter)
-        .context("failed to get counter metrics")?;
-
-    for (i, name) in counters.iter().enumerate() {
-        println!("  {}. {}", i + 1, name.to_string_lossy());
-    }
-
-    println!("\nAvailable Ratio Metrics:");
-    println!("{}", "=".repeat(60));
-
-    let ratios = builder
-        .get_base_metrics(MetricType::Ratio)
-        .context("failed to get ratio metrics")?;
-
-    for (i, name) in ratios.iter().enumerate() {
-        println!("  {}. {}", i + 1, name.to_string_lossy());
-    }
-
-    println!("\nAvailable Throughput Metrics:");
-    println!("{}", "=".repeat(60));
-
-    let throughputs = builder
-        .get_base_metrics(MetricType::Throughput)
-        .context("failed to get throughput metrics")?;
-
-    for (i, name) in throughputs.iter().enumerate() {
-        println!("  {}. {}", i + 1, name.to_string_lossy());
-    }
-
-    println!("\nTotal metrics: {} counters, {} ratios, {} throughputs",
-        counters.len(), ratios.len(), throughputs.len());
 
     Ok(())
 }
