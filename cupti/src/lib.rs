@@ -72,3 +72,27 @@ impl Drop for InitializeGuard {
         let _ = deinitialize();
     }
 }
+
+/// Get the chip name for a CUDA device.
+///
+/// Returns the chip name (e.g., "ga100", "gv100") for the device at the given index.
+///
+/// # Parameters
+///
+/// - `device_index`: The index of the CUDA device
+///
+/// # Errors
+///
+/// - [`Error::InvalidParameter`] if `device_index` is invalid
+pub fn get_device_chip_name(device_index: usize) -> Result<&'static str> {
+    use cupti_sys::{CUpti_Device_GetChipName_Params, cuptiDeviceGetChipName};
+    use std::ffi::CStr;
+
+    let mut params = CUpti_Device_GetChipName_Params::default();
+    params.deviceIndex = device_index;
+
+    Error::result(unsafe { cuptiDeviceGetChipName(&mut params) })?;
+
+    let chip_name = unsafe { CStr::from_ptr(params.pChipName) };
+    Ok(chip_name.to_str().expect("chip name should be valid UTF-8"))
+}

@@ -8,3 +8,7 @@ bitflags = "2.10.0"
 c-enum = "0.2.3"
 cuda-sys = "0.2.0"
 cupti-sys = { workspace = true }
+
+[dev-dependencies]
+anyhow = "1.0.100"
+clap = { version = "4.5.52", features = ["derive"] }

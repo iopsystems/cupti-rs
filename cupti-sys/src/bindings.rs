@@ -51,7 +51,11 @@ where
             index % 8
         };
         let mask = 1 << bit_index;
-        if val { byte | mask } else { byte & !mask }
+        if val {
+            byte | mask
+        } else {
+            byte & !mask
+        }
     }
     #[inline]
     pub fn set_bit(&mut self, index: usize, val: bool) {
@@ -3760,16 +3764,7 @@ impl Default for CUpti_ActivityMemory4 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMemory4 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMemory4 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?}, source: {:?} }}",
-            self.kind,
-            self.memoryOperationType,
-            self.memoryKind,
-            self.name,
-            self.memoryPoolConfig,
-            self.source
-        )
+        write ! (f , "CUpti_ActivityMemory4 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?}, source: {:?} }}" , self . kind , self . memoryOperationType , self . memoryKind , self . name , self . memoryPoolConfig , self . source)
     }
 }
 #[doc = " \\brief The activity record for memory pool.\n\n This activity record represents a memory pool creation, destruction and\n trimming (CUPTI_ACTIVITY_KIND_MEMORY_POOL).\n This activity record provides separate records for memory pool creation,\n destruction and trimming operations.\n This allows to correlate the corresponding driver and runtime API\n activity record with the memory pool operation.\n"]
@@ -4207,20 +4202,7 @@ impl Default for CUpti_ActivityKernel10 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel10 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel10 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?}, padding3: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig,
-            self.pAccessPolicyWindow,
-            self.channelType,
-            self.padding3
-        )
+        write ! (f , "CUpti_ActivityKernel10 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?}, padding3: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType , self . padding3)
     }
 }
 #[doc = " \\brief The activity record for CDP (CUDA Dynamic Parallelism)\n kernel.\n\n This activity record represents a CDP kernel execution."]
@@ -5242,11 +5224,7 @@ impl Default for CUpti_ActivityDeviceAttribute {
 }
 impl ::std::fmt::Debug for CUpti_ActivityDeviceAttribute {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityDeviceAttribute {{ kind: {:?}, flags: {:?}, attribute: {:?}, value: {:?} }}",
-            self.kind, self.flags, self.attribute, self.value
-        )
+        write ! (f , "CUpti_ActivityDeviceAttribute {{ kind: {:?}, flags: {:?}, attribute: {:?}, value: {:?} }}" , self . kind , self . flags , self . attribute , self . value)
     }
 }
 #[doc = " \\brief The activity record for a context.\n\n This activity record represents information about a context\n (CUPTI_ACTIVITY_KIND_CONTEXT)."]
@@ -5418,11 +5396,7 @@ impl Default for CUpti_ActivityMarker2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMarker2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMarker2 {{ kind: {:?}, flags: {:?}, objectKind: {:?}, objectId: {:?}, name: {:?}, domain: {:?} }}",
-            self.kind, self.flags, self.objectKind, self.objectId, self.name, self.domain
-        )
+        write ! (f , "CUpti_ActivityMarker2 {{ kind: {:?}, flags: {:?}, objectKind: {:?}, objectId: {:?}, name: {:?}, domain: {:?} }}" , self . kind , self . flags , self . objectKind , self . objectId , self . name , self . domain)
     }
 }
 #[doc = " \\brief The activity record providing detailed information for a marker.\n\n User must enable CUPTI_ACTIVITY_KIND_MARKER as well\n to get records for marker data.\n The marker data contains color, payload, and category.\n (CUPTI_ACTIVITY_KIND_MARKER_DATA)."]
@@ -5484,11 +5458,7 @@ impl Default for CUpti_ActivityMarkerData2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMarkerData2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMarkerData2 {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}",
-            self.kind, self.flags, self.payloadKind, self.payload
-        )
+        write ! (f , "CUpti_ActivityMarkerData2 {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}" , self . kind , self . flags , self . payloadKind , self . payload)
     }
 }
 #[doc = " \\brief The activity record for CUPTI and driver overheads.\n\n This activity record provides CUPTI and driver overhead information\n (CUPTI_ACTIVITY_KIND_OVERHEAD)."]
@@ -5549,11 +5519,7 @@ impl Default for CUpti_ActivityOverhead3 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityOverhead3 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityOverhead3 {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?}, overheadData: {:?} }}",
-            self.kind, self.overheadKind, self.objectKind, self.objectId, self.overheadData
-        )
+        write ! (f , "CUpti_ActivityOverhead3 {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?}, overheadData: {:?} }}" , self . kind , self . overheadKind , self . objectKind , self . objectId , self . overheadData)
     }
 }
 #[doc = " \\brief The activity record for CUPTI environmental data.\n\n This activity record provides CUPTI environmental data, include\n power, clocks, and thermals.  This information is sampled at\n various rates and returned in this activity record.  The consumer\n of the record needs to check the environmentKind field to figure\n out what kind of environmental record this is."]
@@ -5618,12 +5584,7 @@ const _: () = {
         pcieLinkWidth
     )
         - 12usize];
-    [
-        "Offset of field: CUpti_ActivityEnvironment__bindgen_ty_1__bindgen_ty_1::clocksThrottleReasons",
-    ][::std::mem::offset_of!(
-        CUpti_ActivityEnvironment__bindgen_ty_1__bindgen_ty_1,
-        clocksThrottleReasons
-    ) - 16usize];
+    ["Offset of field: CUpti_ActivityEnvironment__bindgen_ty_1__bindgen_ty_1::clocksThrottleReasons"] [:: std :: mem :: offset_of ! (CUpti_ActivityEnvironment__bindgen_ty_1__bindgen_ty_1 , clocksThrottleReasons) - 16usize] ;
 };
 impl Default for CUpti_ActivityEnvironment__bindgen_ty_1__bindgen_ty_1 {
     fn default() -> Self {
@@ -7197,18 +7158,7 @@ impl Default for CUpti_ActivityNvLink4 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityNvLink4 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityNvLink4 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?}, pad: {:?} }}",
-            self.kind,
-            self.typeDev0,
-            self.typeDev1,
-            self.idDev0,
-            self.idDev1,
-            self.portDev0,
-            self.portDev1,
-            self.pad
-        )
+        write ! (f , "CUpti_ActivityNvLink4 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?}, pad: {:?} }}" , self . kind , self . typeDev0 , self . typeDev1 , self . idDev0 , self . idDev1 , self . portDev0 , self . portDev1 , self . pad)
     }
 }
 #[doc = " PCIE GPU record"]
@@ -8079,7 +8029,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     #[doc = " \\brief Disable collection of a specific kind of activity record for\n a context.\n\n Disable collection of a specific kind of activity record for a context.\n This setting done by this API will supersede the global settings\n for activity records.\n Multiple kinds can be enabled by calling this function multiple times.\n\n \\param context The context for which activity is to be disabled\n \\param kind The kind of activity record to stop collecting\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_KIND if the activity kind is not supported"]
     pub fn cuptiActivityDisableContext(context: CUcontext, kind: CUpti_ActivityKind)
-    -> CUptiResult;
+        -> CUptiResult;
 }
 unsafe extern "C" {
     #[doc = " \\brief Get the number of activity records that were dropped of\n insufficient buffer space.\n\n Get the number of records that were dropped because of insufficient\n buffer space.  The dropped count includes records that could not be\n recorded because CUPTI did not have activity buffer space available\n for the record (because the CUpti_BuffersCallbackRequestFunc\n callback did not return an empty buffer of sufficient size) and\n also CDP records that could not be record because the device-size\n buffer was full (size is controlled by the\n CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE_CDP attribute). The dropped\n count maintained for the queue is reset to zero when this function\n is called.\n\n \\param context The context, or NULL to get dropped count from global queue\n \\param streamId The stream ID\n \\param dropped The number of records that were dropped since the last call\n to this function.\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p dropped is NULL"]
@@ -8316,11 +8266,7 @@ impl Default for CUpti_ActivityOverhead {
 }
 impl ::std::fmt::Debug for CUpti_ActivityOverhead {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityOverhead {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?} }}",
-            self.kind, self.overheadKind, self.objectKind, self.objectId
-        )
+        write ! (f , "CUpti_ActivityOverhead {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?} }}" , self . kind , self . overheadKind , self . objectKind , self . objectId)
     }
 }
 #[doc = " \\brief The activity record for CUPTI and driver overheads.\n\n This activity record provides CUPTI and driver overhead information\n (CUPTI_ACTIVITY_OVERHEAD)."]
@@ -8377,11 +8323,7 @@ impl Default for CUpti_ActivityOverhead2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityOverhead2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityOverhead2 {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?} }}",
-            self.kind, self.overheadKind, self.objectKind, self.objectId
-        )
+        write ! (f , "CUpti_ActivityOverhead2 {{ kind: {:?}, overheadKind: {:?}, objectKind: {:?}, objectId: {:?} }}" , self . kind , self . overheadKind , self . objectKind , self . objectId)
     }
 }
 #[doc = " \\brief The activity record for a device. (deprecated)\n\n This activity record represents information about a GPU device\n (CUPTI_ACTIVITY_KIND_DEVICE).\n Device activity is now reported using the\n CUpti_ActivityDevice5 activity record."]
@@ -9318,11 +9260,7 @@ impl Default for CUpti_ActivityKernel2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel2 {{ kind: {:?}, cacheConfig: {:?}, name: {:?}, reserved0: {:?} }}",
-            self.kind, self.cacheConfig, self.name, self.reserved0
-        )
+        write ! (f , "CUpti_ActivityKernel2 {{ kind: {:?}, cacheConfig: {:?}, name: {:?}, reserved0: {:?} }}" , self . kind , self . cacheConfig , self . name , self . reserved0)
     }
 }
 #[doc = " \\brief The activity record for a kernel (CUDA 6.5(with sm_52 support) onwards).\n (deprecated in CUDA 9.0)\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL).\n Kernel activities are now reported using the CUpti_ActivityKernel9 activity\n record."]
@@ -9575,16 +9513,7 @@ impl Default for CUpti_ActivityKernel3 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel3 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel3 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0
-        )
+        write ! (f , "CUpti_ActivityKernel3 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0)
     }
 }
 #[doc = " \\brief The activity record for a kernel (CUDA 9.0(with sm_70 support) onwards).\n (deprecated in CUDA 11.0)\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL).\n Kernel activities are now reported using the CUpti_ActivityKernel9 activity\n record."]
@@ -9866,16 +9795,7 @@ impl Default for CUpti_ActivityKernel4 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel4 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel4 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0
-        )
+        write ! (f , "CUpti_ActivityKernel4 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0)
     }
 }
 #[doc = " \\brief The activity record for a kernel (CUDA 11.0(with sm_80 support) onwards).\n (deprecated in CUDA 11.2)\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL) but is no longer generated\n by CUPTI. Kernel activities are now reported using the\n CUpti_ActivityKernel9 activity record."]
@@ -10169,17 +10089,7 @@ impl Default for CUpti_ActivityKernel5 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel5 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel5 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig
-        )
+        write ! (f , "CUpti_ActivityKernel5 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig)
     }
 }
 #[doc = " \\brief The activity record for kernel. (deprecated in CUDA 11.6)\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL) but is no longer generated\n by CUPTI. Kernel activities are now reported using the\n CUpti_ActivityKernel9 activity record."]
@@ -10477,18 +10387,7 @@ impl Default for CUpti_ActivityKernel6 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel6 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel6 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig,
-            self.pAccessPolicyWindow
-        )
+        write ! (f , "CUpti_ActivityKernel6 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow)
     }
 }
 #[doc = " \\brief The activity record for kernel. (deprecated in CUDA 11.8)\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL) but is no longer generated\n by CUPTI. Kernel activities are now reported using the\n CUpti_ActivityKernel9 activity record."]
@@ -10794,19 +10693,7 @@ impl Default for CUpti_ActivityKernel7 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel7 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel7 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig,
-            self.pAccessPolicyWindow,
-            self.channelType
-        )
+        write ! (f , "CUpti_ActivityKernel7 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType)
     }
 }
 #[doc = " \\brief The activity record for kernel.\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL)"]
@@ -11132,19 +11019,7 @@ impl Default for CUpti_ActivityKernel8 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel8 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel8 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig,
-            self.pAccessPolicyWindow,
-            self.channelType
-        )
+        write ! (f , "CUpti_ActivityKernel8 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType)
     }
 }
 #[doc = " \\brief The activity record for kernel.\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL)"]
@@ -11478,19 +11353,7 @@ impl Default for CUpti_ActivityKernel9 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityKernel9 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityKernel9 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}",
-            self.kind,
-            self.cacheConfig,
-            self.partitionedGlobalCacheRequested,
-            self.partitionedGlobalCacheExecuted,
-            self.name,
-            self.reserved0,
-            self.shmemLimitConfig,
-            self.pAccessPolicyWindow,
-            self.channelType
-        )
+        write ! (f , "CUpti_ActivityKernel9 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType)
     }
 }
 #[doc = " \\brief The activity record for memory copies. (deprecated)\n\n This activity record represents a memory copy\n (CUPTI_ACTIVITY_KIND_MEMCPY)."]
@@ -12435,11 +12298,7 @@ impl Default for CUpti_ActivityMemory2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMemory2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMemory2 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?} }}",
-            self.kind, self.memoryOperationType, self.memoryKind, self.name, self.memoryPoolConfig
-        )
+        write ! (f , "CUpti_ActivityMemory2 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?} }}" , self . kind , self . memoryOperationType , self . memoryKind , self . name , self . memoryPoolConfig)
     }
 }
 #[doc = " \\brief The activity record for memory.\n\n This activity record represents a memory allocation and free operation\n (CUPTI_ACTIVITY_KIND_MEMORY2).\n This activity record provides separate records for memory allocation and\n memory release operations.\n This allows to correlate the corresponding driver and runtime API\n activity record with the memory operation.\n\n Note: This activity record is an upgrade over \\ref CUpti_ActivityMemory2\n enabled using the kind \\ref CUPTI_ACTIVITY_KIND_MEMORY.\n \\ref CUpti_ActivityMemory provides a single record for the memory\n allocation and memory release operations."]
@@ -12617,11 +12476,7 @@ impl Default for CUpti_ActivityMemory3 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMemory3 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMemory3 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?} }}",
-            self.kind, self.memoryOperationType, self.memoryKind, self.name, self.memoryPoolConfig
-        )
+        write ! (f , "CUpti_ActivityMemory3 {{ kind: {:?}, memoryOperationType: {:?}, memoryKind: {:?}, name: {:?}, memoryPoolConfig: {:?} }}" , self . kind , self . memoryOperationType , self . memoryKind , self . name , self . memoryPoolConfig)
     }
 }
 #[doc = " \\brief The activity record for memory pool.\n\n This activity record represents a memory pool creation, destruction and\n trimming (CUPTI_ACTIVITY_KIND_MEMORY_POOL).\n This activity record provides separate records for memory pool creation,\n destruction and trimming operations.\n This allows to correlate the corresponding driver and runtime API\n activity record with the memory pool operation.\n"]
@@ -12811,11 +12666,7 @@ impl Default for CUpti_ActivityMarker {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMarker {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMarker {{ kind: {:?}, flags: {:?}, objectKind: {:?}, objectId: {:?}, name: {:?} }}",
-            self.kind, self.flags, self.objectKind, self.objectId, self.name
-        )
+        write ! (f , "CUpti_ActivityMarker {{ kind: {:?}, flags: {:?}, objectKind: {:?}, objectId: {:?}, name: {:?} }}" , self . kind , self . flags , self . objectKind , self . objectId , self . name)
     }
 }
 #[doc = " \\brief The activity record for source-level global\n access. (deprecated)\n\n This activity records the locations of the global\n accesses in the source (CUPTI_ACTIVITY_KIND_GLOBAL_ACCESS).\n Global access activities are now reported using the\n CUpti_ActivityGlobalAccess3 activity record."]
@@ -13389,17 +13240,7 @@ impl Default for CUpti_ActivityNvLink {
 }
 impl ::std::fmt::Debug for CUpti_ActivityNvLink {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityNvLink {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?} }}",
-            self.kind,
-            self.typeDev0,
-            self.typeDev1,
-            self.idDev0,
-            self.idDev1,
-            self.portDev0,
-            self.portDev1
-        )
+        write ! (f , "CUpti_ActivityNvLink {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?} }}" , self . kind , self . typeDev0 , self . typeDev1 , self . idDev0 , self . idDev1 , self . portDev0 , self . portDev1)
     }
 }
 #[doc = " \\brief NVLink information. (deprecated in CUDA 10.0)\n\n This structure gives capabilities of each logical NVLink connection between two devices,\n gpu<->gpu or gpu<->CPU which can be used to understand the topology.\n NvLink information are now reported using the\n CUpti_ActivityNvLink4 activity record."]
@@ -13572,17 +13413,7 @@ impl Default for CUpti_ActivityNvLink2 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityNvLink2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityNvLink2 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?} }}",
-            self.kind,
-            self.typeDev0,
-            self.typeDev1,
-            self.idDev0,
-            self.idDev1,
-            self.portDev0,
-            self.portDev1
-        )
+        write ! (f , "CUpti_ActivityNvLink2 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?} }}" , self . kind , self . typeDev0 , self . typeDev1 , self . idDev0 , self . idDev1 , self . portDev0 , self . portDev1)
     }
 }
 #[doc = " \\brief NVLink information.\n\n This structure gives capabilities of each logical NVLink connection between two devices,\n gpu<->gpu or gpu<->CPU which can be used to understand the topology.\n NvLink information are now reported using the\n CUpti_ActivityNvLink4 activity record."]
@@ -13763,18 +13594,7 @@ impl Default for CUpti_ActivityNvLink3 {
 }
 impl ::std::fmt::Debug for CUpti_ActivityNvLink3 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityNvLink3 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?}, pad: {:?} }}",
-            self.kind,
-            self.typeDev0,
-            self.typeDev1,
-            self.idDev0,
-            self.idDev1,
-            self.portDev0,
-            self.portDev1,
-            self.pad
-        )
+        write ! (f , "CUpti_ActivityNvLink3 {{ kind: {:?}, typeDev0: {:?}, typeDev1: {:?}, idDev0: {:?}, idDev1: {:?}, portDev0: {:?}, portDev1: {:?}, pad: {:?} }}" , self . kind , self . typeDev0 , self . typeDev1 , self . idDev0 , self . idDev1 , self . portDev0 , self . portDev1 , self . pad)
     }
 }
 #[doc = " \\brief The activity record for trace of graph execution.\n\n This activity record represents execution for a graph without giving visibility\n about the execution of its nodes. This is intended to reduce overheads in tracing\n each node. The activity kind is CUPTI_ACTIVITY_KIND_GRAPH_TRACE\n Graph trace activity is now reported using CUpti_ActivityGraphTrace2 record."]
@@ -14243,11 +14063,7 @@ impl Default for CUpti_ActivityMarkerData {
 }
 impl ::std::fmt::Debug for CUpti_ActivityMarkerData {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_ActivityMarkerData {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}",
-            self.kind, self.flags, self.payloadKind, self.payload
-        )
+        write ! (f , "CUpti_ActivityMarkerData {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}" , self . kind , self . flags , self . payloadKind , self . payload)
     }
 }
 pub const CUPTI_DRIVER_TRACE_CBID_INVALID: CUpti_driver_api_trace_cbid_enum = 0;
@@ -16586,12 +16402,7 @@ const _: () = {
     ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2"]
         [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2>()
             - 4usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2::samplingPeriod",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2,
-        samplingPeriod
-    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2::samplingPeriod"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_2 , samplingPeriod) - 0usize] ;
 };
 #[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_STALL_REASON"]
 #[repr(C)]
@@ -16608,18 +16419,8 @@ const _: () = {
     ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3"]
         [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3>()
             - 8usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3::stallReasonCount",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3,
-        stallReasonCount
-    ) - 0usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3::pStallReasonIndex",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3,
-        pStallReasonIndex
-    ) - 8usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3::stallReasonCount"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3 , stallReasonCount) - 0usize] ;
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3::pStallReasonIndex"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3 , pStallReasonIndex) - 8usize] ;
 };
 impl Default for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_3 {
     fn default() -> Self {
@@ -16644,12 +16445,7 @@ const _: () = {
     ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4"]
         [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4>()
             - 8usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4::scratchBufferSize",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4,
-        scratchBufferSize
-    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4::scratchBufferSize"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_4 , scratchBufferSize) - 0usize] ;
 };
 #[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_HARDWARE_BUFFER_SIZE"]
 #[repr(C)]
@@ -16665,12 +16461,7 @@ const _: () = {
     ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5"]
         [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5>()
             - 8usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5::hardwareBufferSize",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5,
-        hardwareBufferSize
-    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5::hardwareBufferSize"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_5 , hardwareBufferSize) - 0usize] ;
 };
 #[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_COLLECTION_MODE"]
 #[repr(C)]
@@ -16686,12 +16477,7 @@ const _: () = {
     ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6"]
         [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6>()
             - 4usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6::collectionMode",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6,
-        collectionMode
-    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6::collectionMode"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6 , collectionMode) - 0usize] ;
 };
 impl Default for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_6 {
     fn default() -> Self {
@@ -16716,12 +16502,7 @@ const _: () = {
     ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7"]
         [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7>()
             - 4usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7::enableStartStopControl",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7,
-        enableStartStopControl
-    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7::enableStartStopControl"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_7 , enableStartStopControl) - 0usize] ;
 };
 #[doc = " Refer \\ref CUPTI_PC_SAMPLING_CONFIGURATION_ATTR_TYPE_OUTPUT_DATA_FORMAT"]
 #[repr(C)]
@@ -16737,12 +16518,7 @@ const _: () = {
     ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8"]
         [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8>()
             - 4usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8::outputDataFormat",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8,
-        outputDataFormat
-    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8::outputDataFormat"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8 , outputDataFormat) - 0usize] ;
 };
 impl Default for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_8 {
     fn default() -> Self {
@@ -16767,12 +16543,7 @@ const _: () = {
     ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9"]
         [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9>()
             - 8usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9::samplingDataBuffer",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9,
-        samplingDataBuffer
-    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9::samplingDataBuffer"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9 , samplingDataBuffer) - 0usize] ;
 };
 impl Default for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_9 {
     fn default() -> Self {
@@ -16797,12 +16568,7 @@ const _: () = {
     ["Alignment of CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10"]
         [::std::mem::align_of::<CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10>()
             - 4usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10::workerThreadPeriodicSleepSpan",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10,
-        workerThreadPeriodicSleepSpan
-    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10::workerThreadPeriodicSleepSpan"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1__bindgen_ty_10 , workerThreadPeriodicSleepSpan) - 0usize] ;
 };
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
@@ -16839,12 +16605,7 @@ const _: () = {
         collectionModeData
     )
         - 0usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::enableStartStopControlData",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
-        enableStartStopControlData
-    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::enableStartStopControlData"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1 , enableStartStopControlData) - 0usize] ;
     ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::outputDataFormatData"][::std::mem::offset_of!(
         CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
         outputDataFormatData
@@ -16855,12 +16616,7 @@ const _: () = {
         samplingDataBufferData
     )
         - 0usize];
-    [
-        "Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::workerThreadPeriodicSleepSpanData",
-    ][::std::mem::offset_of!(
-        CUpti_PCSamplingConfigurationInfo__bindgen_ty_1,
-        workerThreadPeriodicSleepSpanData
-    ) - 0usize];
+    ["Offset of field: CUpti_PCSamplingConfigurationInfo__bindgen_ty_1::workerThreadPeriodicSleepSpanData"] [:: std :: mem :: offset_of ! (CUpti_PCSamplingConfigurationInfo__bindgen_ty_1 , workerThreadPeriodicSleepSpanData) - 0usize] ;
 };
 impl Default for CUpti_PCSamplingConfigurationInfo__bindgen_ty_1 {
     fn default() -> Self {
@@ -16903,11 +16659,7 @@ impl Default for CUpti_PCSamplingConfigurationInfo {
 }
 impl ::std::fmt::Debug for CUpti_PCSamplingConfigurationInfo {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(
-            f,
-            "CUpti_PCSamplingConfigurationInfo {{ attributeType: {:?}, attributeStatus: {:?}, attributeData: {:?} }}",
-            self.attributeType, self.attributeStatus, self.attributeData
-        )
+        write ! (f , "CUpti_PCSamplingConfigurationInfo {{ attributeType: {:?}, attributeStatus: {:?}, attributeData: {:?} }}" , self . attributeType , self . attributeStatus , self . attributeData)
     }
 }
 #[doc = " \\brief PC sampling configuration structure\n\n This structure configures PC sampling using \\ref cuptiPCSamplingSetConfigurationAttribute\n and queries PC sampling default configuration using \\ref cuptiPCSamplingGetConfigurationAttribute"]
@@ -17453,7 +17205,7 @@ impl Default for CUpti_PmSampling_SetConfig_Params {
 unsafe extern "C" {
     #[doc = " \\brief Set the configuration for PM sampling like sampling interval, maximum number of samples\n filled in HW buffer, trigger mode and the config image which has scheduling info for metric collection.\n\n \\param pParams A pointer to \\ref CUpti_PmSampling_SetConfig_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_NOT_SUPPORTED for config image which require multiple passes for data collection"]
     pub fn cuptiPmSamplingSetConfig(pParams: *mut CUpti_PmSampling_SetConfig_Params)
-    -> CUptiResult;
+        -> CUptiResult;
 }
 #[doc = " \\brief Params for cuptiPmSamplingEnable"]
 #[repr(C)]
@@ -17695,17 +17447,8 @@ const _: () = {
         CUpti_PmSampling_GetCounterAvailability_Params,
         deviceIndex
     ) - 16usize];
-    [
-        "Offset of field: CUpti_PmSampling_GetCounterAvailability_Params::counterAvailabilityImageSize",
-    ][::std::mem::offset_of!(
-        CUpti_PmSampling_GetCounterAvailability_Params,
-        counterAvailabilityImageSize
-    ) - 24usize];
-    ["Offset of field: CUpti_PmSampling_GetCounterAvailability_Params::pCounterAvailabilityImage"]
-        [::std::mem::offset_of!(
-            CUpti_PmSampling_GetCounterAvailability_Params,
-            pCounterAvailabilityImage
-        ) - 32usize];
+    ["Offset of field: CUpti_PmSampling_GetCounterAvailability_Params::counterAvailabilityImageSize"] [:: std :: mem :: offset_of ! (CUpti_PmSampling_GetCounterAvailability_Params , counterAvailabilityImageSize) - 24usize] ;
+    ["Offset of field: CUpti_PmSampling_GetCounterAvailability_Params::pCounterAvailabilityImage"] [:: std :: mem :: offset_of ! (CUpti_PmSampling_GetCounterAvailability_Params , pCounterAvailabilityImage) - 32usize] ;
 };
 impl Default for CUpti_PmSampling_GetCounterAvailability_Params {
     fn default() -> Self {
@@ -18708,18 +18451,8 @@ const _: () = {
         pChipName
     )
         - 24usize];
-    [
-        "Offset of field: CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::pCounterAvailabilityImage",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
-        pCounterAvailabilityImage
-    ) - 32usize];
-    [
-        "Offset of field: CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::maxMetricsPerPass",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params,
-        maxMetricsPerPass
-    ) - 40usize];
+    ["Offset of field: CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::pCounterAvailabilityImage"] [:: std :: mem :: offset_of ! (CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params , pCounterAvailabilityImage) - 32usize] ;
+    ["Offset of field: CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::maxMetricsPerPass"] [:: std :: mem :: offset_of ! (CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params , maxMetricsPerPass) - 40usize] ;
 };
 impl Default for CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params {
     fn default() -> Self {
@@ -18913,22 +18646,13 @@ const _: () = {
         CUpti_Profiler_CounterDataImage_CalculateSize_Params,
         pPriv
     ) - 8usize];
-    [
-        "Offset of field: CUpti_Profiler_CounterDataImage_CalculateSize_Params::sizeofCounterDataImageOptions",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_CounterDataImage_CalculateSize_Params,
-        sizeofCounterDataImageOptions
-    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateSize_Params::sizeofCounterDataImageOptions"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_CalculateSize_Params , sizeofCounterDataImageOptions) - 16usize] ;
     ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateSize_Params::pOptions"][::std::mem::offset_of!(
         CUpti_Profiler_CounterDataImage_CalculateSize_Params,
         pOptions
     )
         - 24usize];
-    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateSize_Params::counterDataImageSize"]
-        [::std::mem::offset_of!(
-            CUpti_Profiler_CounterDataImage_CalculateSize_Params,
-            counterDataImageSize
-        ) - 32usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateSize_Params::counterDataImageSize"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_CalculateSize_Params , counterDataImageSize) - 32usize] ;
 };
 impl Default for CUpti_Profiler_CounterDataImage_CalculateSize_Params {
     fn default() -> Self {
@@ -18968,12 +18692,7 @@ const _: () = {
     ) - 0usize];
     ["Offset of field: CUpti_Profiler_CounterDataImage_Initialize_Params::pPriv"]
         [::std::mem::offset_of!(CUpti_Profiler_CounterDataImage_Initialize_Params, pPriv) - 8usize];
-    [
-        "Offset of field: CUpti_Profiler_CounterDataImage_Initialize_Params::sizeofCounterDataImageOptions",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_CounterDataImage_Initialize_Params,
-        sizeofCounterDataImageOptions
-    ) - 16usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_Initialize_Params::sizeofCounterDataImageOptions"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_Initialize_Params , sizeofCounterDataImageOptions) - 16usize] ;
     ["Offset of field: CUpti_Profiler_CounterDataImage_Initialize_Params::pOptions"][::std::mem::offset_of!(
         CUpti_Profiler_CounterDataImage_Initialize_Params,
         pOptions
@@ -19032,35 +18751,15 @@ const _: () = {
     ["Alignment of CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params"]
         [::std::mem::align_of::<CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params>(
         ) - 8usize];
-    [
-        "Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::structSize",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
-        structSize
-    ) - 0usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::structSize"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params , structSize) - 0usize] ;
     ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::pPriv"][::std::mem::offset_of!(
         CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
         pPriv
     )
         - 8usize];
-    [
-        "Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::counterDataImageSize",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
-        counterDataImageSize
-    ) - 16usize];
-    [
-        "Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::pCounterDataImage",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
-        pCounterDataImage
-    ) - 24usize];
-    [
-        "Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::counterDataScratchBufferSize",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
-        counterDataScratchBufferSize
-    ) - 32usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::counterDataImageSize"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params , counterDataImageSize) - 16usize] ;
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::pCounterDataImage"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params , pCounterDataImage) - 24usize] ;
+    ["Offset of field: CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params::counterDataScratchBufferSize"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params , counterDataScratchBufferSize) - 32usize] ;
 };
 impl Default for CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params {
     fn default() -> Self {
@@ -19096,40 +18795,16 @@ const _: () = {
     ["Alignment of CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params"]
         [::std::mem::align_of::<CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params>()
             - 8usize];
-    ["Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::structSize"]
-        [::std::mem::offset_of!(
-            CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
-            structSize
-        ) - 0usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::structSize"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params , structSize) - 0usize] ;
     ["Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::pPriv"][::std::mem::offset_of!(
         CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
         pPriv
     )
         - 8usize];
-    [
-        "Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::counterDataImageSize",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
-        counterDataImageSize
-    ) - 16usize];
-    [
-        "Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::pCounterDataImage",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
-        pCounterDataImage
-    ) - 24usize];
-    [
-        "Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::counterDataScratchBufferSize",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
-        counterDataScratchBufferSize
-    ) - 32usize];
-    [
-        "Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::pCounterDataScratchBuffer",
-    ][::std::mem::offset_of!(
-        CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params,
-        pCounterDataScratchBuffer
-    ) - 40usize];
+    ["Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::counterDataImageSize"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params , counterDataImageSize) - 16usize] ;
+    ["Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::pCounterDataImage"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params , pCounterDataImage) - 24usize] ;
+    ["Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::counterDataScratchBufferSize"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params , counterDataScratchBufferSize) - 32usize] ;
+    ["Offset of field: CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params::pCounterDataScratchBuffer"] [:: std :: mem :: offset_of ! (CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params , pCounterDataScratchBuffer) - 40usize] ;
 };
 impl Default for CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params {
     fn default() -> Self {
@@ -19375,7 +19050,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     #[doc = " \\brief Unset metrics configuration profiled\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerUnsetConfig(pParams: *mut CUpti_Profiler_UnsetConfig_Params)
-    -> CUptiResult;
+        -> CUptiResult;
 }
 #[doc = " \\brief Params for cuptiProfilerBeginPass"]
 #[repr(C)]
@@ -19757,11 +19432,7 @@ const _: () = {
         [::std::mem::offset_of!(CUpti_Profiler_GetCounterAvailability_Params, pPriv) - 8usize];
     ["Offset of field: CUpti_Profiler_GetCounterAvailability_Params::ctx"]
         [::std::mem::offset_of!(CUpti_Profiler_GetCounterAvailability_Params, ctx) - 16usize];
-    ["Offset of field: CUpti_Profiler_GetCounterAvailability_Params::counterAvailabilityImageSize"]
-        [::std::mem::offset_of!(
-            CUpti_Profiler_GetCounterAvailability_Params,
-            counterAvailabilityImageSize
-        ) - 24usize];
+    ["Offset of field: CUpti_Profiler_GetCounterAvailability_Params::counterAvailabilityImageSize"] [:: std :: mem :: offset_of ! (CUpti_Profiler_GetCounterAvailability_Params , counterAvailabilityImageSize) - 24usize] ;
     ["Offset of field: CUpti_Profiler_GetCounterAvailability_Params::pCounterAvailabilityImage"][::std::mem::offset_of!(
         CUpti_Profiler_GetCounterAvailability_Params,
         pCounterAvailabilityImage
@@ -19876,4 +19547,43 @@ unsafe extern "C" {
     pub fn cuptiProfilerDeviceSupported(
         pParams: *mut CUpti_Profiler_DeviceSupported_Params,
     ) -> CUptiResult;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_Device_GetChipName_Params {
+    #[doc = "!< [in]"]
+    pub structSize: usize,
+    #[doc = "!< [in] assign to NULL"]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = "!< [in]"]
+    pub deviceIndex: usize,
+    #[doc = "!< [out]"]
+    pub pChipName: *const ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_Device_GetChipName_Params"]
+        [::std::mem::size_of::<CUpti_Device_GetChipName_Params>() - 32usize];
+    ["Alignment of CUpti_Device_GetChipName_Params"]
+        [::std::mem::align_of::<CUpti_Device_GetChipName_Params>() - 8usize];
+    ["Offset of field: CUpti_Device_GetChipName_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_Device_GetChipName_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_Device_GetChipName_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_Device_GetChipName_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_Device_GetChipName_Params::deviceIndex"]
+        [::std::mem::offset_of!(CUpti_Device_GetChipName_Params, deviceIndex) - 16usize];
+    ["Offset of field: CUpti_Device_GetChipName_Params::pChipName"]
+        [::std::mem::offset_of!(CUpti_Device_GetChipName_Params, pChipName) - 24usize];
+};
+impl Default for CUpti_Device_GetChipName_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    pub fn cuptiDeviceGetChipName(pParams: *mut CUpti_Device_GetChipName_Params) -> CUptiResult;
 }
