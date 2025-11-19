@@ -13,12 +13,13 @@ mod cuda;
 mod driver_cbid;
 mod error;
 mod nvtx_cbid;
-pub mod util;
+mod util;
 
 pub use self::cuda::*;
 pub use self::driver_cbid::DriverApiTraceCbid;
 pub use self::error::Error;
 pub use self::nvtx_cbid::NvtxApiTraceCbid;
+pub use self::util::{CStringList, CStringSlice};
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 

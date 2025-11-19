@@ -10,8 +10,7 @@ use anyhow::{Context, bail};
 use clap::Parser;
 use cupti::pmsampling::*;
 use cupti::profiler::MetricType;
-use cupti::util::CStringList;
-use cupti::get_device_chip_name;
+use cupti::{CStringList, get_device_chip_name};
 
 /// PM Sampling example - collect GPU performance metrics at regular intervals
 #[derive(Parser, Debug)]
