@@ -13,7 +13,7 @@ mod cuda;
 mod driver_cbid;
 mod error;
 mod nvtx_cbid;
-mod util;
+pub mod util;
 
 pub use self::cuda::*;
 pub use self::driver_cbid::DriverApiTraceCbid;
