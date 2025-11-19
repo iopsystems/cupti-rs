@@ -5,7 +5,7 @@
 //! monitors periodically at fixed intervals. Each sample is composed of metric
 //! values and the GPU timestamp when it was collected in nanoseconds.
 //!
-//! This APIs here are supported on Turing and later GPU architectures.
+//! These APIs here are supported on Turing and later GPU architectures.
 
 use std::ffi::CStr;
 use std::ptr::NonNull;
@@ -86,7 +86,7 @@ pub struct SamplerBuilder {
 }
 
 impl SamplerBuilder {
-    /// Create and initialize a new profiler host object for PM sampling.
+    /// Create and initialize a new builder for PM sampling.
     ///
     /// # Parameters
     ///
@@ -109,6 +109,11 @@ impl SamplerBuilder {
             counter_availability_image,
         )?;
         Ok(Self { host })
+    }
+
+    /// Construct a builder from a pre-configured host profiler.
+    pub fn from_host_profiler(host: HostProfiler) -> Self {
+        Self { host }
     }
 
     /// Get a list of the supported base metrics for the chip.
@@ -220,6 +225,23 @@ pub struct Sampler {
 }
 
 impl Sampler {
+    /// Create and initialize a new builder for PM sampling.
+    ///
+    /// # Parameters
+    ///
+    /// - `chip_name`: The chip name (accepted for chips supported at the
+    ///   time-of-release)
+    /// - `counter_availability_image`: Buffer with counter availability image
+    ///   (required for future chip support)
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::InvalidParameter`] if any parameter is not valid
+    /// - [`Error::Unknown`] for any internal error
+    pub fn builder(chip_name: &CStr, counter_availability_image: &CounterAvailabilityImage) -> Result<SamplerBuilder> {
+        SamplerBuilder::new(chip_name, counter_availability_image)
+    }
+
     /// Set the configuration for PM sampling like sampling interval, hardware
     /// buffer size, trigger mode and the config image which has scheduling info
     /// for metric collection.

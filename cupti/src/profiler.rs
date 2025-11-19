@@ -202,8 +202,8 @@ impl HostProfiler {
 
     /// Add metrics to the profiler host object for generating the config image.
     ///
-    /// The config image will have the required information to schedule the metrics for
-    /// collecting the profiling data.
+    /// The config image will have the required information to schedule the
+    /// metrics for collecting the profiling data.
     ///
     /// # Parameters
     ///
@@ -216,7 +216,8 @@ impl HostProfiler {
     /// # Errors
     ///
     /// - [`Error::InvalidParameter`] if any parameter is not valid
-    /// - [`Error::InvalidMetricName`] if the metric name is not valid or not supported for the chip
+    /// - [`Error::InvalidMetricName`] if the metric name is not valid or not
+    ///   supported for the chip
     /// - [`Error::Unknown`] for any internal error
     pub fn add_metrics(&mut self, metric_names: &CStringSlice) -> Result<()> {
         let mut params = CUpti_Profiler_Host_ConfigAddMetrics_Params::default();
