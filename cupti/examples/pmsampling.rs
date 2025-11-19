@@ -31,9 +31,12 @@ struct Args {
     #[arg(short, long, default_value_t = 100)]
     max_samples: u32,
 
-    /// Metrics to collect (comma-separated)
-    #[arg(short, long, default_value = "sm__cycles_elapsed.avg,sm__warps_active.avg.pct_of_peak_sustained_active")]
-    metrics: String,
+    /// Metrics to collect (can be specified multiple times)
+    #[arg(short, long, default_values_t = [
+        "sm__cycles_elapsed.avg".to_string(),
+        "sm__warps_active.avg.pct_of_peak_sustained_active".to_string()
+    ])]
+    metrics: Vec<String>,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -59,11 +62,11 @@ fn main() -> anyhow::Result<()> {
     let mut builder = Sampler::builder(&chip_name, &counter_availability)
         .context("failed to create sampler builder")?;
 
-    // Parse the metrics from command line argument
+    // Convert metrics to CStringList
     let metric_names: CStringList = args
         .metrics
-        .split(',')
-        .map(|s| CString::new(s.trim()).unwrap())
+        .iter()
+        .map(|s| CString::new(s.as_str()).unwrap())
         .collect();
 
     if metric_names.is_empty() {
