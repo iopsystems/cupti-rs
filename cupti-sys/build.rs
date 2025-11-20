@@ -8,13 +8,14 @@ fn main() {
     println!("cargo:rustc-link-lib=cupti");
 
     // Re-run if these environment variables change
+    println!("cargo:rerun-if-env-changed=CUDA_HOME");
     println!("cargo:rerun-if-env-changed=CUDA_PATH");
     println!("cargo:rerun-if-env-changed=CUDA_ROOT");
 }
 
 fn add_cuda_lib_paths() {
     // Check environment variables for custom CUDA installation
-    for var in &["CUDA_PATH", "CUDA_ROOT"] {
+    for var in &["CUDA_HOME", "CUDA_PATH", "CUDA_ROOT"] {
         if let Ok(cuda_path) = env::var(var) {
             println!("cargo:rustc-link-search=native={}/lib64", cuda_path);
             println!("cargo:rustc-link-search=native={}/lib", cuda_path);
