@@ -19550,6 +19550,663 @@ unsafe extern "C" {
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_Object {
+    _unused: [u8; 0],
+}
+#[doc = " \\brief Params for cuptiRangeProfilerSetConfig"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_SetConfig_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Range Profiler Object."]
+    pub pRangeProfilerObject: *mut CUpti_RangeProfiler_Object,
+    #[doc = " [in] Size of the config image."]
+    pub configSize: usize,
+    #[doc = " [in] Config image."]
+    pub pConfig: *const u8,
+    #[doc = " [in] Size of the counter data image."]
+    pub counterDataImageSize: usize,
+    #[doc = " [in] Counter data image."]
+    pub pCounterDataImage: *mut u8,
+    #[doc = " [in] Profiling Range mode."]
+    pub range: CUpti_ProfilerRange,
+    #[doc = " [in] Replay mode."]
+    pub replayMode: CUpti_ProfilerReplayMode,
+    #[doc = " [in] Maximum number of ranges that can be profiled in a pass."]
+    pub maxRangesPerPass: usize,
+    #[doc = " [in] number of nesting level to be profiled. For Auto range mode, this should be set to 1."]
+    pub numNestingLevels: u16,
+    #[doc = " [in] minimum nesting level to be profiled."]
+    pub minNestingLevel: u16,
+    #[doc = " [in] Pass index for the replay session."]
+    pub passIndex: usize,
+    #[doc = " [in] Target nesting level for the replay session."]
+    pub targetNestingLevel: u16,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_SetConfig_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_SetConfig_Params>() - 96usize];
+    ["Alignment of CUpti_RangeProfiler_SetConfig_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_SetConfig_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::pRangeProfilerObject"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_SetConfig_Params,
+        pRangeProfilerObject
+    ) - 16usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::configSize"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, configSize) - 24usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::pConfig"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, pConfig) - 32usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::counterDataImageSize"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_SetConfig_Params,
+        counterDataImageSize
+    ) - 40usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::pCounterDataImage"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, pCounterDataImage) - 48usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::range"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, range) - 56usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::replayMode"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, replayMode) - 60usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::maxRangesPerPass"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, maxRangesPerPass) - 64usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::numNestingLevels"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, numNestingLevels) - 72usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::minNestingLevel"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, minNestingLevel) - 74usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::passIndex"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_SetConfig_Params, passIndex) - 80usize];
+    ["Offset of field: CUpti_RangeProfiler_SetConfig_Params::targetNestingLevel"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_SetConfig_Params,
+        targetNestingLevel
+    ) - 88usize];
+};
+impl Default for CUpti_RangeProfiler_SetConfig_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Set the configuration for range profiler like maximum number of ranges per pass, number of nesting levels,\n range and replay mode and the config image which has scheduling info for metric collection.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_SetConfig_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid"]
+    pub fn cuptiRangeProfilerSetConfig(
+        pParams: *mut CUpti_RangeProfiler_SetConfig_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerEnable"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_Enable_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Context to be used for profiling."]
+    pub ctx: CUcontext,
+    #[doc = " [out] Range Profiler Object."]
+    pub pRangeProfilerObject: *mut CUpti_RangeProfiler_Object,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_Enable_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_Enable_Params>() - 32usize];
+    ["Alignment of CUpti_RangeProfiler_Enable_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_Enable_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_Enable_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Enable_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_Enable_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Enable_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_Enable_Params::ctx"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Enable_Params, ctx) - 16usize];
+    ["Offset of field: CUpti_RangeProfiler_Enable_Params::pRangeProfilerObject"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Enable_Params, pRangeProfilerObject) - 24usize];
+};
+impl Default for CUpti_RangeProfiler_Enable_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Create a range profiler object and enable range profiling on the CUDA context.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_Enable_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_OUT_OF_MEMORY if memory allocation fails while creating the PM sampling object\n \\retval CUPTI_ERROR_INSUFFICIENT_PRIVILEGES if the user does not have sufficient privileges to perform the operation\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiRangeProfilerEnable(pParams: *mut CUpti_RangeProfiler_Enable_Params)
+        -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerDisable"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_Disable_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Range Profiler Object."]
+    pub pRangeProfilerObject: *mut CUpti_RangeProfiler_Object,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_Disable_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_Disable_Params>() - 24usize];
+    ["Alignment of CUpti_RangeProfiler_Disable_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_Disable_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_Disable_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Disable_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_Disable_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Disable_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_Disable_Params::pRangeProfilerObject"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_Disable_Params,
+        pRangeProfilerObject
+    ) - 16usize];
+};
+impl Default for CUpti_RangeProfiler_Disable_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Disable the range profiler on the CUDA context and destroy the range profiler object.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_Disable_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid"]
+    pub fn cuptiRangeProfilerDisable(
+        pParams: *mut CUpti_RangeProfiler_Disable_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerStart"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_Start_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Range Profiler Object."]
+    pub pRangeProfilerObject: *mut CUpti_RangeProfiler_Object,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_Start_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_Start_Params>() - 24usize];
+    ["Alignment of CUpti_RangeProfiler_Start_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_Start_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_Start_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Start_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_Start_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Start_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_Start_Params::pRangeProfilerObject"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Start_Params, pRangeProfilerObject) - 16usize];
+};
+impl Default for CUpti_RangeProfiler_Start_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Start the range profiler.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_Start_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if range profiler Start is called without enabling range profiler\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiRangeProfilerStart(pParams: *mut CUpti_RangeProfiler_Start_Params) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerStop"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_Stop_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Range Profiler Object."]
+    pub pRangeProfilerObject: *mut CUpti_RangeProfiler_Object,
+    #[doc = " [out] pass index for the replay session."]
+    pub passIndex: usize,
+    #[doc = " [out] target nesting level for the replay session."]
+    pub targetNestingLevel: usize,
+    #[doc = " [out] 1 if all passes are submitted to GPU for collection, 0 otherwise."]
+    pub isAllPassSubmitted: u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_Stop_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_Stop_Params>() - 48usize];
+    ["Alignment of CUpti_RangeProfiler_Stop_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_Stop_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_Stop_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Stop_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_Stop_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Stop_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_Stop_Params::pRangeProfilerObject"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Stop_Params, pRangeProfilerObject) - 16usize];
+    ["Offset of field: CUpti_RangeProfiler_Stop_Params::passIndex"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Stop_Params, passIndex) - 24usize];
+    ["Offset of field: CUpti_RangeProfiler_Stop_Params::targetNestingLevel"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Stop_Params, targetNestingLevel) - 32usize];
+    ["Offset of field: CUpti_RangeProfiler_Stop_Params::isAllPassSubmitted"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_Stop_Params, isAllPassSubmitted) - 40usize];
+};
+impl Default for CUpti_RangeProfiler_Stop_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Stop the range profiler.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_Stop_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if range profiler Stop is called without enabling range profiler\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiRangeProfilerStop(pParams: *mut CUpti_RangeProfiler_Stop_Params) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerPushRange"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_PushRange_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Range Profiler Object."]
+    pub pRangeProfilerObject: *mut CUpti_RangeProfiler_Object,
+    #[doc = " [in] Name of the range to be profiled (only valid for User range mode)."]
+    pub pRangeName: *const ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_PushRange_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_PushRange_Params>() - 32usize];
+    ["Alignment of CUpti_RangeProfiler_PushRange_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_PushRange_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_PushRange_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_PushRange_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_PushRange_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_PushRange_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_PushRange_Params::pRangeProfilerObject"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_PushRange_Params,
+        pRangeProfilerObject
+    ) - 16usize];
+    ["Offset of field: CUpti_RangeProfiler_PushRange_Params::pRangeName"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_PushRange_Params, pRangeName) - 24usize];
+};
+impl Default for CUpti_RangeProfiler_PushRange_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Add a new range to the Range Profiler with a given range name.\n For nested ranges, this API should be called again for the innermost range. For profiling the nested\n range, users need to set the values for minNestingLevel and numNestingLevels in the SetConfig API.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_PushRange_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if range profiler PushRange is called without enabling range profiler\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiRangeProfilerPushRange(
+        pParams: *mut CUpti_RangeProfiler_PushRange_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerPopRange"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_PopRange_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Range Profiler Object."]
+    pub pRangeProfilerObject: *mut CUpti_RangeProfiler_Object,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_PopRange_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_PopRange_Params>() - 24usize];
+    ["Alignment of CUpti_RangeProfiler_PopRange_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_PopRange_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_PopRange_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_PopRange_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_PopRange_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_PopRange_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_PopRange_Params::pRangeProfilerObject"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_PopRange_Params,
+        pRangeProfilerObject
+    ) - 16usize];
+};
+impl Default for CUpti_RangeProfiler_PopRange_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief pop the current range to the Range Profiler.\n The number of pop range API call should be same as number of push ranges in the same order.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_PopRange_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if range profiler PopRange is called without enabling range profiler\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiRangeProfilerPopRange(
+        pParams: *mut CUpti_RangeProfiler_PopRange_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerDecodeData"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_DecodeData_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Range Profiler Object."]
+    pub pRangeProfilerObject: *mut CUpti_RangeProfiler_Object,
+    #[doc = " [out] Number of ranges dropped in the processed passes."]
+    pub numOfRangeDropped: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_DecodeData_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_DecodeData_Params>() - 32usize];
+    ["Alignment of CUpti_RangeProfiler_DecodeData_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_DecodeData_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_DecodeData_Params::structSize"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_DecodeData_Params, structSize) - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_DecodeData_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_DecodeData_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_DecodeData_Params::pRangeProfilerObject"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_DecodeData_Params,
+        pRangeProfilerObject
+    ) - 16usize];
+    ["Offset of field: CUpti_RangeProfiler_DecodeData_Params::numOfRangeDropped"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_DecodeData_Params,
+        numOfRangeDropped
+    ) - 24usize];
+};
+impl Default for CUpti_RangeProfiler_DecodeData_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Decode the profiling data stored in the hardware to the counter data image passed in the\n SetConfig API. This API should be called after cuptiRangeProfilerStop. The counter data image\n will be updated with the profiling data for the ranges profiled.\n\n For the cases where the number of ranges counter data image can store is less than the number of ranges\n profiled (= maxRangesPerPass in SetConfig API), the counter data image will report dropped ranges.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_DecodeData_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if range profiler DecodeData is called without enabling range profiler\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiRangeProfilerDecodeData(
+        pParams: *mut CUpti_RangeProfiler_DecodeData_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerGetCounterDataSize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_GetCounterDataSize_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Periodic sampler object."]
+    pub pRangeProfilerObject: *mut CUpti_RangeProfiler_Object,
+    #[doc = " [in] Names of the metrics to be collected."]
+    pub pMetricNames: *mut *const ::std::os::raw::c_char,
+    #[doc = " [in] Number of metrics to be collected."]
+    pub numMetrics: usize,
+    #[doc = " [in] Maximum number of ranges to be stored in the counter data image."]
+    pub maxNumOfRanges: usize,
+    #[doc = " [in] Maximum number of RangeTree nodes; must be >= maxNumOfRanges"]
+    pub maxNumRangeTreeNodes: u32,
+    #[doc = " [out] Size of the counter data image."]
+    pub counterDataSize: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_GetCounterDataSize_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_GetCounterDataSize_Params>() - 64usize];
+    ["Alignment of CUpti_RangeProfiler_GetCounterDataSize_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_GetCounterDataSize_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataSize_Params::structSize"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataSize_Params,
+        structSize
+    ) - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataSize_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_GetCounterDataSize_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataSize_Params::pRangeProfilerObject"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataSize_Params,
+        pRangeProfilerObject
+    )
+        - 16usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataSize_Params::pMetricNames"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataSize_Params,
+        pMetricNames
+    ) - 24usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataSize_Params::numMetrics"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataSize_Params,
+        numMetrics
+    ) - 32usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataSize_Params::maxNumOfRanges"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataSize_Params,
+        maxNumOfRanges
+    ) - 40usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataSize_Params::maxNumRangeTreeNodes"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataSize_Params,
+        maxNumRangeTreeNodes
+    )
+        - 48usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataSize_Params::counterDataSize"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataSize_Params,
+        counterDataSize
+    )
+        - 56usize];
+};
+impl Default for CUpti_RangeProfiler_GetCounterDataSize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the size of the counter data image required to store the profiling data for the ranges profiled.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_GetCounterDataSize_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if range profiler GetCounterDataSize is called without enabling range profiler\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiRangeProfilerGetCounterDataSize(
+        pParams: *mut CUpti_RangeProfiler_GetCounterDataSize_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerCounterDataImageInitialize"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_CounterDataImage_Initialize_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Periodic sampler object."]
+    pub pRangeProfilerObject: *mut CUpti_RangeProfiler_Object,
+    #[doc = " [in] Size of the counter data image."]
+    pub counterDataSize: usize,
+    #[doc = " [in] Counter data image."]
+    pub pCounterData: *mut u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_CounterDataImage_Initialize_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_CounterDataImage_Initialize_Params>() - 40usize];
+    ["Alignment of CUpti_RangeProfiler_CounterDataImage_Initialize_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_CounterDataImage_Initialize_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_CounterDataImage_Initialize_Params::structSize"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_CounterDataImage_Initialize_Params,
+        structSize
+    )
+        - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_CounterDataImage_Initialize_Params::pPriv"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_CounterDataImage_Initialize_Params,
+        pPriv
+    ) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_CounterDataImage_Initialize_Params::pRangeProfilerObject"] [:: std :: mem :: offset_of ! (CUpti_RangeProfiler_CounterDataImage_Initialize_Params , pRangeProfilerObject) - 16usize] ;
+    ["Offset of field: CUpti_RangeProfiler_CounterDataImage_Initialize_Params::counterDataSize"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_CounterDataImage_Initialize_Params,
+        counterDataSize
+    )
+        - 24usize];
+    ["Offset of field: CUpti_RangeProfiler_CounterDataImage_Initialize_Params::pCounterData"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_CounterDataImage_Initialize_Params,
+        pCounterData
+    )
+        - 32usize];
+};
+impl Default for CUpti_RangeProfiler_CounterDataImage_Initialize_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Initialize the counter data image with the profiling data for the ranges profiled.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_CounterDataImage_Initialize_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_INVALID_OPERATION if range profiler CounterDataImageInitialize is called without enabling range profiler\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiRangeProfilerCounterDataImageInitialize(
+        pParams: *mut CUpti_RangeProfiler_CounterDataImage_Initialize_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerGetCounterDataInfo"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_GetCounterDataInfo_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Counter data image."]
+    pub pCounterDataImage: *const u8,
+    #[doc = " [in] Size of the counter data image."]
+    pub counterDataImageSize: usize,
+    #[doc = " [out] Number of ranges in the counter data image."]
+    pub numTotalRanges: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_GetCounterDataInfo_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_GetCounterDataInfo_Params>() - 40usize];
+    ["Alignment of CUpti_RangeProfiler_GetCounterDataInfo_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_GetCounterDataInfo_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataInfo_Params::structSize"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataInfo_Params,
+        structSize
+    ) - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataInfo_Params::pPriv"]
+        [::std::mem::offset_of!(CUpti_RangeProfiler_GetCounterDataInfo_Params, pPriv) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataInfo_Params::pCounterDataImage"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataInfo_Params,
+        pCounterDataImage
+    )
+        - 16usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataInfo_Params::counterDataImageSize"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataInfo_Params,
+        counterDataImageSize
+    )
+        - 24usize];
+    ["Offset of field: CUpti_RangeProfiler_GetCounterDataInfo_Params::numTotalRanges"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_GetCounterDataInfo_Params,
+        numTotalRanges
+    ) - 32usize];
+};
+impl Default for CUpti_RangeProfiler_GetCounterDataInfo_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the number of ranges stored in the counter data image.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_GetCounterDataInfo_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiRangeProfilerGetCounterDataInfo(
+        pParams: *mut CUpti_RangeProfiler_GetCounterDataInfo_Params,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiRangeProfilerCounterDataGetRangeInfo"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_RangeProfiler_CounterData_GetRangeInfo_Params {
+    #[doc = " [in] Size of the data structure."]
+    pub structSize: usize,
+    #[doc = " [in] Set to NULL."]
+    pub pPriv: *mut ::std::os::raw::c_void,
+    #[doc = " [in] Counter data image."]
+    pub pCounterDataImage: *const u8,
+    #[doc = " [in] Size of the counter data image."]
+    pub counterDataImageSize: usize,
+    #[doc = " [in] Index of the sample."]
+    pub rangeIndex: usize,
+    #[doc = " [in] range delimiter."]
+    pub rangeDelimiter: *const ::std::os::raw::c_char,
+    #[doc = " [out] RangeName;"]
+    pub rangeName: *const ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_RangeProfiler_CounterData_GetRangeInfo_Params"]
+        [::std::mem::size_of::<CUpti_RangeProfiler_CounterData_GetRangeInfo_Params>() - 56usize];
+    ["Alignment of CUpti_RangeProfiler_CounterData_GetRangeInfo_Params"]
+        [::std::mem::align_of::<CUpti_RangeProfiler_CounterData_GetRangeInfo_Params>() - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_CounterData_GetRangeInfo_Params::structSize"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_CounterData_GetRangeInfo_Params,
+        structSize
+    )
+        - 0usize];
+    ["Offset of field: CUpti_RangeProfiler_CounterData_GetRangeInfo_Params::pPriv"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_CounterData_GetRangeInfo_Params,
+        pPriv
+    ) - 8usize];
+    ["Offset of field: CUpti_RangeProfiler_CounterData_GetRangeInfo_Params::pCounterDataImage"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_CounterData_GetRangeInfo_Params,
+        pCounterDataImage
+    )
+        - 16usize];
+    ["Offset of field: CUpti_RangeProfiler_CounterData_GetRangeInfo_Params::counterDataImageSize"] [:: std :: mem :: offset_of ! (CUpti_RangeProfiler_CounterData_GetRangeInfo_Params , counterDataImageSize) - 24usize] ;
+    ["Offset of field: CUpti_RangeProfiler_CounterData_GetRangeInfo_Params::rangeIndex"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_CounterData_GetRangeInfo_Params,
+        rangeIndex
+    )
+        - 32usize];
+    ["Offset of field: CUpti_RangeProfiler_CounterData_GetRangeInfo_Params::rangeDelimiter"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_CounterData_GetRangeInfo_Params,
+        rangeDelimiter
+    )
+        - 40usize];
+    ["Offset of field: CUpti_RangeProfiler_CounterData_GetRangeInfo_Params::rangeName"][::std::mem::offset_of!(
+        CUpti_RangeProfiler_CounterData_GetRangeInfo_Params,
+        rangeName
+    )
+        - 48usize];
+};
+impl Default for CUpti_RangeProfiler_CounterData_GetRangeInfo_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Get the range name for the given range index.\n\n \\param pParams A pointer to \\ref CUpti_RangeProfiler_CounterData_GetRangeInfo_Params\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if any \\p pParams is not valid\n \\retval CUPTI_ERROR_UNKNOWN for any internal error"]
+    pub fn cuptiRangeProfilerCounterDataGetRangeInfo(
+        pParams: *mut CUpti_RangeProfiler_CounterData_GetRangeInfo_Params,
+    ) -> CUptiResult;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
 pub struct CUpti_Device_GetChipName_Params {
     #[doc = "!< [in]"]
     pub structSize: usize,
