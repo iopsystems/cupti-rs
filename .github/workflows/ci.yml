@@ -135,7 +135,6 @@ jobs:
           cargo clippy --workspace --all-targets --message-format=json -- -D warnings \
             | cargo-deduplicate-warnings \
             | clippy-sarif | tee clippy-results.sarif | sarif-fmt
-        continue-on-error: true
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
@@ -143,7 +142,3 @@ jobs:
           sarif_file: clippy-results.sarif
           category: clippy
         if: always()
-
-      - name: Fail if clippy found issues
-        run: |
-          cargo clippy --workspace --all-targets -- -D warnings
