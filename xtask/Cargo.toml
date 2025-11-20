@@ -8,3 +8,5 @@ publish = false
 anyhow = "1.0.100"
 bindgen = "0.72.1"
 clap = { version = "4.5.51", features = ["derive"] }
+prettyplease = "0.2.37"
+syn = "2.0.110"

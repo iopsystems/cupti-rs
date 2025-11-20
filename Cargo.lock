@@ -396,4 +396,6 @@ dependencies = [
  "anyhow",
  "bindgen",
  "clap",
+ "prettyplease",
+ "syn",
 ]
