@@ -22,10 +22,10 @@ impl Regenerate {
             .parse_callbacks(Box::new(Callbacks))
             .impl_debug(true)
             .derive_default(true)
-            .prepend_enum_name(false);
+            .prepend_enum_name(false)
+            .raw_line("#![rustfmt::skip]");
 
-        builder = builder
-            .blocklist_function("cu([^p]|p[^t]|pt[^i]).*");
+        builder = builder.blocklist_function("cu([^p]|p[^t]|pt[^i]).*");
 
         builder
             .clang_args(["-x", "c++"])
@@ -33,6 +33,12 @@ impl Regenerate {
             .header(&self.input)
             .generate()?
             .write_to_file(&self.output)
+            .context(format!("failed to write to {}", self.output.display()))?;
+
+        let text = std::fs::read_to_string(&self.output)
+            .context(format!("failed to read {}", self.output.display()))?;
+        let ast = syn::parse_file(&text).context("failed to parse bindings")?;
+        std::fs::write(&self.output, prettyplease::unparse(&ast))
             .context(format!("failed to write to {}", self.output.display()))?;
 
         Ok(())
