@@ -23,7 +23,7 @@ impl Regenerate {
             .impl_debug(true)
             .derive_default(true)
             .prepend_enum_name(false)
-            .raw_line("#![rustfmt::skip]");
+            .raw_line("#![cfg_attr(any(), rustfmt::skip)]");
 
         builder = builder.blocklist_function("cu([^p]|p[^t]|pt[^i]).*");
 

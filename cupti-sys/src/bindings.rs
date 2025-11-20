@@ -1,4 +1,4 @@
-#![rustfmt::skip]
+#![cfg_attr(any(), rustfmt::skip)]
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct __BindgenBitfieldUnit<Storage> {
