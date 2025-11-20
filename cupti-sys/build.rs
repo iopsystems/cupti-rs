@@ -14,9 +14,16 @@ fn main() {
 }
 
 fn add_cuda_lib_paths() {
+    let target_arch = env::var("CARGO_CFG_TARGET_ARCH")
+        .expect("CARGO_CFG_TARGET_ARCH should be set by Cargo");
+    let target_os = env::var("CARGO_CFG_TARGET_OS")
+        .expect("CARGO_CFG_TARGET_OS should be set by Cargo");
+    let targets_lib = format!("targets/{}-{}/lib", target_arch, target_os);
+
     // Check environment variables for custom CUDA installation
     for var in &["CUDA_HOME", "CUDA_PATH", "CUDA_ROOT"] {
         if let Ok(cuda_path) = env::var(var) {
+            println!("cargo:rustc-link-search=native={}/{}", cuda_path, targets_lib);
             println!("cargo:rustc-link-search=native={}/lib64", cuda_path);
             println!("cargo:rustc-link-search=native={}/lib", cuda_path);
             println!("cargo:rustc-link-search=native={}/lib/x86_64-linux-gnu", cuda_path);
@@ -24,6 +31,7 @@ fn add_cuda_lib_paths() {
     }
 
     // Add standard CUDA installation paths
+    println!("cargo:rustc-link-search=native=/usr/local/cuda/{}", targets_lib);
     println!("cargo:rustc-link-search=native=/usr/local/cuda/lib64");
     println!("cargo:rustc-link-search=native=/usr/local/cuda/lib");
     // Debian/Ubuntu package installations place libraries here
