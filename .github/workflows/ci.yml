@@ -3,7 +3,7 @@ name: CI
 # Continuous Integration workflow for cupti-rs
 # - Builds the project, examples, and tests
 # - Checks code formatting with rustfmt
-# - Verifies CUPTI bindings are up-to-date with CUDA 13.0
+# - Verifies CUPTI bindings are up-to-date with CUDA 13.0.2
 # - Runs clippy and uploads results as CodeQL annotations
 
 on:
@@ -26,7 +26,7 @@ jobs:
       - name: Install CUDA Toolkit
         uses: Jimver/cuda-toolkit@v0.2.24
         with:
-          cuda: '13.0.0'
+          cuda: '13.0.2'
           method: 'network'
 
       - name: Install Rust toolchain
@@ -70,7 +70,7 @@ jobs:
       - name: Install CUDA Toolkit
         uses: Jimver/cuda-toolkit@v0.2.24
         with:
-          cuda: '13.0.0'
+          cuda: '13.0.2'
           method: 'network'
 
       - name: Install Rust toolchain
@@ -112,7 +112,7 @@ jobs:
       - name: Install CUDA Toolkit
         uses: Jimver/cuda-toolkit@v0.2.24
         with:
-          cuda: '13.0.0'
+          cuda: '13.0.2'
           method: 'network'
 
       - name: Install Rust toolchain
