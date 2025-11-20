@@ -100,10 +100,6 @@ jobs:
   clippy:
     name: Clippy Analysis
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
     steps:
       - uses: actions/checkout@v4
 
@@ -115,33 +111,44 @@ jobs:
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Install cargo-deduplicate-warnings
-        uses: baptiste0928/cargo-install@v3
+      - name: Install tools
+        uses: taiki-e/install-action@v2
         with:
-          crate: cargo-deduplicate-warnings
-
-      - name: Install clippy-sarif
-        uses: baptiste0928/cargo-install@v3
-        with:
-          crate: clippy-sarif
-
-      - name: Install sarif-fmt
-        uses: baptiste0928/cargo-install@v3
-        with:
-          crate: sarif-fmt
+          tool: clippy-sarif,sarif-fmt,cargo-deduplicate-warnings
 
       - name: Run Clippy and generate SARIF
         run: |
           cargo clippy --workspace --all-targets --message-format=json -- -D warnings \
             | cargo-deduplicate-warnings \
-            | clippy-sarif | tee clippy-results.sarif | sarif-fmt
+            | clippy-sarif | tee clippy.sarif | sarif-fmt
         continue-on-error: true
+
+      - name: Upload SARIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: clippy-sarif
+          path: clippy.sarif
+
+  clippy-upload:
+    name: Upload Clippy Results
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs:
+      - clippy
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download SARIF artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: clippy-sarif
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: clippy-results.sarif
-          category: clippy
+          sarif_file: clippy.sarif
 
   check-success:
     name: Verify all checks pass
