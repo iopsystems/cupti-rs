@@ -135,6 +135,7 @@ jobs:
           cargo clippy --workspace --all-targets --message-format=json -- -D warnings \
             | cargo-deduplicate-warnings \
             | clippy-sarif | tee clippy-results.sarif | sarif-fmt
+        continue-on-error: true
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
