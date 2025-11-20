@@ -677,10 +677,10 @@ impl Subscriber {
     /// # Parameters
     ///
     /// - `cb`: The callback function
-    /// - `name`: Name given to the subscriber. The subscriber name need not
-    ///   include the "CUPTI" prefix, as the CUPTI library automatically adds it
-    ///   as "CUPTI for \<subscriberName\>". Maximum size is 53 bytes; longer
-    ///   names will be truncated.
+    /// - `name`: Name given to the subscriber, or `None` for no name. The
+    ///   subscriber name need not include the "CUPTI" prefix, as the CUPTI
+    ///   library automatically adds it as "CUPTI for \<subscriberName\>".
+    ///   Maximum size is 53 bytes; longer names will be truncated.
     ///
     /// # Notes
     ///
@@ -703,19 +703,28 @@ impl Subscriber {
     ///   Nsight Systems, Nsight Compute, cuda-gdb and cuda-memcheck. In this
     ///   case, the [`SubscribeError`] will contain the name of the incompatible
     ///   tool or existing CUPTI subscriber if available.
-    pub fn new_v2<CB: RawSubscriberCallback>(cb: CB, name: &str) -> Result<Self, SubscribeError> {
+    pub fn new_v2<'a, CB: RawSubscriberCallback>(
+        cb: CB,
+        name: impl Into<Option<&'a str>>,
+    ) -> Result<Self, SubscribeError> {
+        let name = name.into();
         let mut name_bytes = [0u8; CUPTI_SUBSCRIBER_NAME_MAX_LEN as usize + 1];
         let mut old_name_bytes = [0u8; CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN as usize + 1];
 
-        let name = Self::truncate_to_char_boundary(name, CUPTI_SUBSCRIBER_NAME_MAX_LEN as usize);
-        (&mut name_bytes[..name.len()]).copy_from_slice(name.as_bytes());
+        let subscriber_name_ptr = if let Some(name) = name {
+            let name = Self::truncate_to_char_boundary(name, CUPTI_SUBSCRIBER_NAME_MAX_LEN as usize);
+            (&mut name_bytes[..name.len()]).copy_from_slice(name.as_bytes());
+            name_bytes.as_ptr() as *const c_char
+        } else {
+            std::ptr::null()
+        };
 
         let func = Box::new(cb);
         let mut handle = std::ptr::null_mut();
 
         let mut params = CUpti_SubscriberParams::default();
         params.structSize = std::mem::size_of_val(&params);
-        params.subscriberName = name_bytes.as_ptr() as *const c_char;
+        params.subscriberName = subscriber_name_ptr;
         params.oldSubscriberName = old_name_bytes.as_mut_ptr() as *mut c_char;
         params.oldSubscriberSize = CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN as _;
 
