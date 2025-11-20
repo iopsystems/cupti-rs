@@ -142,4 +142,3 @@ jobs:
         with:
           sarif_file: clippy-results.sarif
           category: clippy
-        if: always()
