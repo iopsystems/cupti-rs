@@ -1,6 +1,34 @@
 # Documentation Conversion Guide
 
-This document describes the rules for converting C API documentation from CUPTI headers to Rust rustdoc format.
+This document describes the rules for updating CUPTI bindings and converting C API documentation from CUPTI headers to Rust rustdoc format.
+
+## Updating CUPTI Bindings
+
+When updating or regenerating CUPTI bindings:
+
+### CUDA Version
+- **Always use the latest version of CUDA** available when updating bindings
+- This ensures the bindings include the most recent CUPTI APIs and bug fixes
+
+### Regenerating Bindings
+To regenerate the Rust bindings from CUPTI headers:
+
+1. **Navigate to the cupti-sys directory**:
+   ```bash
+   cd cupti-sys
+   ```
+
+2. **Run the regenerate script**:
+   ```bash
+   ./regenerate.sh
+   ```
+
+This script will:
+- Use `cargo xtask` to run bindgen on `cupti.cpp`
+- Generate updated Rust bindings in `src/bindings.rs`
+- Use the CUDA headers from `/usr/local/cuda/include`
+
+**Note**: The script must be run from within the `cupti-sys` directory for the paths to resolve correctly.
 
 ## Documentation Conversion Rules
 
