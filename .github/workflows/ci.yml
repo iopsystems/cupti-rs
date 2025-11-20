@@ -142,3 +142,21 @@ jobs:
         with:
           sarif_file: clippy-results.sarif
           category: clippy
+
+  check-success:
+    name: Verify all checks pass
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - build
+      - format
+      - bindings-check
+      - clippy
+
+    steps:
+      - name: Fail if any dependencies failed
+        if: contains(needs.*.result, 'failure')
+        shell: bash
+        run: exit 1
+      - name: Success
+        run: echo "All checks passed!"
