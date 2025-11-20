@@ -1,0 +1,165 @@
+name: CI
+
+# Continuous Integration workflow for cupti-rs
+# - Builds the project, examples, and tests
+# - Checks code formatting with rustfmt
+# - Verifies CUPTI bindings are up-to-date with CUDA 13.0
+# - Runs clippy and uploads results as CodeQL annotations
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CUDA Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.24
+        with:
+          cuda: '13.0.0'
+          method: 'network'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build workspace
+        run: cargo build --workspace --verbose
+
+      - name: Build all examples
+        run: cargo build --workspace --examples --verbose
+
+      - name: Build tests
+        run: cargo test --workspace --no-run --verbose
+
+      - name: Run tests
+        run: cargo test --workspace --verbose
+
+  format:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  bindings-check:
+    name: Check CUPTI Bindings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CUDA Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.24
+        with:
+          cuda: '13.0.0'
+          method: 'network'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install bindgen dependencies
+        run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
+
+      - name: Generate bindings
+        run: |
+          cd cupti-sys
+          cargo xtask regenerate cupti.cpp \
+            --output src/bindings.rs.new \
+            -- \
+            -I /usr/local/cuda/include
+
+      - name: Compare bindings
+        run: |
+          if ! diff -u cupti-sys/src/bindings.rs cupti-sys/src/bindings.rs.new; then
+            echo "Error: Generated bindings differ from checked-in bindings"
+            echo "Please regenerate bindings using: cd cupti-sys && ./regenerate.sh"
+            exit 1
+          fi
+          echo "Bindings match!"
+
+  clippy:
+    name: Clippy Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CUDA Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.24
+        with:
+          cuda: '13.0.0'
+          method: 'network'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install clippy-sarif and sarif-fmt
+        run: cargo install clippy-sarif sarif-fmt
+
+      - name: Run Clippy and generate SARIF
+        run: |
+          cargo clippy --workspace --all-targets --message-format=json -- -D warnings \
+            | clippy-sarif | tee clippy-results.sarif | sarif-fmt
+        continue-on-error: true
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: clippy-results.sarif
+          category: clippy
+        if: always()
+
+      - name: Fail if clippy found issues
+        run: |
+          cargo clippy --workspace --all-targets -- -D warnings
