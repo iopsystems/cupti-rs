@@ -103,9 +103,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install CUDA Toolkit
-        uses: Jimver/cuda-toolkit@v0.2.29
-
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
