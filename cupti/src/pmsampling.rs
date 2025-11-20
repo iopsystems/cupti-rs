@@ -60,26 +60,31 @@ c_enum! {
     }
 }
 
-c_enum! {
-    /// Hardware buffer append mode for PM sampling.
-    ///
-    /// Specifies the behavior when the hardware buffer fills up during PM sampling.
-    #[derive(Copy, Clone, Default, Eq, PartialEq, Hash)]
-    pub enum HardwareBufferAppendMode : CUpti_PmSampling_HardwareBuffer_AppendMode {
-        /// Keep the oldest records in the hardware buffer.
-        ///
-        /// CUPTI will report error for overflow in case hardware buffer is getting filled up.
-        KeepOldest = CUPTI_PM_SAMPLING_HARDWARE_BUFFER_APPEND_MODE_KEEP_OLDEST,
+// CUDA 12.6: Removed in this version
+// c_enum! {
+//     /// Hardware buffer append mode for PM sampling.
+//     ///
+//     /// Specifies the behavior when the hardware buffer fills up during PM sampling.
+//     #[derive(Copy, Clone, Default, Eq, PartialEq, Hash)]
+//     pub enum HardwareBufferAppendMode : CUpti_PmSampling_HardwareBuffer_AppendMode {
+//         /// Keep the oldest records in the hardware buffer.
+//         ///
+//         /// CUPTI will report error for overflow in case hardware buffer is getting filled up.
+//         KeepOldest = CUPTI_PM_SAMPLING_HARDWARE_BUFFER_APPEND_MODE_KEEP_OLDEST,
+//
+//         /// Keep the latest records in the hardware buffer.
+//         ///
+//         /// # Notes
+//         ///
+//         /// This mode is not supported on Turing GPU architecture.
+//         /// It is supported on Ampere and later GPU architectures.
+//         KeepLatest = CUPTI_PM_SAMPLING_HARDWARE_BUFFER_APPEND_MODE_KEEP_LATEST,
+//     }
+// }
 
-        /// Keep the latest records in the hardware buffer.
-        ///
-        /// # Notes
-        ///
-        /// This mode is not supported on Turing GPU architecture.
-        /// It is supported on Ampere and later GPU architectures.
-        KeepLatest = CUPTI_PM_SAMPLING_HARDWARE_BUFFER_APPEND_MODE_KEEP_LATEST,
-    }
-}
+/// Hardware buffer append mode for PM sampling (placeholder for CUDA 12.6 compatibility).
+#[derive(Copy, Clone, Default, Eq, PartialEq, Hash)]
+pub struct HardwareBufferAppendMode;
 
 pub struct SamplerBuilder {
     host: HostProfiler,
@@ -276,7 +281,7 @@ impl Sampler {
         hardware_buffer_size: usize,
         sampling_interval: u64,
         trigger_mode: TriggerMode,
-        hw_buffer_append_mode: HardwareBufferAppendMode,
+        _hw_buffer_append_mode: HardwareBufferAppendMode,
     ) -> Result<()> {
         let mut params = CUpti_PmSampling_SetConfig_Params::default();
         params.structSize = std::mem::size_of_val(&params);
@@ -286,7 +291,8 @@ impl Sampler {
         params.hardwareBufferSize = hardware_buffer_size;
         params.samplingInterval = sampling_interval;
         params.triggerMode = trigger_mode.into();
-        params.hwBufferAppendMode = hw_buffer_append_mode.into();
+        // CUDA 12.6: Removed in this version
+        // params.hwBufferAppendMode = hw_buffer_append_mode.into();
 
         Error::result(unsafe { cuptiPmSamplingSetConfig(&mut params) })
     }

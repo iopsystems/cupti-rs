@@ -8,6 +8,7 @@ pub mod callbacks;
 pub mod checkpoint;
 pub mod pmsampling;
 pub mod profiler;
+pub mod rangeprofiling;
 // pub mod pcsampling;
 mod cuda;
 mod driver_cbid;
