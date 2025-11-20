@@ -478,19 +478,16 @@ impl RangeCounterDataImage {
     /// - [`Error::Unknown`] for any internal error
     pub fn new(
         profiler: &RangeProfiler,
-        metric_names: &[&CStr],
+        metric_names: &CStringSlice,
         max_num_of_ranges: usize,
         max_num_range_tree_nodes: u32,
     ) -> Result<Self> {
         // Get the required size for the counter data image
-        let mut metric_names_ptrs: Vec<*const _> =
-            metric_names.iter().map(|c| c.as_ptr()).collect();
-
         let mut size_params = CUpti_RangeProfiler_GetCounterDataSize_Params::default();
         size_params.structSize = std::mem::size_of_val(&size_params);
         size_params.pRangeProfilerObject = profiler.raw.as_ptr() as *mut _;
-        size_params.pMetricNames = metric_names_ptrs.as_mut_ptr();
-        size_params.numMetrics = metric_names_ptrs.len();
+        size_params.pMetricNames = metric_names.as_raw_slice().as_ptr() as *mut _;
+        size_params.numMetrics = metric_names.len();
         size_params.maxNumOfRanges = max_num_of_ranges;
         size_params.maxNumRangeTreeNodes = max_num_range_tree_nodes;
 
