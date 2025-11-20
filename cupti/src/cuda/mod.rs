@@ -3,7 +3,6 @@
 use std::ffi::{c_int, c_uint};
 
 use c_enum::c_enum;
-use cuda_sys::cuda::CUevent;
 use cupti_sys::*;
 
 mod context;

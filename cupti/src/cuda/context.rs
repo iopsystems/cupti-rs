@@ -1,6 +1,5 @@
 use std::cell::UnsafeCell;
 
-use cuda_sys::cuda::{CUcontext, CUctx_st};
 use cupti_sys::*;
 
 use crate::activity::ActivityKind;

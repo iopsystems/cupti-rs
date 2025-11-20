@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
 use c_enum::c_enum;
-use cuda_sys::cuda::CUcontext;
 use cupti_sys::*;
 
 use crate::*;

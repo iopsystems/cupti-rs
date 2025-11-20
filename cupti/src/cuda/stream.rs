@@ -1,6 +1,5 @@
 use std::cell::UnsafeCell;
 
-use cuda_sys::cuda::{CUstream, CUstream_st};
 use cupti_sys::*;
 
 use crate::*;
