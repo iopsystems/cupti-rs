@@ -123,8 +123,15 @@ jobs:
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Install clippy-sarif and sarif-fmt
-        run: cargo install clippy-sarif sarif-fmt
+      - name: Install clippy-sarif
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: clippy-sarif
+
+      - name: Install sarif-fmt
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: sarif-fmt
 
       - name: Run Clippy and generate SARIF
         run: |
