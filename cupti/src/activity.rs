@@ -280,19 +280,18 @@ c_enum! {
         GraphTrace = CUPTI_ACTIVITY_KIND_GRAPH_TRACE,
         /// JIT (Just-in-time) operation tracking.
         Jit = CUPTI_ACTIVITY_KIND_JIT,
-        // CUDA 12.6: Removed in this version
-        // /// Device graph trace activity.
-        // ///
-        // /// This activity cannot be directly enabled or disabled.
-        // /// It is enabled when [`GraphTrace`] is enabled and device graph trace is enabled
-        // /// through API `cuptiActivityEnableDeviceGraph()`.
-        // ///
-        // /// [`GraphTrace`]: Self::GraphTrace
-        // DeviceGraphTrace = CUPTI_ACTIVITY_KIND_DEVICE_GRAPH_TRACE,
-        // /// Tracing batches of copies that are to be decompressed.
-        // MemDecompress = CUPTI_ACTIVITY_KIND_MEM_DECOMPRESS,
-        // /// Tracing new overheads introduced on some hardware when confidential computing is enabled.
-        // ConfidentialComputeRotation = CUPTI_ACTIVITY_KIND_CONFIDENTIAL_COMPUTE_ROTATION,
+        /// Device graph trace activity.
+        ///
+        /// This activity cannot be directly enabled or disabled.
+        /// It is enabled when [`GraphTrace`] is enabled and device graph trace is enabled
+        /// through API `cuptiActivityEnableDeviceGraph()`.
+        ///
+        /// [`GraphTrace`]: Self::GraphTrace
+        DeviceGraphTrace = CUPTI_ACTIVITY_KIND_DEVICE_GRAPH_TRACE,
+        /// Tracing batches of copies that are to be decompressed.
+        MemDecompress = CUPTI_ACTIVITY_KIND_MEM_DECOMPRESS,
+        /// Tracing new overheads introduced on some hardware when confidential computing is enabled.
+        ConfidentialComputeRotation = CUPTI_ACTIVITY_KIND_CONFIDENTIAL_COMPUTE_ROTATION,
         /// Count of supported activity kinds.
         Count = CUPTI_ACTIVITY_KIND_COUNT,
     }
@@ -322,9 +321,8 @@ c_enum! {
         CommandBufferFull = CUPTI_ACTIVITY_OVERHEAD_COMMAND_BUFFER_FULL,
         /// Overhead due to activity buffer request.
         ActivityBufferRequest = CUPTI_ACTIVITY_OVERHEAD_ACTIVITY_BUFFER_REQUEST,
-        // CUDA 12.6: Removed in this version
-        // /// Overhead due to UVM activity initialization.
-        // UvmActivityInit = CUPTI_ACTIVITY_OVERHEAD_UVM_ACTIVITY_INIT,
+        /// Overhead due to UVM activity initialization.
+        UvmActivityInit = CUPTI_ACTIVITY_OVERHEAD_UVM_ACTIVITY_INIT,
     }
 }
 
@@ -973,9 +971,8 @@ c_enum! {
         /// the copy engines.
         AsyncMemcpy = CUPTI_CHANNEL_TYPE_ASYNC_MEMCPY,
 
-        // CUDA 12.6: Removed in this version
-        // /// Channel is used for memory decompression operations.
-        // Decomp = CUPTI_CHANNEL_TYPE_DECOMP,
+        /// Channel is used for memory decompression operations.
+        Decomp = CUPTI_CHANNEL_TYPE_DECOMP,
     }
 }
 
@@ -994,20 +991,19 @@ c_enum! {
     }
 }
 
-// CUDA 12.6: Removed in this version
-// c_enum! {
-//     #[derive(Copy, Clone, Eq, PartialEq, Hash)]
-//     pub enum NvtxExtPayloadType : CUpti_NvtxExtPayloadType {
-//         /// The payload type is not known.
-//         Unknown = CUPTI_NVTX_EXT_PAYLOAD_TYPE_UNKNOWN,
-//
-//         /// The payload type is a schema.
-//         Schema = CUPTI_NVTX_EXT_PAYLOAD_TYPE_SCHEMA,
-//
-//         /// The payload type is an enum.
-//         Enum = CUPTI_NVTX_EXT_PAYLOAD_TYPE_ENUM,
-//     }
-// }
+c_enum! {
+    #[derive(Copy, Clone, Eq, PartialEq, Hash)]
+    pub enum NvtxExtPayloadType : CUpti_NvtxExtPayloadType {
+        /// The payload type is not known.
+        Unknown = CUPTI_NVTX_EXT_PAYLOAD_TYPE_UNKNOWN,
+
+        /// The payload type is a schema.
+        Schema = CUPTI_NVTX_EXT_PAYLOAD_TYPE_SCHEMA,
+
+        /// The payload type is an enum.
+        Enum = CUPTI_NVTX_EXT_PAYLOAD_TYPE_ENUM,
+    }
+}
 
 c_enum! {
     /// The type of the CUDA kernel launch.
@@ -1096,25 +1092,24 @@ c_enum! {
     }
 }
 
-// CUDA 12.6: Removed in this version
-// c_enum! {
-//     /// Confidential Computing Rotation Events.
-//     ///
-//     /// Event types for confidential compute tracing.
-//     #[derive(Copy, Clone, Eq, PartialEq, Hash)]
-//     pub enum ConfidentialComputeRotation: CUpti_ConfidentialComputeRotationEventType {
-//         /// Invalid rotation event.
-//         Invalid = CUPTI_CONFIDENTIAL_COMPUTE_INVALID_ROTATION_EVENT,
-//         /// This channel has been blocked from accepting new CUDA work so a key rotation can be done.
-//         KeyRotationChannelBlocked = CUPTI_CONFIDENTIAL_COMPUTE_KEY_ROTATION_CHANNEL_BLOCKED,
-//         /// This channel remains blocked and all queued CUDA work has completed.
-//         ///
-//         /// Other clients or channels may cause delays in starting the key rotation.
-//         KeyRotationChannelDrained = CUPTI_CONFIDENTIAL_COMPUTE_KEY_ROTATION_CHANNEL_DRAINED,
-//         /// Key rotations have completed and this channel is unblocked.
-//         KeyRotationChannelUnblocked = CUPTI_CONFIDENTIAL_COMPUTE_KEY_ROTATION_CHANNEL_UNBLOCKED,
-//     }
-// }
+c_enum! {
+    /// Confidential Computing Rotation Events.
+    ///
+    /// Event types for confidential compute tracing.
+    #[derive(Copy, Clone, Eq, PartialEq, Hash)]
+    pub enum ConfidentialComputeRotation: CUpti_ConfidentialComputeRotationEventType {
+        /// Invalid rotation event.
+        Invalid = CUPTI_CONFIDENTIAL_COMPUTE_INVALID_ROTATION_EVENT,
+        /// This channel has been blocked from accepting new CUDA work so a key rotation can be done.
+        KeyRotationChannelBlocked = CUPTI_CONFIDENTIAL_COMPUTE_KEY_ROTATION_CHANNEL_BLOCKED,
+        /// This channel remains blocked and all queued CUDA work has completed.
+        ///
+        /// Other clients or channels may cause delays in starting the key rotation.
+        KeyRotationChannelDrained = CUPTI_CONFIDENTIAL_COMPUTE_KEY_ROTATION_CHANNEL_DRAINED,
+        /// Key rotations have completed and this channel is unblocked.
+        KeyRotationChannelUnblocked = CUPTI_CONFIDENTIAL_COMPUTE_KEY_ROTATION_CHANNEL_UNBLOCKED,
+    }
+}
 
 c_enum! {
     /// The types of JIT entry.
@@ -1142,16 +1137,15 @@ c_enum! {
     }
 }
 
-// CUDA 12.6: Removed in this version
-// c_enum! {
-//     /// The launch mode for device graph execution.
-//     pub enum DeviceGraphLaunchMode: CUpti_DeviceGraphLaunchMode {
-//         Invalid = CUPTI_DEVICE_GRAPH_LAUNCH_MODE_INVALID,
-//         FireAndForget = CUPTI_DEVICE_GRAPH_LAUNCH_MODE_FIRE_AND_FORGET,
-//         Tail = CUPTI_DEVICE_GRAPH_LAUNCH_MODE_TAIL,
-//         FireAndForgetAsSibling = CUPTI_DEVICE_GRAPH_LAUNCH_MODE_FIRE_AND_FORGET_AS_SIBLING,
-//     }
-// }
+c_enum! {
+    /// The launch mode for device graph execution.
+    pub enum DeviceGraphLaunchMode: CUpti_DeviceGraphLaunchMode {
+        Invalid = CUPTI_DEVICE_GRAPH_LAUNCH_MODE_INVALID,
+        FireAndForget = CUPTI_DEVICE_GRAPH_LAUNCH_MODE_FIRE_AND_FORGET,
+        Tail = CUPTI_DEVICE_GRAPH_LAUNCH_MODE_TAIL,
+        FireAndForgetAsSibling = CUPTI_DEVICE_GRAPH_LAUNCH_MODE_FIRE_AND_FORGET_AS_SIBLING,
+    }
+}
 
 c_enum! {
     /// Activity attributes.
@@ -1360,25 +1354,24 @@ c_enum! {
         /// The default value is 1.
         PerThreadActivityBuffer = CUPTI_ACTIVITY_ATTR_PER_THREAD_ACTIVITY_BUFFER,
 
-        // CUDA 12.6: Removed in this version
-        // /// The device memory size (in bytes) reserved for storing profiling
-        // /// data for device graph operations for each buffer on a context. The
-        // /// value is a size_t.
-        // ///
-        // /// Having larger buffer size means less flush operations but
-        // /// consumes more device memory. This value only applies to new
-        // /// allocations.
-        // ///
-        // /// Set this value before initializing CUDA or before creating a
-        // /// context to ensure it is considered for the following allocations.
-        // ///
-        // /// The default value is 16777216 (16MB).
-        // ///
-        // /// # Notes
-        // ///
-        // /// The actual amount of device memory per context reserved by
-        // /// CUPTI might be larger.
-        // DeviceBufferSizeDeviceGraphs = CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE_DEVICE_GRAPHS,
+        /// The device memory size (in bytes) reserved for storing profiling
+        /// data for device graph operations for each buffer on a context. The
+        /// value is a size_t.
+        ///
+        /// Having larger buffer size means less flush operations but
+        /// consumes more device memory. This value only applies to new
+        /// allocations.
+        ///
+        /// Set this value before initializing CUDA or before creating a
+        /// context to ensure it is considered for the following allocations.
+        ///
+        /// The default value is 16777216 (16MB).
+        ///
+        /// # Notes
+        ///
+        /// The actual amount of device memory per context reserved by
+        /// CUPTI might be larger.
+        DeviceBufferSizeDeviceGraphs = CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE_DEVICE_GRAPHS,
     }
 }
 

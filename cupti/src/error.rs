@@ -190,22 +190,18 @@ error_enum! {
         /// CUPTI does not support NVIDIA Crypto Mining Processors (CMP).
         CmpDeviceNotSupported = CUPTI_ERROR_CMP_DEVICE_NOT_SUPPORTED,
 
-        // CUDA 12.6: Removed in this version
-        // /// Profiling on Multi-instance GPU (MIG) is not supported.
-        // MigDeviceNotSupported = CUPTI_ERROR_MIG_DEVICE_NOT_SUPPORTED,
+        /// Profiling on Multi-instance GPU (MIG) is not supported.
+        MigDeviceNotSupported = CUPTI_ERROR_MIG_DEVICE_NOT_SUPPORTED,
 
-        // CUDA 12.6: Removed in this version
-        // /// Profiling on SLI device is not supported.
-        // SliDeviceNotSupported = CUPTI_ERROR_SLI_DEVICE_NOT_SUPPORTED,
+        /// Profiling on SLI device is not supported.
+        SliDeviceNotSupported = CUPTI_ERROR_SLI_DEVICE_NOT_SUPPORTED,
 
-        // CUDA 12.6: Removed in this version
-        // /// Profiling on WSL device is not supported.
-        // WslDeviceNotSupported = CUPTI_ERROR_WSL_DEVICE_NOT_SUPPORTED,
+        /// Profiling on WSL device is not supported.
+        WslDeviceNotSupported = CUPTI_ERROR_WSL_DEVICE_NOT_SUPPORTED,
 
-        // CUDA 12.6: Removed in this version
-        // /// For invalid or unsupported chip name passed to
-        // /// cuptiProfilerHostInitialize.
-        // InvalidChipName = CUPTI_ERROR_INVALID_CHIP_NAME,
+        /// For invalid or unsupported chip name passed to
+        /// cuptiProfilerHostInitialize.
+        InvalidChipName = CUPTI_ERROR_INVALID_CHIP_NAME,
 
         /// An unknown internal error has occurred.
         Unknown = CUPTI_ERROR_UNKNOWN,

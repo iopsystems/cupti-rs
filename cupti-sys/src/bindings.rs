@@ -142,17 +142,19 @@ where
         }
     }
 }
-pub const CUPTI_API_VERSION: u32 = 24;
+pub const CUPTI_API_VERSION: u32 = 130001;
+pub const CUPTI_SUBSCRIBER_NAME_MAX_LEN: u32 = 53;
+pub const CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN: u32 = 64;
 pub const CUPTILP64: u32 = 1;
 pub const CUPTI_SOURCE_LOCATOR_ID_UNKNOWN: u32 = 0;
 pub const CUPTI_FUNCTION_INDEX_ID_INVALID: u32 = 0;
 pub const CUPTI_CORRELATION_ID_UNKNOWN: u32 = 0;
 pub const CUPTI_GRID_ID_UNKNOWN: u32 = 0;
 pub const CUPTI_TIMESTAMP_UNKNOWN: u32 = 0;
-pub const CUPTI_SYNCHRONIZATION_INVALID_VALUE: i32 = -1;
 pub const CUPTI_AUTO_BOOST_INVALID_CLIENT_PID: u32 = 0;
 pub const CUPTI_NVLINK_INVALID_PORT: i32 = -1;
 pub const CUPTI_MAX_NVLINK_PORTS: u32 = 32;
+pub const CUPTI_DECOMPRESSED_BYTES_UNKNOWN: u32 = 0;
 pub const CUPTI_MAX_GPUS: u32 = 32;
 pub const CUPTI_STALL_REASON_STRING_SIZE: u32 = 128;
 pub type CUdevice_v1 = ::std::os::raw::c_int;
@@ -379,7 +381,7 @@ pub const CU_DEVICE_ATTRIBUTE_MANAGED_MEMORY: CUdevice_attribute_enum = 83;
 pub const CU_DEVICE_ATTRIBUTE_MULTI_GPU_BOARD: CUdevice_attribute_enum = 84;
 #[doc = "< Unique id for a group of devices on the same multi-GPU board"]
 pub const CU_DEVICE_ATTRIBUTE_MULTI_GPU_BOARD_GROUP_ID: CUdevice_attribute_enum = 85;
-#[doc = "< Link between the device and the host supports native atomic operations (this is a placeholder attribute, and is not supported on any current hardware)"]
+#[doc = "< Link between the device and the host supports all native atomic operations"]
 pub const CU_DEVICE_ATTRIBUTE_HOST_NATIVE_ATOMIC_SUPPORTED: CUdevice_attribute_enum = 86;
 #[doc = "< Ratio of single precision performance (in floating-point operations per second) to double precision performance"]
 pub const CU_DEVICE_ATTRIBUTE_SINGLE_TO_DOUBLE_PRECISION_PERF_RATIO: CUdevice_attribute_enum = 87;
@@ -484,7 +486,34 @@ pub const CU_DEVICE_ATTRIBUTE_MPS_ENABLED: CUdevice_attribute_enum = 133;
 pub const CU_DEVICE_ATTRIBUTE_HOST_NUMA_ID: CUdevice_attribute_enum = 134;
 #[doc = "< Device supports CIG with D3D12."]
 pub const CU_DEVICE_ATTRIBUTE_D3D12_CIG_SUPPORTED: CUdevice_attribute_enum = 135;
-pub const CU_DEVICE_ATTRIBUTE_MAX: CUdevice_attribute_enum = 136;
+#[doc = "< The returned valued shall be interpreted as a bitmask, where the individual bits are described by the ::CUmemDecompressAlgorithm enum."]
+pub const CU_DEVICE_ATTRIBUTE_MEM_DECOMPRESS_ALGORITHM_MASK: CUdevice_attribute_enum = 136;
+#[doc = "< The returned valued is the maximum length in bytes of a single decompress operation that is allowed."]
+pub const CU_DEVICE_ATTRIBUTE_MEM_DECOMPRESS_MAXIMUM_LENGTH: CUdevice_attribute_enum = 137;
+#[doc = "< Device supports CIG with Vulkan."]
+pub const CU_DEVICE_ATTRIBUTE_VULKAN_CIG_SUPPORTED: CUdevice_attribute_enum = 138;
+#[doc = "< The combined 16-bit PCI device ID and 16-bit PCI vendor ID."]
+pub const CU_DEVICE_ATTRIBUTE_GPU_PCI_DEVICE_ID: CUdevice_attribute_enum = 139;
+#[doc = "< The combined 16-bit PCI subsystem ID and 16-bit PCI subsystem vendor ID."]
+pub const CU_DEVICE_ATTRIBUTE_GPU_PCI_SUBSYSTEM_ID: CUdevice_attribute_enum = 140;
+#[doc = "< Device supports HOST_NUMA location with the virtual memory management APIs like ::cuMemCreate, ::cuMemMap and related APIs"]
+pub const CU_DEVICE_ATTRIBUTE_HOST_NUMA_VIRTUAL_MEMORY_MANAGEMENT_SUPPORTED:
+    CUdevice_attribute_enum = 141;
+#[doc = "< Device supports HOST_NUMA location with the ::cuMemAllocAsync and ::cuMemPool family of APIs"]
+pub const CU_DEVICE_ATTRIBUTE_HOST_NUMA_MEMORY_POOLS_SUPPORTED: CUdevice_attribute_enum = 142;
+#[doc = "< Device supports HOST_NUMA location IPC between nodes in a multi-node system."]
+pub const CU_DEVICE_ATTRIBUTE_HOST_NUMA_MULTINODE_IPC_SUPPORTED: CUdevice_attribute_enum = 143;
+#[doc = "< Device suports HOST location with the ::cuMemAllocAsync and ::cuMemPool family of APIs"]
+pub const CU_DEVICE_ATTRIBUTE_HOST_MEMORY_POOLS_SUPPORTED: CUdevice_attribute_enum = 144;
+#[doc = "< Device supports HOST location with the virtual memory management APIs like ::cuMemCreate, ::cuMemMap and related APIs"]
+pub const CU_DEVICE_ATTRIBUTE_HOST_VIRTUAL_MEMORY_MANAGEMENT_SUPPORTED: CUdevice_attribute_enum =
+    145;
+#[doc = "< Device supports page-locked host memory buffer sharing with dma_buf mechanism."]
+pub const CU_DEVICE_ATTRIBUTE_HOST_ALLOC_DMA_BUF_SUPPORTED: CUdevice_attribute_enum = 146;
+#[doc = "< Link between the device and the host supports only some native atomic operations"]
+pub const CU_DEVICE_ATTRIBUTE_ONLY_PARTIAL_HOST_NATIVE_ATOMIC_SUPPORTED: CUdevice_attribute_enum =
+    147;
+pub const CU_DEVICE_ATTRIBUTE_MAX: CUdevice_attribute_enum = 148;
 #[doc = " Device properties"]
 pub type CUdevice_attribute_enum = ::std::os::raw::c_uint;
 #[doc = " Device properties"]
@@ -567,7 +596,7 @@ pub const CU_GRAPH_NODE_TYPE_EXT_SEMAS_WAIT: CUgraphNodeType_enum = 9;
 pub const CU_GRAPH_NODE_TYPE_MEM_ALLOC: CUgraphNodeType_enum = 10;
 #[doc = "< Memory Free Node"]
 pub const CU_GRAPH_NODE_TYPE_MEM_FREE: CUgraphNodeType_enum = 11;
-#[doc = "< Batch MemOp Node"]
+#[doc = "< Batch MemOp Node\nSee ::cuStreamBatchMemOp and ::CUstreamBatchMemOpType for what these nodes can do."]
 pub const CU_GRAPH_NODE_TYPE_BATCH_MEM_OP: CUgraphNodeType_enum = 12;
 #[doc = "< Conditional Node\n\nMay be used to implement a conditional execution path or loop\ninside of a graph. The graph(s) contained within the body of the conditional node\ncan be selectively executed or iterated upon based on the value of a conditional\nvariable.\n\nHandles must be created in advance of creating the node\nusing ::cuGraphConditionalHandleCreate.\n\nThe following restrictions apply to graphs which contain conditional nodes:\nThe graph cannot be used in a child node.\nOnly one instantiation of the graph may exist at any point in time.\nThe graph cannot be cloned.\n\nTo set the control value, supply a default value when creating the handle and/or\ncall ::cudaGraphSetConditional from device code."]
 pub const CU_GRAPH_NODE_TYPE_CONDITIONAL: CUgraphNodeType_enum = 13;
@@ -643,12 +672,16 @@ pub const CU_LAUNCH_ATTRIBUTE_PRIORITY: CUlaunchAttributeID_enum = 8;
 pub const CU_LAUNCH_ATTRIBUTE_MEM_SYNC_DOMAIN_MAP: CUlaunchAttributeID_enum = 9;
 #[doc = "< Valid for streams, graph nodes, launches. See\n::CUlaunchAttributeValue::memSyncDomain."]
 pub const CU_LAUNCH_ATTRIBUTE_MEM_SYNC_DOMAIN: CUlaunchAttributeID_enum = 10;
+#[doc = "< Valid for graph nodes, launches. Set\n::CUlaunchAttributeValue::preferredClusterDim\nto allow the kernel launch to specify a preferred substitute\ncluster dimension. Blocks may be grouped according to either\nthe dimensions specified with this attribute (grouped into a\n\"preferred substitute cluster\"), or the one specified with\n::CU_LAUNCH_ATTRIBUTE_CLUSTER_DIMENSION attribute (grouped\ninto a \"regular cluster\"). The cluster dimensions of a\n\"preferred substitute cluster\" shall be an integer multiple\ngreater than zero of the regular cluster dimensions. The\ndevice will attempt - on a best-effort basis - to group\nthread blocks into preferred clusters over grouping them\ninto regular clusters. When it deems necessary (primarily\nwhen the device temporarily runs out of physical resources\nto launch the larger preferred clusters), the device may\nswitch to launch the regular clusters instead to attempt to\nutilize as much of the physical device resources as possible.\n<br>\nEach type of cluster will have its enumeration / coordinate\nsetup as if the grid consists solely of its type of cluster.\nFor example, if the preferred substitute cluster dimensions\ndouble the regular cluster dimensions, there might be\nsimultaneously a regular cluster indexed at (1,0,0), and a\npreferred cluster indexed at (1,0,0). In this example, the\npreferred substitute cluster (1,0,0) replaces regular\nclusters (2,0,0) and (3,0,0) and groups their blocks.\n<br>\nThis attribute will only take effect when a regular cluster\ndimension has been specified. The preferred substitute\ncluster dimension must be an integer multiple greater than\nzero of the regular cluster dimension and must divide the\ngrid. It must also be no more than `maxBlocksPerCluster`, if\nit is set in the kernel's `__launch_bounds__`. Otherwise it\nmust be less than the maximum value the driver can support.\nOtherwise, setting this attribute to a value physically\nunable to fit on any particular device is permitted."]
+pub const CU_LAUNCH_ATTRIBUTE_PREFERRED_CLUSTER_DIMENSION: CUlaunchAttributeID_enum = 11;
 #[doc = "< Valid for launches. Set\n::CUlaunchAttributeValue::launchCompletionEvent to record the\nevent.\n<br>\nNominally, the event is triggered once all blocks of the kernel\nhave begun execution. Currently this is a best effort. If a kernel\nB has a launch completion dependency on a kernel A, B may wait\nuntil A is complete. Alternatively, blocks of B may begin before\nall blocks of A have begun, for example if B can claim execution\nresources unavailable to A (e.g. they run on different GPUs) or\nif B is a higher priority than A.\nExercise caution if such an ordering inversion could lead\nto deadlock.\n<br>\nA launch completion event is nominally similar to a programmatic\nevent with \\c triggerAtBlockStart set except that it is not\nvisible to \\c cudaGridDependencySynchronize() and can be used with\ncompute capability less than 9.0.\n<br>\nThe event supplied must not be an interprocess or interop\nevent. The event must disable timing (i.e. must be created\nwith the ::CU_EVENT_DISABLE_TIMING flag set)."]
 pub const CU_LAUNCH_ATTRIBUTE_LAUNCH_COMPLETION_EVENT: CUlaunchAttributeID_enum = 12;
 #[doc = "< Valid for graph nodes, launches. This attribute is graphs-only,\nand passing it to a launch in a non-capturing stream will result\nin an error.\n<br>\n::CUlaunchAttributeValue::deviceUpdatableKernelNode::deviceUpdatable can\nonly be set to 0 or 1. Setting the field to 1 indicates that the\ncorresponding kernel node should be device-updatable. On success, a handle\nwill be returned via\n::CUlaunchAttributeValue::deviceUpdatableKernelNode::devNode which can be\npassed to the various device-side update functions to update the node's\nkernel parameters from within another kernel. For more information on the\ntypes of device updates that can be made, as well as the relevant limitations\nthereof, see ::cudaGraphKernelNodeUpdatesApply.\n<br>\nNodes which are device-updatable have additional restrictions compared to\nregular kernel nodes. Firstly, device-updatable nodes cannot be removed\nfrom their graph via ::cuGraphDestroyNode. Additionally, once opted-in\nto this functionality, a node cannot opt out, and any attempt to set the\ndeviceUpdatable attribute to 0 will result in an error. Device-updatable\nkernel nodes also cannot have their attributes copied to/from another kernel\nnode via ::cuGraphKernelNodeCopyAttributes. Graphs containing one or more\ndevice-updatable nodes also do not allow multiple instantiation, and neither\nthe graph nor its instantiated version can be passed to ::cuGraphExecUpdate.\n<br>\nIf a graph contains device-updatable nodes and updates those nodes from the device\nfrom within the graph, the graph must be uploaded with ::cuGraphUpload before it\nis launched. For such a graph, if host-side executable graph updates are made to the\ndevice-updatable nodes, the graph must be uploaded before it is launched again."]
 pub const CU_LAUNCH_ATTRIBUTE_DEVICE_UPDATABLE_KERNEL_NODE: CUlaunchAttributeID_enum = 13;
 #[doc = "< Valid for launches. On devices where the L1 cache and shared memory use the\nsame hardware resources, setting ::CUlaunchAttributeValue::sharedMemCarveout to a\npercentage between 0-100 signals the CUDA driver to set the shared memory carveout\npreference, in percent of the total shared memory for that kernel launch.\nThis attribute takes precedence over ::CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT.\nThis is only a hint, and the CUDA driver can choose a different configuration if\nrequired for the launch."]
 pub const CU_LAUNCH_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT: CUlaunchAttributeID_enum = 14;
+#[doc = "< Valid for streams, graph nodes, launches. This attribute is a hint to the CUDA runtime that the\nlaunch should attempt to make the kernel maximize its NVLINK utilization.\n<br>\nWhen possible to honor this hint, CUDA will assume each block in the grid launch will carry out an even amount\nof NVLINK traffic, and make a best-effort attempt to adjust the kernel launch based on that assumption.\n<br>\nThis attribute is a hint only. CUDA makes no functional or performance guarantee. Its applicability can be\naffected by many different factors, including driver version (i.e. CUDA doesn't guarantee the performance\ncharacteristics will be maintained between driver versions or a driver update could alter or regress\npreviously observed perf characteristics.) It also doesn't guarantee a successful result, i.e. applying\nthe attribute may not improve the performance of either the targeted kernel or the encapsulating application.\n<br>\nValid values for ::CUlaunchAttributeValue::nvlinkUtilCentricScheduling are 0 (disabled) and 1 (enabled)."]
+pub const CU_LAUNCH_ATTRIBUTE_NVLINK_UTIL_CENTRIC_SCHEDULING: CUlaunchAttributeID_enum = 16;
 #[doc = " Launch attributes enum; used as id field of ::CUlaunchAttribute"]
 pub type CUlaunchAttributeID_enum = ::std::os::raw::c_uint;
 #[doc = " Launch attributes enum; used as id field of ::CUlaunchAttribute"]
@@ -677,9 +710,11 @@ pub union CUlaunchAttributeValue_union {
     pub memSyncDomainMap: CUlaunchMemSyncDomainMap,
     #[doc = "< Value of launch attribute\n::CU_LAUNCH_ATTRIBUTE_MEM_SYNC_DOMAIN. See::CUlaunchMemSyncDomain"]
     pub memSyncDomain: CUlaunchMemSyncDomain,
-    pub deviceUpdatableKernelNode: CUlaunchAttributeValue_union__bindgen_ty_4,
+    pub preferredClusterDim: CUlaunchAttributeValue_union__bindgen_ty_4,
+    pub deviceUpdatableKernelNode: CUlaunchAttributeValue_union__bindgen_ty_5,
     #[doc = "< Value of launch attribute ::CU_LAUNCH_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT."]
     pub sharedMemCarveout: ::std::os::raw::c_uint,
+    pub nvlinkUtilCentricScheduling: ::std::os::raw::c_uint,
 }
 #[doc = "  Value of launch attribute ::CU_LAUNCH_ATTRIBUTE_CLUSTER_DIMENSION that\n  represents the desired cluster dimensions for the kernel. Opaque type\n  with the following fields:\n      - \\p x - The X dimension of the cluster, in blocks. Must be a divisor\n               of the grid X dimension.\n      - \\p y - The Y dimension of the cluster, in blocks. Must be a divisor\n               of the grid Y dimension.\n      - \\p z - The Z dimension of the cluster, in blocks. Must be a divisor\n               of the grid Z dimension."]
 #[repr(C)]
@@ -762,27 +797,48 @@ impl Default for CUlaunchAttributeValue_union__bindgen_ty_3 {
         }
     }
 }
+#[doc = "  Value of launch attribute ::CU_LAUNCH_ATTRIBUTE_PREFERRED_CLUSTER_DIMENSION\n  that represents the desired preferred cluster dimensions for the kernel.\n  Opaque type with the following fields:\n      - \\p x - The X dimension of the preferred cluster, in blocks. Must\n               be a divisor of the grid X dimension, and must be a\n               multiple of the \\p x field of ::CUlaunchAttributeValue::clusterDim.\n      - \\p y - The Y dimension of the preferred cluster, in blocks. Must\n               be a divisor of the grid Y dimension, and must be a\n               multiple of the \\p y field of ::CUlaunchAttributeValue::clusterDim.\n      - \\p z - The Z dimension of the preferred cluster, in blocks. Must be\n               equal to the \\p z field of ::CUlaunchAttributeValue::clusterDim."]
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUlaunchAttributeValue_union__bindgen_ty_4 {
+    pub x: ::std::os::raw::c_uint,
+    pub y: ::std::os::raw::c_uint,
+    pub z: ::std::os::raw::c_uint,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUlaunchAttributeValue_union__bindgen_ty_4"]
+        [::std::mem::size_of::<CUlaunchAttributeValue_union__bindgen_ty_4>() - 12usize];
+    ["Alignment of CUlaunchAttributeValue_union__bindgen_ty_4"]
+        [::std::mem::align_of::<CUlaunchAttributeValue_union__bindgen_ty_4>() - 4usize];
+    ["Offset of field: CUlaunchAttributeValue_union__bindgen_ty_4::x"]
+        [::std::mem::offset_of!(CUlaunchAttributeValue_union__bindgen_ty_4, x) - 0usize];
+    ["Offset of field: CUlaunchAttributeValue_union__bindgen_ty_4::y"]
+        [::std::mem::offset_of!(CUlaunchAttributeValue_union__bindgen_ty_4, y) - 4usize];
+    ["Offset of field: CUlaunchAttributeValue_union__bindgen_ty_4::z"]
+        [::std::mem::offset_of!(CUlaunchAttributeValue_union__bindgen_ty_4, z) - 8usize];
+};
 #[doc = "  Value of launch attribute ::CU_LAUNCH_ATTRIBUTE_DEVICE_UPDATABLE_KERNEL_NODE.\n  with the following fields:\n      - \\p int deviceUpdatable - Whether or not the resulting kernel node should be device-updatable.\n      - \\p CUgraphDeviceNode devNode - Returns a handle to pass to the various device-side update functions."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct CUlaunchAttributeValue_union__bindgen_ty_4 {
+pub struct CUlaunchAttributeValue_union__bindgen_ty_5 {
     pub deviceUpdatable: ::std::os::raw::c_int,
     pub devNode: CUgraphDeviceNode,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of CUlaunchAttributeValue_union__bindgen_ty_4"]
-        [::std::mem::size_of::<CUlaunchAttributeValue_union__bindgen_ty_4>() - 16usize];
-    ["Alignment of CUlaunchAttributeValue_union__bindgen_ty_4"]
-        [::std::mem::align_of::<CUlaunchAttributeValue_union__bindgen_ty_4>() - 8usize];
-    ["Offset of field: CUlaunchAttributeValue_union__bindgen_ty_4::deviceUpdatable"][::std::mem::offset_of!(
-        CUlaunchAttributeValue_union__bindgen_ty_4,
+    ["Size of CUlaunchAttributeValue_union__bindgen_ty_5"]
+        [::std::mem::size_of::<CUlaunchAttributeValue_union__bindgen_ty_5>() - 16usize];
+    ["Alignment of CUlaunchAttributeValue_union__bindgen_ty_5"]
+        [::std::mem::align_of::<CUlaunchAttributeValue_union__bindgen_ty_5>() - 8usize];
+    ["Offset of field: CUlaunchAttributeValue_union__bindgen_ty_5::deviceUpdatable"][::std::mem::offset_of!(
+        CUlaunchAttributeValue_union__bindgen_ty_5,
         deviceUpdatable
     ) - 0usize];
-    ["Offset of field: CUlaunchAttributeValue_union__bindgen_ty_4::devNode"]
-        [::std::mem::offset_of!(CUlaunchAttributeValue_union__bindgen_ty_4, devNode) - 8usize];
+    ["Offset of field: CUlaunchAttributeValue_union__bindgen_ty_5::devNode"]
+        [::std::mem::offset_of!(CUlaunchAttributeValue_union__bindgen_ty_5, devNode) - 8usize];
 };
-impl Default for CUlaunchAttributeValue_union__bindgen_ty_4 {
+impl Default for CUlaunchAttributeValue_union__bindgen_ty_5 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -827,10 +883,16 @@ const _: () = {
         [::std::mem::offset_of!(CUlaunchAttributeValue_union, memSyncDomainMap) - 0usize];
     ["Offset of field: CUlaunchAttributeValue_union::memSyncDomain"]
         [::std::mem::offset_of!(CUlaunchAttributeValue_union, memSyncDomain) - 0usize];
+    ["Offset of field: CUlaunchAttributeValue_union::preferredClusterDim"]
+        [::std::mem::offset_of!(CUlaunchAttributeValue_union, preferredClusterDim) - 0usize];
     ["Offset of field: CUlaunchAttributeValue_union::deviceUpdatableKernelNode"]
         [::std::mem::offset_of!(CUlaunchAttributeValue_union, deviceUpdatableKernelNode) - 0usize];
     ["Offset of field: CUlaunchAttributeValue_union::sharedMemCarveout"]
         [::std::mem::offset_of!(CUlaunchAttributeValue_union, sharedMemCarveout) - 0usize];
+    ["Offset of field: CUlaunchAttributeValue_union::nvlinkUtilCentricScheduling"][::std::mem::offset_of!(
+        CUlaunchAttributeValue_union,
+        nvlinkUtilCentricScheduling
+    ) - 0usize];
 };
 impl Default for CUlaunchAttributeValue_union {
     fn default() -> Self {
@@ -930,9 +992,9 @@ pub const CUPTI_ERROR_INSUFFICIENT_PRIVILEGES: CUptiResult = 35;
 pub const CUPTI_ERROR_OLD_PROFILER_API_INITIALIZED: CUptiResult = 36;
 #[doc = " Missing definition of the OpenACC API routine in the linked OpenACC library.\n\n One possible reason is that OpenACC library is linked statically in the\n user application, which might not have the definition of all the OpenACC\n API routines needed for the OpenACC profiling, as compiler might ignore\n definitions for the functions not used in the application. This issue\n can be mitigated by linking the OpenACC library dynamically."]
 pub const CUPTI_ERROR_OPENACC_UNDEFINED_ROUTINE: CUptiResult = 37;
-#[doc = " Legacy CUPTI Profiling API i.e. event API from the header cupti_events.h and\n metric API from the header cupti_metrics.h are not supported on devices with\n compute capability 7.5 and higher (i.e. Turing and later GPU architectures).\n These API will be deprecated in a future CUDA release. These are replaced by\n Profiling API in the header cupti_profiler_target.h and Perfworks metrics API\n in the headers nvperf_host.h and nvperf_target.h."]
+#[doc = " Legacy CUPTI Profiling API i.e. event API from the header cupti_events.h and\n metric API from the header cupti_metrics.h are not supported on devices with\n compute capability 7.5 and higher (i.e. Turing and later GPU architectures).\n These APIs were deprecated in CUDA 12.8 and removed in CUDA 13.0.\n These are replaced by the host profiling API in the header cupti_profiler_host.h and\n target profiling API in the header cupti_range_profiler.h which are supported on\n devices with compute capability 7.5 and higher (i.e. Turing and later GPU\n architectures).\n Further, the PC Sampling Activity API and the source/SASS level metrics from the header\n cupti_activity.h are removed in CUDA 13.0."]
 pub const CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED: CUptiResult = 38;
-#[doc = " CUPTI doesn't allow multiple callback subscribers. Only a single subscriber\n can be registered at a time.\n Same error code is used when application is launched using NVIDIA tools\n like nvprof, Visual Profiler, Nsight Systems, Nsight Compute, cuda-gdb and\n cuda-memcheck."]
+#[doc = " CUPTI doesn't allow multiple callback subscribers. Only a single subscriber\n can be registered at a time.\n Same error code is used when application is launched using NVIDIA tools\n like Nsight Systems, Nsight Compute, and cuda-gdb."]
 pub const CUPTI_ERROR_MULTIPLE_SUBSCRIBERS_NOT_SUPPORTED: CUptiResult = 39;
 #[doc = " Profiling on virtualized GPU is not allowed by hypervisor."]
 pub const CUPTI_ERROR_VIRTUALIZED_DEVICE_INSUFFICIENT_PRIVILEGES: CUptiResult = 40;
@@ -940,6 +1002,14 @@ pub const CUPTI_ERROR_VIRTUALIZED_DEVICE_INSUFFICIENT_PRIVILEGES: CUptiResult = 
 pub const CUPTI_ERROR_CONFIDENTIAL_COMPUTING_NOT_SUPPORTED: CUptiResult = 41;
 #[doc = " CUPTI does not support NVIDIA Crypto Mining Processors (CMP).\n For more information, please visit https://developer.nvidia.com/ERR_NVCMPGPU"]
 pub const CUPTI_ERROR_CMP_DEVICE_NOT_SUPPORTED: CUptiResult = 42;
+#[doc = " Profiling on Multi-instance GPU (MIG) is not supported."]
+pub const CUPTI_ERROR_MIG_DEVICE_NOT_SUPPORTED: CUptiResult = 43;
+#[doc = " Profiling on SLI device is not supported."]
+pub const CUPTI_ERROR_SLI_DEVICE_NOT_SUPPORTED: CUptiResult = 44;
+#[doc = " Profiling on WSL device is not supported."]
+pub const CUPTI_ERROR_WSL_DEVICE_NOT_SUPPORTED: CUptiResult = 45;
+#[doc = " For invalid or unsupported chip name passed to cuptiProfilerHostInitialize."]
+pub const CUPTI_ERROR_INVALID_CHIP_NAME: CUptiResult = 46;
 #[doc = " An unknown internal error has occurred."]
 pub const CUPTI_ERROR_UNKNOWN: CUptiResult = 999;
 #[doc = " An unknown internal error has occurred."]
@@ -1036,9 +1106,13 @@ pub const CUPTI_CBID_RESOURCE_GRAPHEXEC_DESTROY_STARTING: CUpti_CallbackIdResour
 pub const CUPTI_CBID_RESOURCE_GRAPHNODE_CLONED: CUpti_CallbackIdResource = 20;
 #[doc = " CUDA stream attribute is changed."]
 pub const CUPTI_CBID_RESOURCE_STREAM_ATTRIBUTE_CHANGED: CUpti_CallbackIdResource = 21;
-#[doc = " CUDA stream attribute is changed."]
-pub const CUPTI_CBID_RESOURCE_SIZE: CUpti_CallbackIdResource = 22;
-#[doc = " CUDA stream attribute is changed."]
+#[doc = " CUDA graph node is updated."]
+pub const CUPTI_CBID_RESOURCE_GRAPH_NODE_UPDATED: CUpti_CallbackIdResource = 22;
+#[doc = " Params are set for the CUDA graph node in the executable graph."]
+pub const CUPTI_CBID_RESOURCE_GRAPH_NODE_SET_PARAMS: CUpti_CallbackIdResource = 23;
+#[doc = " Params are set for the CUDA graph node in the executable graph."]
+pub const CUPTI_CBID_RESOURCE_SIZE: CUpti_CallbackIdResource = 24;
+#[doc = " Params are set for the CUDA graph node in the executable graph."]
 pub const CUPTI_CBID_RESOURCE_FORCE_INT: CUpti_CallbackIdResource = 2147483647;
 #[doc = " \\brief Callback IDs for resource domain.\n\n Callback IDs for resource domain, CUPTI_CB_DOMAIN_RESOURCE.  This\n value is communicated to the callback function via the \\p cbid\n parameter."]
 pub type CUpti_CallbackIdResource = ::std::os::raw::c_uint;
@@ -1060,11 +1134,11 @@ pub const CUPTI_CBID_STATE_INVALID: CUpti_CallbackIdState = 0;
 pub const CUPTI_CBID_STATE_FATAL_ERROR: CUpti_CallbackIdState = 1;
 #[doc = " Notification of non fatal errors - high impact, but recoverable\n This notification is not issued in the current release."]
 pub const CUPTI_CBID_STATE_ERROR: CUpti_CallbackIdState = 2;
-#[doc = " Notification of warnings - low impact, recoverable\n This notification is not issued in the current release."]
+#[doc = " Notification of warnings - low impact, recoverable."]
 pub const CUPTI_CBID_STATE_WARNING: CUpti_CallbackIdState = 3;
-#[doc = " Notification of warnings - low impact, recoverable\n This notification is not issued in the current release."]
+#[doc = " Notification of warnings - low impact, recoverable."]
 pub const CUPTI_CBID_STATE_SIZE: CUpti_CallbackIdState = 4;
-#[doc = " Notification of warnings - low impact, recoverable\n This notification is not issued in the current release."]
+#[doc = " Notification of warnings - low impact, recoverable."]
 pub const CUPTI_CBID_STATE_FORCE_INT: CUpti_CallbackIdState = 2147483647;
 #[doc = " \\brief Callback IDs for state domain.\n\n Callback IDs for state domain,\n CUPTI_CB_DOMAIN_STATE. This value is communicated to the\n callback function via the \\p cbid parameter."]
 pub type CUpti_CallbackIdState = ::std::os::raw::c_uint;
@@ -1238,7 +1312,7 @@ pub struct CUpti_GraphData {
     pub originalNode: CUgraphNode,
     #[doc = " Type of the \\param node"]
     pub nodeType: CUgraphNodeType,
-    #[doc = " The dependent graph node\n The size of the array is \\param numDependencies."]
+    #[doc = " The dependent graph node"]
     pub dependency: CUgraphNode,
     #[doc = " CUDA executable graph"]
     pub graphExec: CUgraphExec,
@@ -1466,11 +1540,56 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Initialize a callback subscriber with a callback function\n and user data.\n\n Initializes a callback subscriber with a callback function and\n (optionally) a pointer to user data. The returned subscriber handle\n can be used to enable and disable the callback for specific domains\n and callback IDs.\n \\note Only a single subscriber can be registered at a time. To ensure\n that no other CUPTI client interrupts the profiling session, it's the\n responsibility of all the CUPTI clients to call this function before\n starting the profling session. In case profiling session is already\n started by another CUPTI client, this function returns the error code\n CUPTI_ERROR_MULTIPLE_SUBSCRIBERS_NOT_SUPPORTED.\n Note that this function returns the same error when application is\n launched using NVIDIA tools like nvprof, Visual Profiler, Nsight Systems,\n Nsight Compute, cuda-gdb and cuda-memcheck.\n \\note This function does not enable any callbacks.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param subscriber Returns handle to initialize subscriber\n \\param callback The callback function\n \\param userdata A pointer to user data. This data will be passed to\n the callback function via the \\p userdata parameter.\n\n \\retval CUPTI_SUCCESS on success\n \\retval CUPTI_ERROR_NOT_INITIALIZED if unable to initialize CUPTI\n \\retval CUPTI_ERROR_MULTIPLE_SUBSCRIBERS_NOT_SUPPORTED if there is already a CUPTI subscriber\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p subscriber is NULL"]
+    #[doc = " \\brief Initialize a callback subscriber with a callback function\n and user data.\n\n Initializes a callback subscriber with a callback function and\n (optionally) a pointer to user data. The returned subscriber handle\n can be used to enable and disable the callback for specific domains\n and callback IDs.\n \\note Only a single subscriber can be registered at a time. To ensure\n that no other CUPTI client interrupts the profiling session, it's the\n responsibility of all the CUPTI clients to call this function before\n starting the profling session. In case profiling session is already\n started by another CUPTI client, this function returns the error code\n CUPTI_ERROR_MULTIPLE_SUBSCRIBERS_NOT_SUPPORTED.\n Note that this function returns the same error when application is\n launched using NVIDIA tools like Nsight Systems,\n Nsight Compute, cuda-gdb and cuda-memcheck.\n \\note This function does not enable any callbacks.\n \\note \\b Thread-safety: this function is thread safe.\n \\note While this API is fully supported and remains available, we recommend transitioning to the new API cuptiSubscribe_v2 moving forward.\n\n \\param subscriber Returns handle to initialize subscriber\n \\param callback The callback function\n \\param userdata A pointer to user data. This data will be passed to\n the callback function via the \\p userdata parameter.\n\n \\retval CUPTI_SUCCESS on success\n \\retval CUPTI_ERROR_NOT_INITIALIZED if unable to initialize CUPTI\n \\retval CUPTI_ERROR_MULTIPLE_SUBSCRIBERS_NOT_SUPPORTED if there is already a CUPTI subscriber,\n         or if the application is launched with NVIDIA tools like Nsight Systems, Nsight Compute, cuda-gdb and cuda-memcheck.\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p subscriber is NULL"]
     pub fn cuptiSubscribe(
         subscriber: *mut CUpti_SubscriberHandle,
         callback: CUpti_CallbackFunc,
         userdata: *mut ::std::os::raw::c_void,
+    ) -> CUptiResult;
+}
+#[doc = " \\brief Params for cuptiSubscribe_v2"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SubscriberParams {
+    #[doc = " Size of the data structure. CUPTI client should set the size of the structure.\n It will be used in CUPTI to check what fields are available in the structure.\n Used to preserve backward compatibility."]
+    pub structSize: usize,
+    #[doc = " Name given to the subscriber. The subscriber name need not include the \"CUPTI\" prefix, as the CUPTI library automatically adds it as \"CUPTI for <subscriberName>\".\n Can be NULL. An internal copy is created. Size must not exceed CUPTI_SUBSCRIBER_NAME_MAX_LEN to avoid truncation."]
+    pub subscriberName: *const ::std::os::raw::c_char,
+    #[doc = " In case of CUPTI_ERROR_MULTIPLE_SUBSCRIBERS_NOT_SUPPORTED return code, the name of the incompatible tool or the\n existing CUPTI subscriber will be written to this location. Size should be greater than or equal to CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN to avoid truncation.\n Can be NULL."]
+    pub oldSubscriberName: *mut ::std::os::raw::c_char,
+    #[doc = " Size of oldSubscriberName. Minimum size should be CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN to avoid truncation."]
+    pub oldSubscriberSize: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_SubscriberParams"][::std::mem::size_of::<CUpti_SubscriberParams>() - 32usize];
+    ["Alignment of CUpti_SubscriberParams"]
+        [::std::mem::align_of::<CUpti_SubscriberParams>() - 8usize];
+    ["Offset of field: CUpti_SubscriberParams::structSize"]
+        [::std::mem::offset_of!(CUpti_SubscriberParams, structSize) - 0usize];
+    ["Offset of field: CUpti_SubscriberParams::subscriberName"]
+        [::std::mem::offset_of!(CUpti_SubscriberParams, subscriberName) - 8usize];
+    ["Offset of field: CUpti_SubscriberParams::oldSubscriberName"]
+        [::std::mem::offset_of!(CUpti_SubscriberParams, oldSubscriberName) - 16usize];
+    ["Offset of field: CUpti_SubscriberParams::oldSubscriberSize"]
+        [::std::mem::offset_of!(CUpti_SubscriberParams, oldSubscriberSize) - 24usize];
+};
+impl Default for CUpti_SubscriberParams {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    #[doc = " \\brief Initialize a callback subscriber with a callback function\n and user data.\n\n Initializes a callback subscriber with a callback function and\n (optionally) a pointer to user data. The returned subscriber handle\n can be used to enable and disable the callback for specific domains\n and callback IDs.\n \\note Only a single subscriber can be registered at a time. To ensure\n that no other CUPTI client interrupts the profiling session, it's the\n responsibility of all the CUPTI clients to call this function before\n starting the profling session. In case profiling session is already\n started by another CUPTI client, this function returns the error code\n CUPTI_ERROR_MULTIPLE_SUBSCRIBERS_NOT_SUPPORTED.\n Note that this function returns the same error when application is\n launched using NVIDIA tools like Nsight Systems,\n Nsight Compute, cuda-gdb and cuda-memcheck.\n \\note This function does not enable any callbacks.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param subscriber Returns handle to initialize subscriber\n \\param callback The callback function\n \\param userdata A pointer to user data. This data will be passed to\n the callback function via the \\p userdata parameter.\n \\param pParams A pointer to \\ref CUpti_SubscriberParams. Can be NULL.\n\n \\retval CUPTI_SUCCESS on success\n \\retval CUPTI_ERROR_NOT_INITIALIZED if unable to initialize CUPTI\n \\retval CUPTI_ERROR_MULTIPLE_SUBSCRIBERS_NOT_SUPPORTED if there is already a CUPTI subscriber,\n         or if the application is launched with NVIDIA tools like Nsight Systems, Nsight Compute, cuda-gdb and cuda-memcheck.\n \\retval CUPTI_ERROR_INVALID_PARAMETER if:\n - \\p pParams.structSize is not filled with the size of the structure"]
+    pub fn cuptiSubscribe_v2(
+        subscriber: *mut CUpti_SubscriberHandle,
+        callback: CUpti_CallbackFunc,
+        userdata: *mut ::std::os::raw::c_void,
+        pParams: *mut CUpti_SubscriberParams,
     ) -> CUptiResult;
 }
 unsafe extern "C" {
@@ -1721,14 +1840,14 @@ impl Default for CUpti_EventGroupSets {
     }
 }
 unsafe extern "C" {
-    #[doc = " \\brief Set the event collection mode.\n\n Set the event collection mode for a \\p context.  The \\p mode\n controls the event collection behavior of all events in event\n groups created in the \\p context. This API is invalid in kernel\n replay mode.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param context The context\n \\param mode The event collection mode\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_CONTEXT\n \\retval CUPTI_ERROR_INVALID_OPERATION if called when replay mode is enabled\n \\retval CUPTI_ERROR_NOT_SUPPORTED if mode is not supported on the device"]
+    #[doc = " \\brief Set the event collection mode.\n\n Set the event collection mode for a \\p context.  The \\p mode\n controls the event collection behavior of all events in event\n groups created in the \\p context. This API is invalid in kernel\n replay mode.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param context The context\n \\param mode The event collection mode\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_CONTEXT\n \\retval CUPTI_ERROR_INVALID_OPERATION if called when replay mode is enabled\n \\retval CUPTI_ERROR_NOT_SUPPORTED if mode is not supported on the device"]
     pub fn cuptiSetEventCollectionMode(
         context: CUcontext,
         mode: CUpti_EventCollectionMode,
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Read a device attribute.\n\n Read a device attribute and return it in \\p *value.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param device The CUDA device\n \\param attrib The attribute to read\n \\param valueSize Size of buffer pointed by the value, and\n returns the number of bytes written to \\p value\n \\param value Returns the value of the attribute\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not a device attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
+    #[doc = " \\brief Read a device attribute.\n\n Read a device attribute and return it in \\p *value.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param device CUDA device\n \\param attrib The attribute to read\n \\param valueSize Size of buffer pointed by the value, and\n returns the number of bytes written to \\p value\n \\param value Returns the value of the attribute\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not a device attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
     pub fn cuptiDeviceGetAttribute(
         device: CUdevice,
         attrib: CUpti_DeviceAttribute,
@@ -1737,11 +1856,11 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get the number of domains for a device.\n\n Returns the number of domains in \\p numDomains for a device.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param device The CUDA device\n \\param numDomains Returns the number of domains\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numDomains is NULL"]
+    #[doc = " \\brief Get the number of domains for a device.\n\n Returns the number of domains in \\p numDomains for a device.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param device CUDA device\n \\param numDomains Returns the number of domains\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numDomains is NULL"]
     pub fn cuptiDeviceGetNumEventDomains(device: CUdevice, numDomains: *mut u32) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get the event domains for a device.\n\n Returns the event domains IDs in \\p domainArray for a device.  The\n size of the \\p domainArray buffer is given by \\p\n *arraySizeBytes. The size of the \\p domainArray buffer must be at\n least \\p numdomains * sizeof(CUpti_EventDomainID) or else all\n domains will not be returned. The value returned in \\p\n *arraySizeBytes contains the number of bytes returned in \\p\n domainArray.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param device The CUDA device\n \\param arraySizeBytes The size of \\p domainArray in bytes, and\n returns the number of bytes written to \\p domainArray\n \\param domainArray Returns the IDs of the event domains for the device\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p arraySizeBytes or\n \\p domainArray are NULL"]
+    #[doc = " \\brief Get the event domains for a device.\n\n Returns the event domains IDs in \\p domainArray for a device.  The\n size of the \\p domainArray buffer is given by \\p\n *arraySizeBytes. The size of the \\p domainArray buffer must be at\n least \\p numdomains * sizeof(CUpti_EventDomainID) or else all\n domains will not be returned. The value returned in \\p\n *arraySizeBytes contains the number of bytes returned in \\p\n domainArray.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param device CUDA device\n \\param arraySizeBytes The size of \\p domainArray in bytes, and\n returns the number of bytes written to \\p domainArray\n \\param domainArray Returns the IDs of the event domains for the device\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p arraySizeBytes or\n \\p domainArray are NULL"]
     pub fn cuptiDeviceEnumEventDomains(
         device: CUdevice,
         arraySizeBytes: *mut usize,
@@ -1749,7 +1868,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Read an event domain attribute.\n\n Returns an event domain attribute in \\p *value. The size of the \\p\n value buffer is given by \\p *valueSize. The value returned in \\p\n *valueSize contains the number of bytes returned in \\p value.\n\n If the attribute value is a c-string that is longer than \\p\n *valueSize, then only the first \\p *valueSize characters will be\n returned and there will be no terminating null byte.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param device The CUDA device\n \\param eventDomain ID of the event domain\n \\param attrib The event domain attribute to read\n \\param valueSize The size of the \\p value buffer in bytes, and\n returns the number of bytes written to \\p value\n \\param value Returns the attribute's value\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_EVENT_DOMAIN_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not an event domain attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
+    #[doc = " \\brief Read an event domain attribute.\n\n Returns an event domain attribute in \\p *value. The size of the \\p\n value buffer is given by \\p *valueSize. The value returned in \\p\n *valueSize contains the number of bytes returned in \\p value.\n\n If the attribute value is a c-string that is longer than \\p\n *valueSize, then only the first \\p *valueSize characters will be\n returned and there will be no terminating null byte.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param device CUDA device\n \\param eventDomain ID of the event domain\n \\param attrib The event domain attribute to read\n \\param valueSize The size of the \\p value buffer in bytes, and\n returns the number of bytes written to \\p value\n \\param value Returns the attribute's value\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_EVENT_DOMAIN_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not an event domain attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
     pub fn cuptiDeviceGetEventDomainAttribute(
         device: CUdevice,
         eventDomain: CUpti_EventDomainID,
@@ -1759,18 +1878,18 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get the number of event domains available on any device.\n\n Returns the total number of event domains available on any\n CUDA-capable device.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param numDomains Returns the number of domains\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numDomains is NULL"]
+    #[doc = " \\brief Get the number of event domains available on any device.\n\n Returns the total number of event domains available on any\n CUDA-capable device.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param numDomains Returns the number of domains\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numDomains is NULL"]
     pub fn cuptiGetNumEventDomains(numDomains: *mut u32) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get the event domains available on any device.\n\n Returns all the event domains available on any CUDA-capable device.\n Event domain IDs are returned in \\p domainArray. The size of the \\p\n domainArray buffer is given by \\p *arraySizeBytes. The size of the\n \\p domainArray buffer must be at least \\p numDomains *\n sizeof(CUpti_EventDomainID) or all domains will not be\n returned. The value returned in \\p *arraySizeBytes contains the\n number of bytes returned in \\p domainArray.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param arraySizeBytes The size of \\p domainArray in bytes, and\n returns the number of bytes written to \\p domainArray\n \\param domainArray Returns all the event domains\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p arraySizeBytes or\n \\p domainArray are NULL"]
+    #[doc = " \\brief Get the event domains available on any device.\n\n Returns all the event domains available on any CUDA-capable device.\n Event domain IDs are returned in \\p domainArray. The size of the \\p\n domainArray buffer is given by \\p *arraySizeBytes. The size of the\n \\p domainArray buffer must be at least \\p numDomains *\n sizeof(CUpti_EventDomainID) or all domains will not be\n returned. The value returned in \\p *arraySizeBytes contains the\n number of bytes returned in \\p domainArray.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param arraySizeBytes The size of \\p domainArray in bytes, and\n returns the number of bytes written to \\p domainArray\n \\param domainArray Returns all the event domains\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p arraySizeBytes or\n \\p domainArray are NULL"]
     pub fn cuptiEnumEventDomains(
         arraySizeBytes: *mut usize,
         domainArray: *mut CUpti_EventDomainID,
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Read an event domain attribute.\n\n Returns an event domain attribute in \\p *value. The size of the \\p\n value buffer is given by \\p *valueSize. The value returned in \\p\n *valueSize contains the number of bytes returned in \\p value.\n\n If the attribute value is a c-string that is longer than \\p\n *valueSize, then only the first \\p *valueSize characters will be\n returned and there will be no terminating null byte.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventDomain ID of the event domain\n \\param attrib The event domain attribute to read\n \\param valueSize The size of the \\p value buffer in bytes, and\n returns the number of bytes written to \\p value\n \\param value Returns the attribute's value\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_DOMAIN_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not an event domain attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
+    #[doc = " \\brief Read an event domain attribute.\n\n Returns an event domain attribute in \\p *value. The size of the \\p\n value buffer is given by \\p *valueSize. The value returned in \\p\n *valueSize contains the number of bytes returned in \\p value.\n\n If the attribute value is a c-string that is longer than \\p\n *valueSize, then only the first \\p *valueSize characters will be\n returned and there will be no terminating null byte.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventDomain ID of the event domain\n \\param attrib The event domain attribute to read\n \\param valueSize The size of the \\p value buffer in bytes, and\n returns the number of bytes written to \\p value\n \\param value Returns the attribute's value\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_DOMAIN_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not an event domain attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
     pub fn cuptiEventDomainGetAttribute(
         eventDomain: CUpti_EventDomainID,
         attrib: CUpti_EventDomainAttribute,
@@ -1779,14 +1898,14 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get number of events in a domain.\n\n Returns the number of events in \\p numEvents for a domain.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventDomain ID of the event domain\n \\param numEvents Returns the number of events in the domain\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_DOMAIN_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numEvents is NULL"]
+    #[doc = " \\brief Get number of events in a domain.\n\n Returns the number of events in \\p numEvents for a domain.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventDomain ID of the event domain\n \\param numEvents Returns the number of events in the domain\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_DOMAIN_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numEvents is NULL"]
     pub fn cuptiEventDomainGetNumEvents(
         eventDomain: CUpti_EventDomainID,
         numEvents: *mut u32,
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get the events in a domain.\n\n Returns the event IDs in \\p eventArray for a domain.  The size of\n the \\p eventArray buffer is given by \\p *arraySizeBytes. The size\n of the \\p eventArray buffer must be at least \\p numdomainevents *\n sizeof(CUpti_EventID) or else all events will not be returned. The\n value returned in \\p *arraySizeBytes contains the number of bytes\n returned in \\p eventArray.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventDomain ID of the event domain\n \\param arraySizeBytes The size of \\p eventArray in bytes, and\n returns the number of bytes written to \\p eventArray\n \\param eventArray Returns the IDs of the events in the domain\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_DOMAIN_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p arraySizeBytes or \\p\n eventArray are NULL"]
+    #[doc = " \\brief Get the events in a domain.\n\n Returns the event IDs in \\p eventArray for a domain.  The size of\n the \\p eventArray buffer is given by \\p *arraySizeBytes. The size\n of the \\p eventArray buffer must be at least \\p numdomainevents *\n sizeof(CUpti_EventID) or else all events will not be returned. The\n value returned in \\p *arraySizeBytes contains the number of bytes\n returned in \\p eventArray.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventDomain ID of the event domain\n \\param arraySizeBytes The size of \\p eventArray in bytes, and\n returns the number of bytes written to \\p eventArray\n \\param eventArray Returns the IDs of the events in the domain\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_DOMAIN_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p arraySizeBytes or \\p\n eventArray are NULL"]
     pub fn cuptiEventDomainEnumEvents(
         eventDomain: CUpti_EventDomainID,
         arraySizeBytes: *mut usize,
@@ -1794,7 +1913,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get an event attribute.\n\n Returns an event attribute in \\p *value. The size of the \\p\n value buffer is given by \\p *valueSize. The value returned in \\p\n *valueSize contains the number of bytes returned in \\p value.\n\n If the attribute value is a c-string that is longer than \\p\n *valueSize, then only the first \\p *valueSize characters will be\n returned and there will be no terminating null byte.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param event ID of the event\n \\param attrib The event attribute to read\n \\param valueSize The size of the \\p value buffer in bytes, and\n returns the number of bytes written to \\p value\n \\param value Returns the attribute's value\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not an event attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
+    #[doc = " \\brief Get an event attribute.\n\n Returns an event attribute in \\p *value. The size of the \\p\n value buffer is given by \\p *valueSize. The value returned in \\p\n *valueSize contains the number of bytes returned in \\p value.\n\n If the attribute value is a c-string that is longer than \\p\n *valueSize, then only the first \\p *valueSize characters will be\n returned and there will be no terminating null byte.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param event ID of the event\n \\param attrib The event attribute to read\n \\param valueSize The size of the \\p value buffer in bytes, and\n returns the number of bytes written to \\p value\n \\param value Returns the attribute's value\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not an event attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
     pub fn cuptiEventGetAttribute(
         event: CUpti_EventID,
         attrib: CUpti_EventAttribute,
@@ -1803,7 +1922,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Find an event by name.\n\n Find an event by name and return the event ID in \\p *event.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param device The CUDA device\n \\param eventName The name of the event to find\n \\param event Returns the ID of the found event or undefined if\n unable to find the event\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_EVENT_NAME if unable to find an event\n with name \\p eventName. In this case \\p *event is undefined\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventName or \\p event are NULL"]
+    #[doc = " \\brief Find an event by name.\n\n Find an event by name and return the event ID in \\p *event.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param device CUDA device\n \\param eventName The name of the event to find\n \\param event Returns the ID of the found event or undefined if\n unable to find the event\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_EVENT_NAME if unable to find an event\n with name \\p eventName. In this case \\p *event is undefined\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventName or \\p event are NULL"]
     pub fn cuptiEventGetIdFromName(
         device: CUdevice,
         eventName: *const ::std::os::raw::c_char,
@@ -1811,7 +1930,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Create a new event group for a context.\n\n Creates a new event group for \\p context and returns the new group\n in \\p *eventGroup.\n \\note \\p flags are reserved for future use and should be set to zero.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param context The context for the event group\n \\param eventGroup Returns the new event group\n \\param flags Reserved - must be zero\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_CONTEXT\n \\retval CUPTI_ERROR_OUT_OF_MEMORY\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
+    #[doc = " \\brief Create a new event group for a context.\n\n Creates a new event group for \\p context and returns the new group\n in \\p *eventGroup.\n \\note \\p flags are reserved for future use and should be set to zero.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param context The context for the event group\n \\param eventGroup Returns the new event group\n \\param flags Reserved - must be zero\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_CONTEXT\n \\retval CUPTI_ERROR_OUT_OF_MEMORY\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
     pub fn cuptiEventGroupCreate(
         context: CUcontext,
         eventGroup: *mut CUpti_EventGroup,
@@ -1819,11 +1938,11 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Destroy an event group.\n\n Destroy an \\p eventGroup and free its resources. An event group\n cannot be destroyed if it is enabled.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventGroup The event group to destroy\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_OPERATION if the event group is enabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if eventGroup is NULL"]
+    #[doc = " \\brief Destroy an event group.\n\n Destroy an \\p eventGroup and free its resources. An event group\n cannot be destroyed if it is enabled.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group to destroy\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_OPERATION if the event group is enabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if eventGroup is NULL"]
     pub fn cuptiEventGroupDestroy(eventGroup: CUpti_EventGroup) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Read an event group attribute.\n\n Read an event group attribute and return it in \\p *value.\n \\note \\b Thread-safety: this function is thread safe but client\n must guard against simultaneous destruction or modification of \\p\n eventGroup (for example, client must guard against simultaneous\n calls to \\ref cuptiEventGroupDestroy, \\ref cuptiEventGroupAddEvent,\n etc.), and must guard against simultaneous destruction of the\n context in which \\p eventGroup was created (for example, client\n must guard against simultaneous calls to cudaDeviceReset,\n cuCtxDestroy, etc.).\n\n \\param eventGroup The event group\n \\param attrib The attribute to read\n \\param valueSize Size of buffer pointed by the value, and\n returns the number of bytes written to \\p value\n \\param value Returns the value of the attribute\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not an eventgroup attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
+    #[doc = " \\brief Read an event group attribute.\n\n Read an event group attribute and return it in \\p *value.\n \\note \\b Thread-safety: this function is thread safe but client\n must guard against simultaneous destruction or modification of \\p\n eventGroup (for example, client must guard against simultaneous\n calls to \\ref cuptiEventGroupDestroy, \\ref cuptiEventGroupAddEvent,\n etc.), and must guard against simultaneous destruction of the\n context in which \\p eventGroup was created (for example, client\n must guard against simultaneous calls to cudaDeviceReset,\n cuCtxDestroy, etc.).\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group\n \\param attrib The attribute to read\n \\param valueSize Size of buffer pointed by the value, and\n returns the number of bytes written to \\p value\n \\param value Returns the value of the attribute\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not an eventgroup attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
     pub fn cuptiEventGroupGetAttribute(
         eventGroup: CUpti_EventGroup,
         attrib: CUpti_EventGroupAttribute,
@@ -1832,7 +1951,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Write an event group attribute.\n\n Write an event group attribute.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventGroup The event group\n \\param attrib The attribute to write\n \\param valueSize The size, in bytes, of the value\n \\param value The attribute value to write\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not an event group attribute, or if\n \\p attrib is not a writable attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT Indicates that\n the \\p value buffer is too small to hold the attribute value."]
+    #[doc = " \\brief Write an event group attribute.\n\n Write an event group attribute.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group\n \\param attrib The attribute to write\n \\param valueSize The size, in bytes, of the value\n \\param value The attribute value to write\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not an event group attribute, or if\n \\p attrib is not a writable attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT Indicates that\n the \\p value buffer is too small to hold the attribute value."]
     pub fn cuptiEventGroupSetAttribute(
         eventGroup: CUpti_EventGroup,
         attrib: CUpti_EventGroupAttribute,
@@ -1841,37 +1960,37 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Add an event to an event group.\n\n Add an event to an event group. The event add can fail for a number of reasons:\n \\li The event group is enabled\n \\li The event does not belong to the same event domain as the\n events that are already in the event group\n \\li Device limitations on the events that can belong to the same group\n \\li The event group is full\n\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventGroup The event group\n \\param event The event to add to the group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_ID\n \\retval CUPTI_ERROR_OUT_OF_MEMORY\n \\retval CUPTI_ERROR_INVALID_OPERATION if \\p eventGroup is enabled\n \\retval CUPTI_ERROR_NOT_COMPATIBLE if \\p event belongs to a\n different event domain than the events already in \\p eventGroup, or\n if a device limitation prevents \\p event from being collected at\n the same time as the events already in \\p eventGroup\n \\retval CUPTI_ERROR_MAX_LIMIT_REACHED if \\p eventGroup is full\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
+    #[doc = " \\brief Add an event to an event group.\n\n Add an event to an event group. The event add can fail for a number of reasons:\n \\li The event group is enabled\n \\li The event does not belong to the same event domain as the\n events that are already in the event group\n \\li Device limitations on the events that can belong to the same group\n \\li The event group is full\n\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group\n \\param event The event to add to the group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_ID\n \\retval CUPTI_ERROR_OUT_OF_MEMORY\n \\retval CUPTI_ERROR_INVALID_OPERATION if \\p eventGroup is enabled\n \\retval CUPTI_ERROR_NOT_COMPATIBLE if \\p event belongs to a\n different event domain than the events already in \\p eventGroup, or\n if a device limitation prevents \\p event from being collected at\n the same time as the events already in \\p eventGroup\n \\retval CUPTI_ERROR_MAX_LIMIT_REACHED if \\p eventGroup is full\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
     pub fn cuptiEventGroupAddEvent(
         eventGroup: CUpti_EventGroup,
         event: CUpti_EventID,
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Remove an event from an event group.\n\n Remove \\p event from the an event group. The event cannot be\n removed if the event group is enabled.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventGroup The event group\n \\param event The event to remove from the group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_ID\n \\retval CUPTI_ERROR_INVALID_OPERATION if \\p eventGroup is enabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
+    #[doc = " \\brief Remove an event from an event group.\n\n Remove \\p event from the an event group. The event cannot be\n removed if the event group is enabled.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group\n \\param event The event to remove from the group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_ID\n \\retval CUPTI_ERROR_INVALID_OPERATION if \\p eventGroup is enabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
     pub fn cuptiEventGroupRemoveEvent(
         eventGroup: CUpti_EventGroup,
         event: CUpti_EventID,
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Remove all events from an event group.\n\n Remove all events from an event group. Events cannot be removed if\n the event group is enabled.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventGroup The event group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_OPERATION if \\p eventGroup is enabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
+    #[doc = " \\brief Remove all events from an event group.\n\n Remove all events from an event group. Events cannot be removed if\n the event group is enabled.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_OPERATION if \\p eventGroup is enabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
     pub fn cuptiEventGroupRemoveAllEvents(eventGroup: CUpti_EventGroup) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Zero all the event counts in an event group.\n\n Zero all the event counts in an event group.\n \\note \\b Thread-safety: this function is thread safe but client\n must guard against simultaneous destruction or modification of \\p\n eventGroup (for example, client must guard against simultaneous\n calls to \\ref cuptiEventGroupDestroy, \\ref cuptiEventGroupAddEvent,\n etc.), and must guard against simultaneous destruction of the\n context in which \\p eventGroup was created (for example, client\n must guard against simultaneous calls to cudaDeviceReset,\n cuCtxDestroy, etc.).\n\n \\param eventGroup The event group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
+    #[doc = " \\brief Zero all the event counts in an event group.\n\n Zero all the event counts in an event group.\n \\note \\b Thread-safety: this function is thread safe but client\n must guard against simultaneous destruction or modification of \\p\n eventGroup (for example, client must guard against simultaneous\n calls to \\ref cuptiEventGroupDestroy, \\ref cuptiEventGroupAddEvent,\n etc.), and must guard against simultaneous destruction of the\n context in which \\p eventGroup was created (for example, client\n must guard against simultaneous calls to cudaDeviceReset,\n cuCtxDestroy, etc.).\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
     pub fn cuptiEventGroupResetAllEvents(eventGroup: CUpti_EventGroup) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Enable an event group.\n\n Enable an event group. Enabling an event group zeros the value of\n all the events in the group and then starts collection of those\n events.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventGroup The event group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_NOT_READY if \\p eventGroup does not contain any events\n \\retval CUPTI_ERROR_NOT_COMPATIBLE if \\p eventGroup cannot be\n enabled due to other already enabled event groups\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL\n \\retval CUPTI_ERROR_HARDWARE_BUSY if another client is profiling\n and hardware is busy"]
+    #[doc = " \\brief Enable an event group.\n\n Enable an event group. Enabling an event group zeros the value of\n all the events in the group and then starts collection of those\n events.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_NOT_READY if \\p eventGroup does not contain any events\n \\retval CUPTI_ERROR_NOT_COMPATIBLE if \\p eventGroup cannot be\n enabled due to other already enabled event groups\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL\n \\retval CUPTI_ERROR_HARDWARE_BUSY if another client is profiling\n and hardware is busy"]
     pub fn cuptiEventGroupEnable(eventGroup: CUpti_EventGroup) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Disable an event group.\n\n Disable an event group. Disabling an event group stops collection\n of events contained in the group.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventGroup The event group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
+    #[doc = " \\brief Disable an event group.\n\n Disable an event group. Disabling an event group stops collection\n of events contained in the group.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup is NULL"]
     pub fn cuptiEventGroupDisable(eventGroup: CUpti_EventGroup) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Read the value for an event in an event group.\n\n Read the value for an event in an event group. The event value is\n returned in the \\p eventValueBuffer buffer. \\p\n eventValueBufferSizeBytes indicates the size of the \\p\n eventValueBuffer buffer. The buffer must be at least sizeof(uint64)\n if ::CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES is not set\n on the group containing the event.  The buffer must be at least\n (sizeof(uint64) * number of domain instances) if\n ::CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES is set on the\n group.\n\n If any instance of an event counter overflows, the value returned\n for that event instance will be ::CUPTI_EVENT_OVERFLOW.\n\n The only allowed value for \\p flags is ::CUPTI_EVENT_READ_FLAG_NONE.\n\n Reading an event from a disabled event group is not allowed. After\n being read, an event's value is reset to zero.\n \\note \\b Thread-safety: this function is thread safe but client\n must guard against simultaneous destruction or modification of \\p\n eventGroup (for example, client must guard against simultaneous\n calls to \\ref cuptiEventGroupDestroy, \\ref cuptiEventGroupAddEvent,\n etc.), and must guard against simultaneous destruction of the\n context in which \\p eventGroup was created (for example, client\n must guard against simultaneous calls to cudaDeviceReset,\n cuCtxDestroy, etc.). If \\ref cuptiEventGroupResetAllEvents is\n called simultaneously with this function, then returned event\n values are undefined.\n\n \\param eventGroup The event group\n \\param flags Flags controlling the reading mode\n \\param event The event to read\n \\param eventValueBufferSizeBytes The size of \\p eventValueBuffer\n in bytes, and returns the number of bytes written to \\p\n eventValueBuffer\n \\param eventValueBuffer Returns the event value(s)\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_ID\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_INVALID_OPERATION if \\p eventGroup is disabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup, \\p\n eventValueBufferSizeBytes or \\p eventValueBuffer is NULL\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT if size of \\p eventValueBuffer\n is not sufficient"]
+    #[doc = " \\brief Read the value for an event in an event group.\n\n Read the value for an event in an event group. The event value is\n returned in the \\p eventValueBuffer buffer. \\p\n eventValueBufferSizeBytes indicates the size of the \\p\n eventValueBuffer buffer. The buffer must be at least sizeof(uint64)\n if ::CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES is not set\n on the group containing the event.  The buffer must be at least\n (sizeof(uint64) * number of domain instances) if\n ::CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES is set on the\n group.\n\n If any instance of an event counter overflows, the value returned\n for that event instance will be ::CUPTI_EVENT_OVERFLOW.\n\n The only allowed value for \\p flags is ::CUPTI_EVENT_READ_FLAG_NONE.\n\n Reading an event from a disabled event group is not allowed. After\n being read, an event's value is reset to zero.\n \\note \\b Thread-safety: this function is thread safe but client\n must guard against simultaneous destruction or modification of \\p\n eventGroup (for example, client must guard against simultaneous\n calls to \\ref cuptiEventGroupDestroy, \\ref cuptiEventGroupAddEvent,\n etc.), and must guard against simultaneous destruction of the\n context in which \\p eventGroup was created (for example, client\n must guard against simultaneous calls to cudaDeviceReset,\n cuCtxDestroy, etc.). If \\ref cuptiEventGroupResetAllEvents is\n called simultaneously with this function, then returned event\n values are undefined.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group\n \\param flags Flags controlling the reading mode\n \\param event The event to read\n \\param eventValueBufferSizeBytes The size of \\p eventValueBuffer\n in bytes, and returns the number of bytes written to \\p\n eventValueBuffer\n \\param eventValueBuffer Returns the event value(s)\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_EVENT_ID\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_INVALID_OPERATION if \\p eventGroup is disabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup, \\p\n eventValueBufferSizeBytes or \\p eventValueBuffer is NULL\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT if size of \\p eventValueBuffer\n is not sufficient"]
     pub fn cuptiEventGroupReadEvent(
         eventGroup: CUpti_EventGroup,
         flags: CUpti_ReadEventFlags,
@@ -1881,7 +2000,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Read the values for all the events in an event group.\n\n Read the values for all the events in an event group. The event\n values are returned in the \\p eventValueBuffer buffer. \\p\n eventValueBufferSizeBytes indicates the size of \\p\n eventValueBuffer.  The buffer must be at least (sizeof(uint64) *\n number of events in group) if\n ::CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES is not set on\n the group containing the events.  The buffer must be at least\n (sizeof(uint64) * number of domain instances * number of events in\n group) if ::CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES is\n set on the group.\n\n The data format returned in \\p eventValueBuffer is:\n    - domain instance 0: event0 event1 ... eventN\n    - domain instance 1: event0 event1 ... eventN\n    - ...\n    - domain instance M: event0 event1 ... eventN\n\n The event order in \\p eventValueBuffer is returned in \\p\n eventIdArray. The size of \\p eventIdArray is specified in \\p\n eventIdArraySizeBytes. The size should be at least\n (sizeof(CUpti_EventID) * number of events in group).\n\n If any instance of any event counter overflows, the value returned\n for that event instance will be ::CUPTI_EVENT_OVERFLOW.\n\n The only allowed value for \\p flags is ::CUPTI_EVENT_READ_FLAG_NONE.\n\n Reading events from a disabled event group is not allowed. After\n being read, an event's value is reset to zero.\n \\note \\b Thread-safety: this function is thread safe but client\n must guard against simultaneous destruction or modification of \\p\n eventGroup (for example, client must guard against simultaneous\n calls to \\ref cuptiEventGroupDestroy, \\ref cuptiEventGroupAddEvent,\n etc.), and must guard against simultaneous destruction of the\n context in which \\p eventGroup was created (for example, client\n must guard against simultaneous calls to cudaDeviceReset,\n cuCtxDestroy, etc.). If \\ref cuptiEventGroupResetAllEvents is\n called simultaneously with this function, then returned event\n values are undefined.\n\n \\param eventGroup The event group\n \\param flags Flags controlling the reading mode\n \\param eventValueBufferSizeBytes The size of \\p eventValueBuffer in\n bytes, and returns the number of bytes written to \\p\n eventValueBuffer\n \\param eventValueBuffer Returns the event values\n \\param eventIdArraySizeBytes The size of \\p eventIdArray in bytes,\n and returns the number of bytes written to \\p eventIdArray\n \\param eventIdArray Returns the IDs of the events in the same order\n as the values return in eventValueBuffer.\n \\param numEventIdsRead Returns the number of event IDs returned\n in \\p eventIdArray\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_INVALID_OPERATION if \\p eventGroup is disabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup, \\p\n eventValueBufferSizeBytes, \\p eventValueBuffer, \\p\n eventIdArraySizeBytes, \\p eventIdArray or \\p numEventIdsRead is\n NULL\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT if size of \\p eventValueBuffer\n or \\p eventIdArray is not sufficient"]
+    #[doc = " \\brief Read the values for all the events in an event group.\n\n Read the values for all the events in an event group. The event\n values are returned in the \\p eventValueBuffer buffer. \\p\n eventValueBufferSizeBytes indicates the size of \\p\n eventValueBuffer.  The buffer must be at least (sizeof(uint64) *\n number of events in group) if\n ::CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES is not set on\n the group containing the events.  The buffer must be at least\n (sizeof(uint64) * number of domain instances * number of events in\n group) if ::CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES is\n set on the group.\n\n The data format returned in \\p eventValueBuffer is:\n    - domain instance 0: event0 event1 ... eventN\n    - domain instance 1: event0 event1 ... eventN\n    - ...\n    - domain instance M: event0 event1 ... eventN\n\n The event order in \\p eventValueBuffer is returned in \\p\n eventIdArray. The size of \\p eventIdArray is specified in \\p\n eventIdArraySizeBytes. The size should be at least\n (sizeof(CUpti_EventID) * number of events in group).\n\n If any instance of any event counter overflows, the value returned\n for that event instance will be ::CUPTI_EVENT_OVERFLOW.\n\n The only allowed value for \\p flags is ::CUPTI_EVENT_READ_FLAG_NONE.\n\n Reading events from a disabled event group is not allowed. After\n being read, an event's value is reset to zero.\n \\note \\b Thread-safety: this function is thread safe but client\n must guard against simultaneous destruction or modification of \\p\n eventGroup (for example, client must guard against simultaneous\n calls to \\ref cuptiEventGroupDestroy, \\ref cuptiEventGroupAddEvent,\n etc.), and must guard against simultaneous destruction of the\n context in which \\p eventGroup was created (for example, client\n must guard against simultaneous calls to cudaDeviceReset,\n cuCtxDestroy, etc.). If \\ref cuptiEventGroupResetAllEvents is\n called simultaneously with this function, then returned event\n values are undefined.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroup The event group\n \\param flags Flags controlling the reading mode\n \\param eventValueBufferSizeBytes The size of \\p eventValueBuffer in\n bytes, and returns the number of bytes written to \\p\n eventValueBuffer\n \\param eventValueBuffer Returns the event values\n \\param eventIdArraySizeBytes The size of \\p eventIdArray in bytes,\n and returns the number of bytes written to \\p eventIdArray\n \\param eventIdArray Returns the IDs of the events in the same order\n as the values return in eventValueBuffer.\n \\param numEventIdsRead Returns the number of event IDs returned\n in \\p eventIdArray\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_INVALID_OPERATION if \\p eventGroup is disabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroup, \\p\n eventValueBufferSizeBytes, \\p eventValueBuffer, \\p\n eventIdArraySizeBytes, \\p eventIdArray or \\p numEventIdsRead is\n NULL\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT if size of \\p eventValueBuffer\n or \\p eventIdArray is not sufficient"]
     pub fn cuptiEventGroupReadAllEvents(
         eventGroup: CUpti_EventGroup,
         flags: CUpti_ReadEventFlags,
@@ -1893,7 +2012,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief For a set of events, get the grouping that indicates the\n number of passes and the event groups necessary to collect the\n events.\n\n The number of events that can be collected simultaneously varies by\n device and by the type of the events. When events can be collected\n simultaneously, they may need to be grouped into multiple event\n groups because they are from different event domains. This function\n takes a set of events and determines how many passes are required\n to collect all those events, and which events can be collected\n simultaneously in each pass.\n\n The CUpti_EventGroupSets returned in \\p eventGroupPasses indicates\n how many passes are required to collect the events with the \\p\n numSets field. Within each event group set, the \\p sets array\n indicates the event groups that should be collected on each pass.\n \\note \\b Thread-safety: this function is thread safe, but client\n must guard against another thread simultaneously destroying \\p\n context.\n\n \\param context The context for event collection\n \\param eventIdArraySizeBytes Size of \\p eventIdArray in bytes\n \\param eventIdArray Array of event IDs that need to be grouped\n \\param eventGroupPasses Returns a CUpti_EventGroupSets object that\n indicates the number of passes required to collect the events and\n the events to collect on each pass\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_CONTEXT\n \\retval CUPTI_ERROR_INVALID_EVENT_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventIdArray or\n \\p eventGroupPasses is NULL"]
+    #[doc = " \\brief For a set of events, get the grouping that indicates the\n number of passes and the event groups necessary to collect the\n events.\n\n The number of events that can be collected simultaneously varies by\n device and by the type of the events. When events can be collected\n simultaneously, they may need to be grouped into multiple event\n groups because they are from different event domains. This function\n takes a set of events and determines how many passes are required\n to collect all those events, and which events can be collected\n simultaneously in each pass.\n\n The CUpti_EventGroupSets returned in \\p eventGroupPasses indicates\n how many passes are required to collect the events with the \\p\n numSets field. Within each event group set, the \\p sets array\n indicates the event groups that should be collected on each pass.\n \\note \\b Thread-safety: this function is thread safe, but client\n must guard against another thread simultaneously destroying \\p\n context.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param context The context for event collection\n \\param eventIdArraySizeBytes Size of \\p eventIdArray in bytes\n \\param eventIdArray Array of event IDs that need to be grouped\n \\param eventGroupPasses Returns a CUpti_EventGroupSets object that\n indicates the number of passes required to collect the events and\n the events to collect on each pass\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_CONTEXT\n \\retval CUPTI_ERROR_INVALID_EVENT_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventIdArray or\n \\p eventGroupPasses is NULL"]
     pub fn cuptiEventGroupSetsCreate(
         context: CUcontext,
         eventIdArraySizeBytes: usize,
@@ -1902,26 +2021,26 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Destroy a event group sets object.\n\n Destroy a CUpti_EventGroupSets object.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventGroupSets The object to destroy\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_OPERATION if any of the event groups\n contained in the sets is enabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroupSets is NULL"]
+    #[doc = " \\brief Destroy a event group sets object.\n\n Destroy a CUpti_EventGroupSets object.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroupSets The object to destroy\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_OPERATION if any of the event groups\n contained in the sets is enabled\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroupSets is NULL"]
     pub fn cuptiEventGroupSetsDestroy(eventGroupSets: *mut CUpti_EventGroupSets) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Enable an event group set.\n\n Enable a set of event groups. Enabling a set of event groups zeros the value of\n all the events in all the groups and then starts collection of those events.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param eventGroupSet The pointer to the event group set\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_NOT_READY if \\p eventGroup does not contain any events\n \\retval CUPTI_ERROR_NOT_COMPATIBLE if \\p eventGroup cannot be\n enabled due to other already enabled event groups\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroupSet is NULL\n \\retval CUPTI_ERROR_HARDWARE_BUSY if other client is profiling and hardware is\n busy"]
+    #[doc = " \\brief Enable an event group set.\n\n Enable a set of event groups. Enabling a set of event groups zeros the value of\n all the events in all the groups and then starts collection of those events.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroupSet The pointer to the event group set\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_NOT_READY if \\p eventGroup does not contain any events\n \\retval CUPTI_ERROR_NOT_COMPATIBLE if \\p eventGroup cannot be\n enabled due to other already enabled event groups\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroupSet is NULL\n \\retval CUPTI_ERROR_HARDWARE_BUSY if other client is profiling and hardware is\n busy"]
     pub fn cuptiEventGroupSetEnable(eventGroupSet: *mut CUpti_EventGroupSet) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Disable an event group set.\n\n Disable a set of event groups. Disabling a set of event groups\n stops collection of events contained in the groups.\n \\note \\b Thread-safety: this function is thread safe.\n \\note \\b If this call fails, some of the event groups in the set may be disabled\n and other event groups may remain enabled.\n\n \\param eventGroupSet The pointer to the event group set\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroupSet is NULL"]
+    #[doc = " \\brief Disable an event group set.\n\n Disable a set of event groups. Disabling a set of event groups\n stops collection of events contained in the groups.\n \\note \\b Thread-safety: this function is thread safe.\n \\note \\b If this call fails, some of the event groups in the set may be disabled\n and other event groups may remain enabled.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param eventGroupSet The pointer to the event group set\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_HARDWARE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventGroupSet is NULL"]
     pub fn cuptiEventGroupSetDisable(eventGroupSet: *mut CUpti_EventGroupSet) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Enable kernel replay mode.\n\n Set profiling mode for the context to replay mode. In this mode,\n any number of events can be collected in one run of the kernel. The\n event collection mode will automatically switch to\n CUPTI_EVENT_COLLECTION_MODE_KERNEL.  In this mode, \\ref\n cuptiSetEventCollectionMode will return\n CUPTI_ERROR_INVALID_OPERATION.\n \\note \\b Kernels might take longer to run if many events are enabled.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param context The context\n \\retval CUPTI_SUCCESS"]
+    #[doc = " \\brief Enable kernel replay mode.\n\n Set profiling mode for the context to replay mode. In this mode,\n any number of events can be collected in one run of the kernel. The\n event collection mode will automatically switch to\n CUPTI_EVENT_COLLECTION_MODE_KERNEL.  In this mode, \\ref\n cuptiSetEventCollectionMode will return\n CUPTI_ERROR_INVALID_OPERATION.\n \\note \\b Kernels might take longer to run if many events are enabled.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param context The context\n \\retval CUPTI_SUCCESS"]
     pub fn cuptiEnableKernelReplayMode(context: CUcontext) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Disable kernel replay mode.\n\n Set profiling mode for the context to non-replay (default)\n mode. Event collection mode will be set to\n CUPTI_EVENT_COLLECTION_MODE_KERNEL.  All previously enabled\n event groups and event group sets will be disabled.\n \\note \\b Thread-safety: this function is thread safe.\n\n \\param context The context\n \\retval CUPTI_SUCCESS"]
+    #[doc = " \\brief Disable kernel replay mode.\n\n Set profiling mode for the context to non-replay (default)\n mode. Event collection mode will be set to\n CUPTI_EVENT_COLLECTION_MODE_KERNEL.  All previously enabled\n event groups and event group sets will be disabled.\n \\note \\b Thread-safety: this function is thread safe.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param context The context\n \\retval CUPTI_SUCCESS"]
     pub fn cuptiDisableKernelReplayMode(context: CUcontext) -> CUptiResult;
 }
-#[doc = " \\brief Function type for getting updates on kernel replay.\n\n \\param kernelName The mangled kernel name\n \\param numReplaysDone Number of replays done so far\n \\param customData Pointer of any custom data passed in when subscribing"]
+#[doc = " \\brief Function type for getting updates on kernel replay.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param kernelName The mangled kernel name\n \\param numReplaysDone Number of replays done so far\n \\param customData Pointer of any custom data passed in when subscribing"]
 pub type CUpti_KernelReplayUpdateFunc = ::std::option::Option<
     unsafe extern "C" fn(
         kernelName: *const ::std::os::raw::c_char,
@@ -1930,7 +2049,7 @@ pub type CUpti_KernelReplayUpdateFunc = ::std::option::Option<
     ),
 >;
 unsafe extern "C" {
-    #[doc = " \\brief Subscribe to kernel replay updates.\n\n When subscribed, the function pointer passed in will be called each time a\n kernel run is finished during kernel replay. Previously subscribed function\n pointer will be replaced. Pass in NULL as the function pointer unsubscribes\n the update.\n\n \\param updateFunc The update function pointer\n \\param customData Pointer to any custom data\n \\retval CUPTI_SUCCESS"]
+    #[doc = " \\brief Subscribe to kernel replay updates.\n\n When subscribed, the function pointer passed in will be called each time a\n kernel run is finished during kernel replay. Previously subscribed function\n pointer will be replaced. Pass in NULL as the function pointer unsubscribes\n the update.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param updateFunc The update function pointer\n \\param customData Pointer to any custom data\n \\retval CUPTI_SUCCESS"]
     pub fn cuptiKernelReplaySubscribeUpdate(
         updateFunc: CUpti_KernelReplayUpdateFunc,
         customData: *mut ::std::os::raw::c_void,
@@ -1976,7 +2095,9 @@ pub const CUPTI_METRIC_VALUE_KIND_THROUGHPUT: CUpti_MetricValueKind = 3;
 pub const CUPTI_METRIC_VALUE_KIND_INT64: CUpti_MetricValueKind = 4;
 #[doc = " The metric value is a utilization level, as represented by\n CUpti_MetricValueUtilizationLevel."]
 pub const CUPTI_METRIC_VALUE_KIND_UTILIZATION_LEVEL: CUpti_MetricValueKind = 5;
-#[doc = " The metric value is a utilization level, as represented by\n CUpti_MetricValueUtilizationLevel."]
+#[doc = " The metric value is a pointer to a NVTX extended payload.\n nvtxPayloadData_t is the structure that contains the payload data."]
+pub const CUPTI_METRIC_VALUE_KIND_NVTX_EXTENDED_PAYLOAD: CUpti_MetricValueKind = 6;
+#[doc = " The metric value is a pointer to a NVTX extended payload.\n nvtxPayloadData_t is the structure that contains the payload data."]
 pub const CUPTI_METRIC_VALUE_KIND_FORCE_INT: CUpti_MetricValueKind = 2147483647;
 #[doc = " \\brief Kinds of metric values.\n\n Metric values can be one of several different kinds. Corresponding\n to each kind is a member of the CUpti_MetricValue union. The metric\n value returned by \\ref cuptiMetricGetValue should be accessed using\n the appropriate member of that union based on its value kind."]
 pub type CUpti_MetricValueKind = ::std::os::raw::c_uint;
@@ -2014,6 +2135,8 @@ pub union CUpti_MetricValue {
     pub metricValuePercent: f64,
     pub metricValueThroughput: u64,
     pub metricValueUtilizationLevel: CUpti_MetricValueUtilizationLevel,
+    #[doc = " Value for CUPTI_METRIC_VALUE_KIND_NVTX_EXTENDED_PAYLOAD."]
+    pub metricValueNvtxExtendedPayload: u64,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
@@ -2031,6 +2154,8 @@ const _: () = {
         [::std::mem::offset_of!(CUpti_MetricValue, metricValueThroughput) - 0usize];
     ["Offset of field: CUpti_MetricValue::metricValueUtilizationLevel"]
         [::std::mem::offset_of!(CUpti_MetricValue, metricValueUtilizationLevel) - 0usize];
+    ["Offset of field: CUpti_MetricValue::metricValueNvtxExtendedPayload"]
+        [::std::mem::offset_of!(CUpti_MetricValue, metricValueNvtxExtendedPayload) - 0usize];
 };
 impl Default for CUpti_MetricValue {
     fn default() -> Self {
@@ -2071,22 +2196,22 @@ pub const CUPTI_METRIC_PROPERTY_GPU_CPU_NVLINK_BANDWIDTH: CUpti_MetricPropertyID
 #[doc = " \\brief Metric device properties.\n\n Metric device properties describe device properties which are needed for a metric.\n Some of these properties can be collected using cuDeviceGetAttribute."]
 pub type CUpti_MetricPropertyID = ::std::os::raw::c_uint;
 unsafe extern "C" {
-    #[doc = " \\brief Get the total number of metrics available on any device.\n\n Returns the total number of metrics available on any CUDA-capable\n devices.\n\n \\param numMetrics Returns the number of metrics\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numMetrics is NULL"]
+    #[doc = " \\brief Get the total number of metrics available on any device.\n\n Returns the total number of metrics available on any CUDA-capable\n devices.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param numMetrics Returns the number of metrics\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numMetrics is NULL"]
     pub fn cuptiGetNumMetrics(numMetrics: *mut u32) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get all the metrics available on any device.\n\n Returns the metric IDs in \\p metricArray for all CUDA-capable\n devices.  The size of the \\p metricArray buffer is given by \\p\n *arraySizeBytes. The size of the \\p metricArray buffer must be at\n least \\p numMetrics * sizeof(CUpti_MetricID) or all metric IDs will\n not be returned. The value returned in \\p *arraySizeBytes contains\n the number of bytes returned in \\p metricArray.\n\n \\param arraySizeBytes The size of \\p metricArray in bytes, and\n returns the number of bytes written to \\p metricArray\n \\param metricArray Returns the IDs of the metrics\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p arraySizeBytes or\n \\p metricArray are NULL"]
+    #[doc = " \\brief Get all the metrics available on any device.\n\n Returns the metric IDs in \\p metricArray for all CUDA-capable\n devices.  The size of the \\p metricArray buffer is given by \\p\n *arraySizeBytes. The size of the \\p metricArray buffer must be at\n least \\p numMetrics * sizeof(CUpti_MetricID) or all metric IDs will\n not be returned. The value returned in \\p *arraySizeBytes contains\n the number of bytes returned in \\p metricArray.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param arraySizeBytes The size of \\p metricArray in bytes, and\n returns the number of bytes written to \\p metricArray\n \\param metricArray Returns the IDs of the metrics\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p arraySizeBytes or\n \\p metricArray are NULL"]
     pub fn cuptiEnumMetrics(
         arraySizeBytes: *mut usize,
         metricArray: *mut CUpti_MetricID,
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get the number of metrics for a device.\n\n Returns the number of metrics available for a device.\n\n \\param device The CUDA device\n \\param numMetrics Returns the number of metrics available for the\n device\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numMetrics is NULL"]
+    #[doc = " \\brief Get the number of metrics for a device.\n\n Returns the number of metrics available for a device.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param device The CUDA device\n \\param numMetrics Returns the number of metrics available for the\n device\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numMetrics is NULL"]
     pub fn cuptiDeviceGetNumMetrics(device: CUdevice, numMetrics: *mut u32) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get the metrics for a device.\n\n Returns the metric IDs in \\p metricArray for a device.  The size of\n the \\p metricArray buffer is given by \\p *arraySizeBytes. The size\n of the \\p metricArray buffer must be at least \\p numMetrics *\n sizeof(CUpti_MetricID) or else all metric IDs will not be\n returned. The value returned in \\p *arraySizeBytes contains the\n number of bytes returned in \\p metricArray.\n\n \\param device The CUDA device\n \\param arraySizeBytes The size of \\p metricArray in bytes, and\n returns the number of bytes written to \\p metricArray\n \\param metricArray Returns the IDs of the metrics for the device\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p arraySizeBytes or\n \\p metricArray are NULL"]
+    #[doc = " \\brief Get the metrics for a device.\n\n Returns the metric IDs in \\p metricArray for a device.  The size of\n the \\p metricArray buffer is given by \\p *arraySizeBytes. The size\n of the \\p metricArray buffer must be at least \\p numMetrics *\n sizeof(CUpti_MetricID) or else all metric IDs will not be\n returned. The value returned in \\p *arraySizeBytes contains the\n number of bytes returned in \\p metricArray.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param device The CUDA device\n \\param arraySizeBytes The size of \\p metricArray in bytes, and\n returns the number of bytes written to \\p metricArray\n \\param metricArray Returns the IDs of the metrics for the device\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p arraySizeBytes or\n \\p metricArray are NULL"]
     pub fn cuptiDeviceEnumMetrics(
         device: CUdevice,
         arraySizeBytes: *mut usize,
@@ -2094,7 +2219,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get a metric attribute.\n\n Returns a metric attribute in \\p *value. The size of the \\p\n value buffer is given by \\p *valueSize. The value returned in \\p\n *valueSize contains the number of bytes returned in \\p value.\n\n If the attribute value is a c-string that is longer than \\p\n *valueSize, then only the first \\p *valueSize characters will be\n returned and there will be no terminating null byte.\n\n \\param metric ID of the metric\n \\param attrib The metric attribute to read\n \\param valueSize The size of the \\p value buffer in bytes, and\n returns the number of bytes written to \\p value\n \\param value Returns the attribute's value\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not a metric attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
+    #[doc = " \\brief Get a metric attribute.\n\n Returns a metric attribute in \\p *value. The size of the \\p\n value buffer is given by \\p *valueSize. The value returned in \\p\n *valueSize contains the number of bytes returned in \\p value.\n\n If the attribute value is a c-string that is longer than \\p\n *valueSize, then only the first \\p *valueSize characters will be\n returned and there will be no terminating null byte.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param metric ID of the metric\n \\param attrib The metric attribute to read\n \\param valueSize The size of the \\p value buffer in bytes, and\n returns the number of bytes written to \\p value\n \\param value Returns the attribute's value\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p valueSize or \\p value\n is NULL, or if \\p attrib is not a metric attribute\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT For non-c-string\n attribute values, indicates that the \\p value buffer is too small\n to hold the attribute value."]
     pub fn cuptiMetricGetAttribute(
         metric: CUpti_MetricID,
         attrib: CUpti_MetricAttribute,
@@ -2103,7 +2228,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Find an metric by name.\n\n Find a metric by name and return the metric ID in \\p *metric.\n\n \\param device The CUDA device\n \\param metricName The name of metric to find\n \\param metric Returns the ID of the found metric or undefined if\n unable to find the metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_METRIC_NAME if unable to find a metric\n with name \\p metricName. In this case \\p *metric is undefined\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p metricName or \\p\n metric are NULL."]
+    #[doc = " \\brief Find an metric by name.\n\n Find a metric by name and return the metric ID in \\p *metric.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param device The CUDA device\n \\param metricName The name of metric to find\n \\param metric Returns the ID of the found metric or undefined if\n unable to find the metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_DEVICE\n \\retval CUPTI_ERROR_INVALID_METRIC_NAME if unable to find a metric\n with name \\p metricName. In this case \\p *metric is undefined\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p metricName or \\p\n metric are NULL."]
     pub fn cuptiMetricGetIdFromName(
         device: CUdevice,
         metricName: *const ::std::os::raw::c_char,
@@ -2111,11 +2236,11 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get number of events required to calculate a metric.\n\n Returns the number of events in \\p numEvents that are required to\n calculate a metric.\n\n \\param metric ID of the metric\n \\param numEvents Returns the number of events required for the metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numEvents is NULL"]
+    #[doc = " \\brief Get number of events required to calculate a metric.\n\n Returns the number of events in \\p numEvents that are required to\n calculate a metric.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param metric ID of the metric\n \\param numEvents Returns the number of events required for the metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numEvents is NULL"]
     pub fn cuptiMetricGetNumEvents(metric: CUpti_MetricID, numEvents: *mut u32) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get the events required to calculating a metric.\n\n Gets the event IDs in \\p eventIdArray required to calculate a \\p\n metric. The size of the \\p eventIdArray buffer is given by \\p\n *eventIdArraySizeBytes and must be at least \\p numEvents *\n sizeof(CUpti_EventID) or all events will not be returned. The value\n returned in \\p *eventIdArraySizeBytes contains the number of bytes\n returned in \\p eventIdArray.\n\n \\param metric ID of the metric\n \\param eventIdArraySizeBytes The size of \\p eventIdArray in bytes,\n and returns the number of bytes written to \\p eventIdArray\n \\param eventIdArray Returns the IDs of the events required to\n calculate \\p metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventIdArraySizeBytes or \\p\n eventIdArray are NULL."]
+    #[doc = " \\brief Get the events required to calculating a metric.\n\n Gets the event IDs in \\p eventIdArray required to calculate a \\p\n metric. The size of the \\p eventIdArray buffer is given by \\p\n *eventIdArraySizeBytes and must be at least \\p numEvents *\n sizeof(CUpti_EventID) or all events will not be returned. The value\n returned in \\p *eventIdArraySizeBytes contains the number of bytes\n returned in \\p eventIdArray.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param metric ID of the metric\n \\param eventIdArraySizeBytes The size of \\p eventIdArray in bytes,\n and returns the number of bytes written to \\p eventIdArray\n \\param eventIdArray Returns the IDs of the events required to\n calculate \\p metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p eventIdArraySizeBytes or \\p\n eventIdArray are NULL."]
     pub fn cuptiMetricEnumEvents(
         metric: CUpti_MetricID,
         eventIdArraySizeBytes: *mut usize,
@@ -2123,11 +2248,11 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get number of properties required to calculate a metric.\n\n Returns the number of properties in \\p numProp that are required to\n calculate a metric.\n\n \\param metric ID of the metric\n \\param numProp Returns the number of properties required for the\n metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numProp is NULL"]
+    #[doc = " \\brief Get number of properties required to calculate a metric.\n\n Returns the number of properties in \\p numProp that are required to\n calculate a metric.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param metric ID of the metric\n \\param numProp Returns the number of properties required for the\n metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p numProp is NULL"]
     pub fn cuptiMetricGetNumProperties(metric: CUpti_MetricID, numProp: *mut u32) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Get the properties required to calculating a metric.\n\n Gets the property IDs in \\p propIdArray required to calculate a \\p\n metric. The size of the \\p propIdArray buffer is given by \\p\n *propIdArraySizeBytes and must be at least \\p numProp *\n sizeof(CUpti_DeviceAttribute) or all properties will not be\n returned. The value returned in \\p *propIdArraySizeBytes contains\n the number of bytes returned in \\p propIdArray.\n\n \\param metric ID of the metric\n \\param propIdArraySizeBytes The size of \\p propIdArray in bytes,\n and returns the number of bytes written to \\p propIdArray\n \\param propIdArray Returns the IDs of the properties required to\n calculate \\p metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p propIdArraySizeBytes or \\p\n propIdArray are NULL."]
+    #[doc = " \\brief Get the properties required to calculating a metric.\n\n Gets the property IDs in \\p propIdArray required to calculate a \\p\n metric. The size of the \\p propIdArray buffer is given by \\p\n *propIdArraySizeBytes and must be at least \\p numProp *\n sizeof(CUpti_DeviceAttribute) or all properties will not be\n returned. The value returned in \\p *propIdArraySizeBytes contains\n the number of bytes returned in \\p propIdArray.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param metric ID of the metric\n \\param propIdArraySizeBytes The size of \\p propIdArray in bytes,\n and returns the number of bytes written to \\p propIdArray\n \\param propIdArray Returns the IDs of the properties required to\n calculate \\p metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p propIdArraySizeBytes or \\p\n propIdArray are NULL."]
     pub fn cuptiMetricEnumProperties(
         metric: CUpti_MetricID,
         propIdArraySizeBytes: *mut usize,
@@ -2135,7 +2260,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief For a metric get the groups of events that must be collected\n in the same pass.\n\n For a metric get the groups of events that must be collected in the\n same pass to ensure that the metric is calculated correctly. If the\n events are not collected as specified then the metric value may be\n inaccurate.\n\n The function returns NULL if a metric does not have any required\n event group. In this case the events needed for the metric can be\n grouped in any manner for collection.\n\n \\param context The context for event collection\n \\param metric The metric ID\n \\param eventGroupSets Returns a CUpti_EventGroupSets object that\n indicates the events that must be collected in the same pass to\n ensure the metric is calculated correctly.  Returns NULL if no\n grouping is required for metric\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID"]
+    #[doc = " \\brief For a metric get the groups of events that must be collected\n in the same pass.\n\n For a metric get the groups of events that must be collected in the\n same pass to ensure that the metric is calculated correctly. If the\n events are not collected as specified then the metric value may be\n inaccurate.\n\n The function returns NULL if a metric does not have any required\n event group. In this case the events needed for the metric can be\n grouped in any manner for collection.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param context The context for event collection\n \\param metric The metric ID\n \\param eventGroupSets Returns a CUpti_EventGroupSets object that\n indicates the events that must be collected in the same pass to\n ensure the metric is calculated correctly.  Returns NULL if no\n grouping is required for metric\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID"]
     pub fn cuptiMetricGetRequiredEventGroupSets(
         context: CUcontext,
         metric: CUpti_MetricID,
@@ -2143,7 +2268,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief For a set of metrics, get the grouping that indicates the\n number of passes and the event groups necessary to collect the\n events required for those metrics.\n\n For a set of metrics, get the grouping that indicates the number of\n passes and the event groups necessary to collect the events\n required for those metrics.\n\n \\see cuptiEventGroupSetsCreate for details on event group set\n creation.\n\n \\param context The context for event collection\n \\param metricIdArraySizeBytes Size of the metricIdArray in bytes\n \\param metricIdArray Array of metric IDs\n \\param eventGroupPasses Returns a CUpti_EventGroupSets object that\n indicates the number of passes required to collect the events and\n the events to collect on each pass\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_CONTEXT\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p metricIdArray or\n \\p eventGroupPasses is NULL"]
+    #[doc = " \\brief For a set of metrics, get the grouping that indicates the\n number of passes and the event groups necessary to collect the\n events required for those metrics.\n\n For a set of metrics, get the grouping that indicates the number of\n passes and the event groups necessary to collect the events\n required for those metrics.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\see cuptiEventGroupSetsCreate for details on event group set\n creation.\n\n \\param context The context for event collection\n \\param metricIdArraySizeBytes Size of the metricIdArray in bytes\n \\param metricIdArray Array of metric IDs\n \\param eventGroupPasses Returns a CUpti_EventGroupSets object that\n indicates the number of passes required to collect the events and\n the events to collect on each pass\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_CONTEXT\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p metricIdArray or\n \\p eventGroupPasses is NULL"]
     pub fn cuptiMetricCreateEventGroupSets(
         context: CUcontext,
         metricIdArraySizeBytes: usize,
@@ -2152,7 +2277,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Calculate the value for a metric.\n\n Use the events collected for a metric to calculate the metric\n value. Metric value evaluation depends on the evaluation mode\n \\ref CUpti_MetricEvaluationMode that the metric supports.\n If a metric has evaluation mode as CUPTI_METRIC_EVALUATION_MODE_PER_INSTANCE,\n then it assumes that the input event value is for one domain instance.\n If a metric has evaluation mode as CUPTI_METRIC_EVALUATION_MODE_AGGREGATE,\n it assumes that input event values are\n normalized to represent all domain instances on a device. For the\n most accurate metric collection, the events required for the metric\n should be collected for all profiled domain instances. For example,\n to collect all instances of an event, set the\n CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES attribute on\n the group containing the event to 1. The normalized value for the\n event is then: (\\p sum_event_values * \\p totalInstanceCount) / \\p\n instanceCount, where \\p sum_event_values is the summation of the\n event values across all profiled domain instances, \\p\n totalInstanceCount is obtained from querying\n CUPTI_EVENT_DOMAIN_ATTR_TOTAL_INSTANCE_COUNT and \\p instanceCount\n is obtained from querying CUPTI_EVENT_GROUP_ATTR_INSTANCE_COUNT (or\n CUPTI_EVENT_DOMAIN_ATTR_INSTANCE_COUNT).\n\n \\param device The CUDA device that the metric is being calculated for\n \\param metric The metric ID\n \\param eventIdArraySizeBytes The size of \\p eventIdArray in bytes\n \\param eventIdArray The event IDs required to calculate \\p metric\n \\param eventValueArraySizeBytes The size of \\p eventValueArray in bytes\n \\param eventValueArray The normalized event values required to\n calculate \\p metric. The values must be order to match the order of\n events in \\p eventIdArray\n \\param timeDuration The duration over which the events were\n collected, in ns\n \\param metricValue Returns the value for the metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_OPERATION\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT if the\n eventIdArray does not contain all the events needed for metric\n \\retval CUPTI_ERROR_INVALID_EVENT_VALUE if any of the\n event values required for the metric is CUPTI_EVENT_OVERFLOW\n \\retval CUPTI_ERROR_INVALID_METRIC_VALUE if the computed metric value\n cannot be represented in the metric's value type. For example,\n if the metric value type is unsigned and the computed metric value is negative\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p metricValue,\n \\p eventIdArray or \\p eventValueArray is NULL"]
+    #[doc = " \\brief Calculate the value for a metric.\n\n Use the events collected for a metric to calculate the metric\n value. Metric value evaluation depends on the evaluation mode\n \\ref CUpti_MetricEvaluationMode that the metric supports.\n If a metric has evaluation mode as CUPTI_METRIC_EVALUATION_MODE_PER_INSTANCE,\n then it assumes that the input event value is for one domain instance.\n If a metric has evaluation mode as CUPTI_METRIC_EVALUATION_MODE_AGGREGATE,\n it assumes that input event values are\n normalized to represent all domain instances on a device. For the\n most accurate metric collection, the events required for the metric\n should be collected for all profiled domain instances. For example,\n to collect all instances of an event, set the\n CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES attribute on\n the group containing the event to 1. The normalized value for the\n event is then: (\\p sum_event_values * \\p totalInstanceCount) / \\p\n instanceCount, where \\p sum_event_values is the summation of the\n event values across all profiled domain instances, \\p\n totalInstanceCount is obtained from querying\n CUPTI_EVENT_DOMAIN_ATTR_TOTAL_INSTANCE_COUNT and \\p instanceCount\n is obtained from querying CUPTI_EVENT_GROUP_ATTR_INSTANCE_COUNT (or\n CUPTI_EVENT_DOMAIN_ATTR_INSTANCE_COUNT).\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param device The CUDA device that the metric is being calculated for\n \\param metric The metric ID\n \\param eventIdArraySizeBytes The size of \\p eventIdArray in bytes\n \\param eventIdArray The event IDs required to calculate \\p metric\n \\param eventValueArraySizeBytes The size of \\p eventValueArray in bytes\n \\param eventValueArray The normalized event values required to\n calculate \\p metric. The values must be order to match the order of\n events in \\p eventIdArray\n \\param timeDuration The duration over which the events were\n collected, in ns\n \\param metricValue Returns the value for the metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_OPERATION\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT if the\n eventIdArray does not contain all the events needed for metric\n \\retval CUPTI_ERROR_INVALID_EVENT_VALUE if any of the\n event values required for the metric is CUPTI_EVENT_OVERFLOW\n \\retval CUPTI_ERROR_INVALID_METRIC_VALUE if the computed metric value\n cannot be represented in the metric's value type. For example,\n if the metric value type is unsigned and the computed metric value is negative\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p metricValue,\n \\p eventIdArray or \\p eventValueArray is NULL"]
     pub fn cuptiMetricGetValue(
         device: CUdevice,
         metric: CUpti_MetricID,
@@ -2165,7 +2290,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Calculate the value for a metric.\n\n Use the events and properties collected for a metric to calculate\n the metric value. Metric value evaluation depends on the evaluation\n mode \\ref CUpti_MetricEvaluationMode that the metric supports.  If\n a metric has evaluation mode as\n CUPTI_METRIC_EVALUATION_MODE_PER_INSTANCE, then it assumes that the\n input event value is for one domain instance.  If a metric has\n evaluation mode as CUPTI_METRIC_EVALUATION_MODE_AGGREGATE, it\n assumes that input event values are normalized to represent all\n domain instances on a device. For the most accurate metric\n collection, the events required for the metric should be collected\n for all profiled domain instances. For example, to collect all\n instances of an event, set the\n CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES attribute on\n the group containing the event to 1. The normalized value for the\n event is then: (\\p sum_event_values * \\p totalInstanceCount) / \\p\n instanceCount, where \\p sum_event_values is the summation of the\n event values across all profiled domain instances, \\p\n totalInstanceCount is obtained from querying\n CUPTI_EVENT_DOMAIN_ATTR_TOTAL_INSTANCE_COUNT and \\p instanceCount\n is obtained from querying CUPTI_EVENT_GROUP_ATTR_INSTANCE_COUNT (or\n CUPTI_EVENT_DOMAIN_ATTR_INSTANCE_COUNT).\n\n \\param metric The metric ID\n \\param eventIdArraySizeBytes The size of \\p eventIdArray in bytes\n \\param eventIdArray The event IDs required to calculate \\p metric\n \\param eventValueArraySizeBytes The size of \\p eventValueArray in bytes\n \\param eventValueArray The normalized event values required to\n calculate \\p metric. The values must be order to match the order of\n events in \\p eventIdArray\n \\param propIdArraySizeBytes The size of \\p propIdArray in bytes\n \\param propIdArray The metric property IDs required to calculate \\p metric\n \\param propValueArraySizeBytes The size of \\p propValueArray in bytes\n \\param propValueArray The metric property values required to\n calculate \\p metric. The values must be order to match the order of\n metric properties in \\p propIdArray\n \\param metricValue Returns the value for the metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_OPERATION\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT if the\n eventIdArray does not contain all the events needed for metric\n \\retval CUPTI_ERROR_INVALID_EVENT_VALUE if any of the\n event values required for the metric is CUPTI_EVENT_OVERFLOW\n \\retval CUPTI_ERROR_NOT_COMPATIBLE if the computed metric value\n cannot be represented in the metric's value type. For example,\n if the metric value type is unsigned and the computed metric value is negative\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p metricValue,\n \\p eventIdArray or \\p eventValueArray is NULL"]
+    #[doc = " \\brief Calculate the value for a metric.\n\n Use the events and properties collected for a metric to calculate\n the metric value. Metric value evaluation depends on the evaluation\n mode \\ref CUpti_MetricEvaluationMode that the metric supports.  If\n a metric has evaluation mode as\n CUPTI_METRIC_EVALUATION_MODE_PER_INSTANCE, then it assumes that the\n input event value is for one domain instance.  If a metric has\n evaluation mode as CUPTI_METRIC_EVALUATION_MODE_AGGREGATE, it\n assumes that input event values are normalized to represent all\n domain instances on a device. For the most accurate metric\n collection, the events required for the metric should be collected\n for all profiled domain instances. For example, to collect all\n instances of an event, set the\n CUPTI_EVENT_GROUP_ATTR_PROFILE_ALL_DOMAIN_INSTANCES attribute on\n the group containing the event to 1. The normalized value for the\n event is then: (\\p sum_event_values * \\p totalInstanceCount) / \\p\n instanceCount, where \\p sum_event_values is the summation of the\n event values across all profiled domain instances, \\p\n totalInstanceCount is obtained from querying\n CUPTI_EVENT_DOMAIN_ATTR_TOTAL_INSTANCE_COUNT and \\p instanceCount\n is obtained from querying CUPTI_EVENT_GROUP_ATTR_INSTANCE_COUNT (or\n CUPTI_EVENT_DOMAIN_ATTR_INSTANCE_COUNT).\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param metric The metric ID\n \\param eventIdArraySizeBytes The size of \\p eventIdArray in bytes\n \\param eventIdArray The event IDs required to calculate \\p metric\n \\param eventValueArraySizeBytes The size of \\p eventValueArray in bytes\n \\param eventValueArray The normalized event values required to\n calculate \\p metric. The values must be order to match the order of\n events in \\p eventIdArray\n \\param propIdArraySizeBytes The size of \\p propIdArray in bytes\n \\param propIdArray The metric property IDs required to calculate \\p metric\n \\param propValueArraySizeBytes The size of \\p propValueArray in bytes\n \\param propValueArray The metric property values required to\n calculate \\p metric. The values must be order to match the order of\n metric properties in \\p propIdArray\n \\param metricValue Returns the value for the metric\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_METRIC_ID\n \\retval CUPTI_ERROR_INVALID_OPERATION\n \\retval CUPTI_ERROR_PARAMETER_SIZE_NOT_SUFFICIENT if the\n eventIdArray does not contain all the events needed for metric\n \\retval CUPTI_ERROR_INVALID_EVENT_VALUE if any of the\n event values required for the metric is CUPTI_EVENT_OVERFLOW\n \\retval CUPTI_ERROR_NOT_COMPATIBLE if the computed metric value\n cannot be represented in the metric's value type. For example,\n if the metric value type is unsigned and the computed metric value is negative\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p metricValue,\n \\p eventIdArray or \\p eventValueArray is NULL"]
     pub fn cuptiMetricGetValue2(
         metric: CUpti_MetricID,
         eventIdArraySizeBytes: usize,
@@ -2181,69 +2306,69 @@ unsafe extern "C" {
 }
 #[doc = " The activity record is invalid."]
 pub const CUPTI_ACTIVITY_KIND_INVALID: CUpti_ActivityKind = 0;
-#[doc = " A host<->host, host<->device, or device<->device memory copy. The\n corresponding activity record structure is \\ref\n CUpti_ActivityMemcpy5."]
+#[doc = " A host<->host, host<->device, or device<->device memory copy.\n For peer to peer memory copy, use the kind CUPTI_ACTIVITY_KIND_MEMCPY2.\n The corresponding activity record structure is \\ref\n CUpti_ActivityMemcpy6."]
 pub const CUPTI_ACTIVITY_KIND_MEMCPY: CUpti_ActivityKind = 1;
 #[doc = " A memory set executing on the GPU. The corresponding activity\n record structure is \\ref CUpti_ActivityMemset4."]
 pub const CUPTI_ACTIVITY_KIND_MEMSET: CUpti_ActivityKind = 2;
-#[doc = " A kernel executing on the GPU. This activity kind may significantly change\n the overall performance characteristics of the application because all\n kernel executions are serialized on the GPU. Other activity kind for kernel\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL doesn't break kernel concurrency.\n The corresponding activity record structure is \\ref CUpti_ActivityKernel9."]
+#[doc = " A kernel executing on the GPU. This activity kind may significantly change\n the overall performance characteristics of the application because all\n kernel executions are serialized on the GPU. Other activity kind for kernel\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL doesn't break kernel concurrency.\n The corresponding activity record structure is \\ref CUpti_ActivityKernel10."]
 pub const CUPTI_ACTIVITY_KIND_KERNEL: CUpti_ActivityKind = 3;
 #[doc = " A CUDA driver API function execution. The corresponding activity\n record structure is \\ref CUpti_ActivityAPI."]
 pub const CUPTI_ACTIVITY_KIND_DRIVER: CUpti_ActivityKind = 4;
 #[doc = " A CUDA runtime API function execution. The corresponding activity\n record structure is \\ref CUpti_ActivityAPI."]
 pub const CUPTI_ACTIVITY_KIND_RUNTIME: CUpti_ActivityKind = 5;
-#[doc = " An event value. The corresponding activity record structure is\n \\ref CUpti_ActivityEvent."]
+#[doc = " A performance counter (aka event) value. The corresponding activity record\n structure is \\ref CUpti_ActivityEvent. This activity cannot be directly\n enabled or disabled. Information collected using the Event API.\n can be stored in the corresponding activity record.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used."]
 pub const CUPTI_ACTIVITY_KIND_EVENT: CUpti_ActivityKind = 6;
-#[doc = " A metric value. The corresponding activity record structure is\n \\ref CUpti_ActivityMetric."]
+#[doc = " A performance metric value. The corresponding activity record structure is\n \\ref CUpti_ActivityMetric. This activity cannot be directly\n enabled or disabled. Information collected using the Metric API.\n can be stored in the corresponding activity record.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used."]
 pub const CUPTI_ACTIVITY_KIND_METRIC: CUpti_ActivityKind = 7;
-#[doc = " Information about a device. The corresponding activity record\n structure is \\ref CUpti_ActivityDevice5."]
+#[doc = " Information about a CUDA device. The corresponding activity record\n structure is \\ref CUpti_ActivityDevice5."]
 pub const CUPTI_ACTIVITY_KIND_DEVICE: CUpti_ActivityKind = 8;
-#[doc = " Information about a context. The corresponding activity record\n structure is \\ref CUpti_ActivityContext3."]
+#[doc = " Information about a CUDA context. The corresponding activity record\n structure is \\ref CUpti_ActivityContext3."]
 pub const CUPTI_ACTIVITY_KIND_CONTEXT: CUpti_ActivityKind = 9;
-#[doc = " A kernel executing on the GPU. This activity kind doesn't break\n kernel concurrency. The corresponding activity record structure\n is \\ref CUpti_ActivityKernel9."]
+#[doc = " A kernel executing on the GPU. This activity kind doesn't break\n kernel concurrency. The corresponding activity record structure\n is \\ref CUpti_ActivityKernel10."]
 pub const CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL: CUpti_ActivityKind = 10;
 #[doc = " Resource naming done via NVTX APIs for thread, device, context, etc.\n The corresponding activity record structure is \\ref CUpti_ActivityName."]
 pub const CUPTI_ACTIVITY_KIND_NAME: CUpti_ActivityKind = 11;
 #[doc = " Instantaneous, start, or end NVTX marker. The corresponding activity\n record structure is \\ref CUpti_ActivityMarker2."]
 pub const CUPTI_ACTIVITY_KIND_MARKER: CUpti_ActivityKind = 12;
-#[doc = " Extended, optional, data about a marker. User must enable\n CUPTI_ACTIVITY_KIND_MARKER as well to get records for marker data.\n The corresponding activity record structure is \\ref CUpti_ActivityMarkerData."]
+#[doc = " Extended, optional, data about a NVTX marker. User must enable\n CUPTI_ACTIVITY_KIND_MARKER as well to get records for marker data.\n The corresponding activity record structure is \\ref CUpti_ActivityMarkerData2."]
 pub const CUPTI_ACTIVITY_KIND_MARKER_DATA: CUpti_ActivityKind = 13;
-#[doc = " Source information about source level result. The corresponding\n activity record structure is \\ref CUpti_ActivitySourceLocator.\n In CUDA 12.6, this kind is deprecated for Volta and later GPU architectures\n in favor of SASS Metric APIs from the header cupti_sass_metrics.h."]
+#[doc = " Source information about source level result. The corresponding\n activity record structure is \\ref CUpti_ActivitySourceLocator.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used.\n Enabling it will return the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n Instead, use the SASS Metric APIs from the cupti_sass_metrics.h header."]
 pub const CUPTI_ACTIVITY_KIND_SOURCE_LOCATOR: CUpti_ActivityKind = 14;
-#[doc = " Results for source-level global access. The\n corresponding activity record structure is \\ref\n CUpti_ActivityGlobalAccess3.\n In CUDA 12.6, this kind is deprecated for Volta and later GPU architectures\n in favor of SASS Metric APIs from the header cupti_sass_metrics.h."]
+#[doc = " Results for source-level global access. The\n corresponding activity record structure is \\ref\n CUpti_ActivityGlobalAccess3.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used.\n Enabling it will return the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n Instead, use the SASS Metric APIs from the cupti_sass_metrics.h header."]
 pub const CUPTI_ACTIVITY_KIND_GLOBAL_ACCESS: CUpti_ActivityKind = 15;
-#[doc = " Results for source-level branch. The corresponding\n activity record structure is \\ref CUpti_ActivityBranch2.\n In CUDA 12.6, this kind is deprecated for Volta and later GPU architectures\n in favor of SASS Metric APIs from the header cupti_sass_metrics.h."]
+#[doc = " Results for source-level branch. The corresponding\n activity record structure is \\ref CUpti_ActivityBranch2.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used.\n Enabling it will return the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n Instead, use the SASS Metric APIs from the cupti_sass_metrics.h header."]
 pub const CUPTI_ACTIVITY_KIND_BRANCH: CUpti_ActivityKind = 16;
-#[doc = " Overhead activity records. The\n corresponding activity record structure is\n \\ref CUpti_ActivityOverhead3."]
+#[doc = " Overhead added by CUPTI, Compiler, CUDA driver etc. The\n corresponding activity record structure is\n \\ref CUpti_ActivityOverhead3."]
 pub const CUPTI_ACTIVITY_KIND_OVERHEAD: CUpti_ActivityKind = 17;
-#[doc = " A CDP (CUDA Dynamic Parallel) kernel executing on the GPU. The\n corresponding activity record structure is \\ref\n CUpti_ActivityCdpKernel.  This activity can not be directly\n enabled or disabled. It is enabled and disabled through\n concurrent kernel activity i.e. _CONCURRENT_KERNEL."]
+#[doc = " A CDP (CUDA Dynamic Parallel) kernel executing on the GPU. The\n corresponding activity record structure is \\ref\n CUpti_ActivityCdpKernel. This activity cannot be directly\n enabled or disabled. It is enabled and disabled through\n concurrent kernel activity i.e. _CONCURRENT_KERNEL."]
 pub const CUPTI_ACTIVITY_KIND_CDP_KERNEL: CUpti_ActivityKind = 18;
 #[doc = " Preemption activity record indicating a preemption of a CDP (CUDA\n Dynamic Parallel) kernel executing on the GPU. The corresponding\n activity record structure is \\ref CUpti_ActivityPreemption."]
 pub const CUPTI_ACTIVITY_KIND_PREEMPTION: CUpti_ActivityKind = 19;
 #[doc = " Environment activity records indicating power, clock, thermal,\n etc. levels of the GPU. The corresponding activity record\n structure is \\ref CUpti_ActivityEnvironment."]
 pub const CUPTI_ACTIVITY_KIND_ENVIRONMENT: CUpti_ActivityKind = 20;
-#[doc = " An event value associated with a specific event domain\n instance. The corresponding activity record structure is \\ref\n CUpti_ActivityEventInstance."]
+#[doc = " An performance counter value associated with a specific event domain\n instance. The corresponding activity record structure is \\ref\n CUpti_ActivityEventInstance. This activity cannot be directly\n enabled or disabled. Information collected using the Event API.\n can be stored in the corresponding activity record.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used."]
 pub const CUPTI_ACTIVITY_KIND_EVENT_INSTANCE: CUpti_ActivityKind = 21;
 #[doc = " A peer to peer memory copy. The corresponding activity record\n structure is \\ref CUpti_ActivityMemcpyPtoP4."]
 pub const CUPTI_ACTIVITY_KIND_MEMCPY2: CUpti_ActivityKind = 22;
-#[doc = " A metric value associated with a specific metric domain\n instance. The corresponding activity record structure is \\ref\n CUpti_ActivityMetricInstance."]
+#[doc = " A performance metric value associated with a specific metric domain\n instance. The corresponding activity record structure is \\ref\n CUpti_ActivityMetricInstance. This activity cannot be directly\n enabled or disabled. Information collected using the Metric API.\n can be stored in the corresponding activity record.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used."]
 pub const CUPTI_ACTIVITY_KIND_METRIC_INSTANCE: CUpti_ActivityKind = 23;
-#[doc = " Results for source-level instruction execution.\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstructionExecution.\n In CUDA 12.6, this kind is deprecated for Volta and later GPU architectures\n in favor of SASS Metric APIs from the header cupti_sass_metrics.h."]
+#[doc = " Results for source-level instruction execution.\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstructionExecution.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used.\n Enabling it will return the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n Instead, use the SASS Metric APIs from the cupti_sass_metrics.h header."]
 pub const CUPTI_ACTIVITY_KIND_INSTRUCTION_EXECUTION: CUpti_ActivityKind = 24;
-#[doc = " Unified Memory counter record. The corresponding activity\n record structure is \\ref CUpti_ActivityUnifiedMemoryCounter2."]
+#[doc = " Unified Memory counter record. The corresponding activity\n record structure is \\ref CUpti_ActivityUnifiedMemoryCounter3."]
 pub const CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER: CUpti_ActivityKind = 25;
 #[doc = " Device global/function record. The corresponding activity\n record structure is \\ref CUpti_ActivityFunction."]
 pub const CUPTI_ACTIVITY_KIND_FUNCTION: CUpti_ActivityKind = 26;
-#[doc = " CUDA Module record. The corresponding activity\n record structure is \\ref CUpti_ActivityModule."]
+#[doc = " CUDA Module record. The corresponding activity\n record structure is \\ref CUpti_ActivityModule.\n This activity cannot be directly enabled or disabled.\n Information collected using the module callback can be\n be stored in the corresponding activity record."]
 pub const CUPTI_ACTIVITY_KIND_MODULE: CUpti_ActivityKind = 27;
-#[doc = " A device attribute value. The corresponding activity record\n structure is \\ref CUpti_ActivityDeviceAttribute."]
+#[doc = " A device attribute value. The corresponding activity record\n structure is \\ref CUpti_ActivityDeviceAttribute.\n This activity cannot be directly enabled or disabled.\n Information collected using attributes CUpti_DeviceAttribute\n or CUdevice_attribute can be stored in the corresponding activity record."]
 pub const CUPTI_ACTIVITY_KIND_DEVICE_ATTRIBUTE: CUpti_ActivityKind = 28;
-#[doc = " Results for source-level shared access. The\n corresponding activity record structure is \\ref\n CUpti_ActivitySharedAccess.\n In CUDA 12.6, this kind is deprecated for Volta and later GPU architectures\n in favor of SASS Metric APIs from the header cupti_sass_metrics.h."]
+#[doc = " Results for source-level shared access. The\n corresponding activity record structure is \\ref\n CUpti_ActivitySharedAccess.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used.\n Enabling it will return the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n Instead, use the SASS Metric APIs from the cupti_sass_metrics.h header."]
 pub const CUPTI_ACTIVITY_KIND_SHARED_ACCESS: CUpti_ActivityKind = 29;
-#[doc = " Enable PC sampling for kernels. This will serialize\n kernels. The corresponding activity record structure\n is \\ref CUpti_ActivityPCSampling3. In CUDA 12.5, this kind\n is deprecated for Volta and later GPU architectures in favor\n of PC Sampling APIs from the header cupti_pcsampling.h."]
+#[doc = " PC sampling information for kernels. This will serialize\n kernels. The corresponding activity record structure\n is \\ref CUpti_ActivityPCSampling3.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used.\n Enabling it will return the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n Instead, use the PC Sampling API from the cupti_pcsampling.h header, which\n allows concurrent kernel execution."]
 pub const CUPTI_ACTIVITY_KIND_PC_SAMPLING: CUpti_ActivityKind = 30;
-#[doc = " Summary information about PC sampling records. The\n corresponding activity record structure is \\ref\n CUpti_ActivityPCSamplingRecordInfo. In CUDA 12.5, this kind\n is deprecated for Volta and later GPU architectures in favor\n of PC Sampling APIs from the header cupti_pcsampling.h."]
+#[doc = " Summary information about PC sampling records. The\n corresponding activity record structure is \\ref\n CUpti_ActivityPCSamplingRecordInfo.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used.\n Enabling it will return the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n Instead, use the PC Sampling API from the cupti_pcsampling.h header."]
 pub const CUPTI_ACTIVITY_KIND_PC_SAMPLING_RECORD_INFO: CUpti_ActivityKind = 31;
-#[doc = " SASS/Source line-by-line correlation record.\n This will generate sass/source correlation for functions that have source\n level analysis or pc sampling results. The records will be generated only\n when either of source level analysis or pc sampling activity is enabled.\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstructionCorrelation.\n In CUDA 12.6, this kind is deprecated for Volta and later GPU architectures\n in favor of SASS Metric APIs from the header cupti_sass_metrics.h."]
+#[doc = " SASS/Source line-by-line correlation record.\n This will generate sass/source correlation for functions that have source\n level analysis or pc sampling results. The records will be generated only\n when either of source level analysis or pc sampling activity is enabled.\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstructionCorrelation.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used.\n Enabling it will return the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n Instead, use the SASS Metric APIs from the cupti_sass_metrics.h header."]
 pub const CUPTI_ACTIVITY_KIND_INSTRUCTION_CORRELATION: CUpti_ActivityKind = 32;
 #[doc = " OpenACC data events.\n The corresponding activity record structure is \\ref\n CUpti_ActivityOpenAccData."]
 pub const CUPTI_ACTIVITY_KIND_OPENACC_DATA: CUpti_ActivityKind = 33;
@@ -2251,23 +2376,23 @@ pub const CUPTI_ACTIVITY_KIND_OPENACC_DATA: CUpti_ActivityKind = 33;
 pub const CUPTI_ACTIVITY_KIND_OPENACC_LAUNCH: CUpti_ActivityKind = 34;
 #[doc = " OpenACC other events.\n The corresponding activity record structure is \\ref\n CUpti_ActivityOpenAccOther."]
 pub const CUPTI_ACTIVITY_KIND_OPENACC_OTHER: CUpti_ActivityKind = 35;
-#[doc = " Information about a CUDA event. The\n corresponding activity record structure is \\ref\n CUpti_ActivityCudaEvent."]
+#[doc = " Information about a CUDA event (cudaEvent).\n The corresponding activity record structure is \\ref\n CUpti_ActivityCudaEvent2."]
 pub const CUPTI_ACTIVITY_KIND_CUDA_EVENT: CUpti_ActivityKind = 36;
 #[doc = " Information about a CUDA stream. The\n corresponding activity record structure is \\ref\n CUpti_ActivityStream."]
 pub const CUPTI_ACTIVITY_KIND_STREAM: CUpti_ActivityKind = 37;
-#[doc = " Records for synchronization management. The\n corresponding activity record structure is \\ref\n CUpti_ActivitySynchronization."]
+#[doc = " Records for CUDA synchronization primitives. The\n corresponding activity record structure is \\ref\n CUpti_ActivitySynchronization2."]
 pub const CUPTI_ACTIVITY_KIND_SYNCHRONIZATION: CUpti_ActivityKind = 38;
 #[doc = " Records for correlation of different programming APIs. The\n corresponding activity record structure is \\ref\n CUpti_ActivityExternalCorrelation."]
 pub const CUPTI_ACTIVITY_KIND_EXTERNAL_CORRELATION: CUpti_ActivityKind = 39;
-#[doc = " NVLink information.\n The corresponding activity record structure is \\ref\n CUpti_ActivityNvLink4."]
+#[doc = " NVLink topology information.\n The corresponding activity record structure is \\ref\n CUpti_ActivityNvLink4."]
 pub const CUPTI_ACTIVITY_KIND_NVLINK: CUpti_ActivityKind = 40;
-#[doc = " Instantaneous Event information.\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstantaneousEvent."]
+#[doc = " Instantaneous Event information.\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstantaneousEvent.\n This activity can not be directly enabled or disabled.\n Information collected using the Event API can be stored\n in the corresponding activity record.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used."]
 pub const CUPTI_ACTIVITY_KIND_INSTANTANEOUS_EVENT: CUpti_ActivityKind = 41;
-#[doc = " Instantaneous Event information for a specific event\n domain instance.\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstantaneousEventInstance"]
+#[doc = " Instantaneous Event information for a specific event\n domain instance.\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstantaneousEventInstance.\n This activity can not be directly enabled or disabled.\n Information collected using the Event API can be stored\n in the corresponding activity record.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used."]
 pub const CUPTI_ACTIVITY_KIND_INSTANTANEOUS_EVENT_INSTANCE: CUpti_ActivityKind = 42;
-#[doc = " Instantaneous Metric information\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstantaneousMetric."]
+#[doc = " Instantaneous Metric information\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstantaneousMetric.\n This activity cannot be directly enabled or disabled.\n Information collected using the Metric API can be stored\n in the corresponding activity record.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used."]
 pub const CUPTI_ACTIVITY_KIND_INSTANTANEOUS_METRIC: CUpti_ActivityKind = 43;
-#[doc = " Instantaneous Metric information for a specific metric\n domain instance.\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstantaneousMetricInstance."]
+#[doc = " Instantaneous Metric information for a specific metric\n domain instance.\n The corresponding activity record structure is \\ref\n CUpti_ActivityInstantaneousMetricInstance.\n This activity cannot be directly enabled or disabled.\n Information collected using the Metric API can be stored\n in the corresponding activity record.\n Starting with the CUDA 13.0 release, this enum is unsupported and should no longer be used."]
 pub const CUPTI_ACTIVITY_KIND_INSTANTANEOUS_METRIC_INSTANCE: CUpti_ActivityKind = 44;
 #[doc = " Memory activity tracking allocation and freeing of the memory\n The corresponding activity record structure is \\ref\n CUpti_ActivityMemory."]
 pub const CUPTI_ACTIVITY_KIND_MEMORY: CUpti_ActivityKind = 45;
@@ -2275,21 +2400,27 @@ pub const CUPTI_ACTIVITY_KIND_MEMORY: CUpti_ActivityKind = 45;
 pub const CUPTI_ACTIVITY_KIND_PCIE: CUpti_ActivityKind = 46;
 #[doc = " OpenMP parallel events.\n The corresponding activity record structure is \\ref\n CUpti_ActivityOpenMp."]
 pub const CUPTI_ACTIVITY_KIND_OPENMP: CUpti_ActivityKind = 47;
-#[doc = " A CUDA driver kernel launch occurring outside of any\n public API function execution.  Tools can handle these\n like records for driver API launch functions, although\n the cbid field is not used here.\n The corresponding activity record structure is \\ref\n CUpti_ActivityAPI."]
+#[doc = " A CUDA driver kernel launch occurring outside of any\n public API function execution. Tools can handle these\n like records for driver API launch functions, although\n the cbid field is not used here.\n The corresponding activity record structure is \\ref\n CUpti_ActivityAPI."]
 pub const CUPTI_ACTIVITY_KIND_INTERNAL_LAUNCH_API: CUpti_ActivityKind = 48;
 #[doc = " Memory activity tracking allocation and freeing of the memory\n The corresponding activity record structure is \\ref\n CUpti_ActivityMemory4."]
 pub const CUPTI_ACTIVITY_KIND_MEMORY2: CUpti_ActivityKind = 49;
-#[doc = " Memory pool activity tracking creation, destruction and\n trimming of the memory pool.\n The corresponding activity record structure is \\ref\n CUpti_ActivityMemoryPool2."]
+#[doc = " Memory pool activity tracking creation, destruction and\n trimming of the memory pool.\n The corresponding activity record structure is \\ref\n CUpti_ActivityMemoryPool3."]
 pub const CUPTI_ACTIVITY_KIND_MEMORY_POOL: CUpti_ActivityKind = 50;
-#[doc = " The corresponding activity record structure is\n \\ref CUpti_ActivityGraphTrace2."]
+#[doc = " Activity record for graph-level information.\n The corresponding activity record structure is\n \\ref CUpti_ActivityGraphTrace2."]
 pub const CUPTI_ACTIVITY_KIND_GRAPH_TRACE: CUpti_ActivityKind = 51;
-#[doc = " JIT operation tracking\n The corresponding activity record structure is \\ref\n CUpti_ActivityJit."]
+#[doc = " JIT (Just-in-time) operation tracking.\n The corresponding activity record structure is \\ref\n CUpti_ActivityJit."]
 pub const CUPTI_ACTIVITY_KIND_JIT: CUpti_ActivityKind = 52;
-#[doc = " JIT operation tracking\n The corresponding activity record structure is \\ref\n CUpti_ActivityJit."]
-pub const CUPTI_ACTIVITY_KIND_COUNT: CUpti_ActivityKind = 53;
-#[doc = " JIT operation tracking\n The corresponding activity record structure is \\ref\n CUpti_ActivityJit."]
+#[doc = " This activity can not be directly enabled or disabled.\n It is enabled when CUPTI_ACTIVITY_KIND_GRAPH_TRACE is enabled\n and device graph trace is enabled through API cuptiActivityEnableDeviceGraph().\n The corresponding activity record structure is\n \\ref CUpti_ActivityDeviceGraphTrace."]
+pub const CUPTI_ACTIVITY_KIND_DEVICE_GRAPH_TRACE: CUpti_ActivityKind = 53;
+#[doc = " Tracing batches of copies that are to be decompressed.\n The corresponding activity record structure is \\ref\n CUpti_ActivityMemDecompress."]
+pub const CUPTI_ACTIVITY_KIND_MEM_DECOMPRESS: CUpti_ActivityKind = 54;
+#[doc = " Tracing new overheads introduced on some hardware due when\n confidential computing is enabled.\n The corresponding activity record structure is \\ref\n CUpti_ActivityConfidentialComputeRotation."]
+pub const CUPTI_ACTIVITY_KIND_CONFIDENTIAL_COMPUTE_ROTATION: CUpti_ActivityKind = 55;
+#[doc = " Count of supported activity kinds."]
+pub const CUPTI_ACTIVITY_KIND_COUNT: CUpti_ActivityKind = 56;
+#[doc = " Count of supported activity kinds."]
 pub const CUPTI_ACTIVITY_KIND_FORCE_INT: CUpti_ActivityKind = 2147483647;
-#[doc = " \\brief The kinds of activity records.\n\n Each activity record kind represents information about a GPU or an\n activity occurring on a CPU or GPU. Each kind is associated with a\n activity record structure that holds the information associated\n with the kind.\n \\see CUpti_Activity\n \\see CUpti_ActivityAPI\n \\see CUpti_ActivityContext\n \\see CUpti_ActivityContext2\n \\see CUpti_ActivityContext3\n \\see CUpti_ActivityDevice\n \\see CUpti_ActivityDevice2\n \\see CUpti_ActivityDevice3\n \\see CUpti_ActivityDevice4\n \\see CUpti_ActivityDeviceAttribute\n \\see CUpti_ActivityEvent\n \\see CUpti_ActivityEventInstance\n \\see CUpti_ActivityKernel\n \\see CUpti_ActivityKernel2\n \\see CUpti_ActivityKernel3\n \\see CUpti_ActivityKernel4\n \\see CUpti_ActivityKernel5\n \\see CUpti_ActivityKernel6\n \\see CUpti_ActivityKernel7\n \\see CUpti_ActivityKernel8\n \\see CUpti_ActivityKernel9\n \\see CUpti_ActivityCdpKernel\n \\see CUpti_ActivityPreemption\n \\see CUpti_ActivityMemcpy\n \\see CUpti_ActivityMemcpy3\n \\see CUpti_ActivityMemcpy4\n \\see CUpti_ActivityMemcpy5\n \\see CUpti_ActivityMemcpyPtoP\n \\see CUpti_ActivityMemcpyPtoP2\n \\see CUpti_ActivityMemcpyPtoP3\n \\see CUpti_ActivityMemcpyPtoP4\n \\see CUpti_ActivityMemset\n \\see CUpti_ActivityMemset2\n \\see CUpti_ActivityMemset3\n \\see CUpti_ActivityMemset4\n \\see CUpti_ActivityMemory\n \\see CUpti_ActivityMemory2\n \\see CUpti_ActivityMemory3\n \\see CUpti_ActivityMemory4\n \\see CUpti_ActivityMemoryPool\n \\see CUpti_ActivityMemoryPool2\n \\see CUpti_ActivityMetric\n \\see CUpti_ActivityMetricInstance\n \\see CUpti_ActivityName\n \\see CUpti_ActivityMarker\n \\see CUpti_ActivityMarker2\n \\see CUpti_ActivityMarkerData\n \\see CUpti_ActivitySourceLocator\n \\see CUpti_ActivityGlobalAccess\n \\see CUpti_ActivityGlobalAccess2\n \\see CUpti_ActivityGlobalAccess3\n \\see CUpti_ActivityBranch\n \\see CUpti_ActivityBranch2\n \\see CUpti_ActivityOverhead3\n \\see CUpti_ActivityEnvironment\n \\see CUpti_ActivityInstructionExecution\n \\see CUpti_ActivityUnifiedMemoryCounter\n \\see CUpti_ActivityFunction\n \\see CUpti_ActivityModule\n \\see CUpti_ActivitySharedAccess\n \\see CUpti_ActivityPCSampling\n \\see CUpti_ActivityPCSampling2\n \\see CUpti_ActivityPCSampling3\n \\see CUpti_ActivityPCSamplingRecordInfo\n \\see CUpti_ActivityCudaEvent\n \\see CUpti_ActivityStream\n \\see CUpti_ActivitySynchronization\n \\see CUpti_ActivityInstructionCorrelation\n \\see CUpti_ActivityExternalCorrelation\n \\see CUpti_ActivityUnifiedMemoryCounter2\n \\see CUpti_ActivityOpenAccData\n \\see CUpti_ActivityOpenAccLaunch\n \\see CUpti_ActivityOpenAccOther\n \\see CUpti_ActivityOpenMp\n \\see CUpti_ActivityNvLink\n \\see CUpti_ActivityNvLink2\n \\see CUpti_ActivityNvLink3\n \\see CUpti_ActivityNvLink4\n \\see CUpti_ActivityPcie\n \\see CUpti_ActivityConfidentialComputeRotation"]
+#[doc = " \\brief The kinds of activity records.\n\n Each activity record kind represents information about a GPU or an\n activity occurring on a CPU or GPU. Each kind is associated with a\n activity record structure that holds the information associated\n with the kind.\n \\see CUpti_Activity\n \\see CUpti_ActivityAPI\n \\see CUpti_ActivityContext\n \\see CUpti_ActivityContext2\n \\see CUpti_ActivityContext3\n \\see CUpti_ActivityDevice\n \\see CUpti_ActivityDevice2\n \\see CUpti_ActivityDevice3\n \\see CUpti_ActivityDevice4\n \\see CUpti_ActivityDevice5\n \\see CUpti_ActivityDeviceAttribute\n \\see CUpti_ActivityEvent\n \\see CUpti_ActivityEventInstance\n \\see CUpti_ActivityKernel\n \\see CUpti_ActivityKernel2\n \\see CUpti_ActivityKernel3\n \\see CUpti_ActivityKernel4\n \\see CUpti_ActivityKernel5\n \\see CUpti_ActivityKernel6\n \\see CUpti_ActivityKernel7\n \\see CUpti_ActivityKernel8\n \\see CUpti_ActivityKernel9\n \\see CUpti_ActivityKernel10\n \\see CUpti_ActivityCdpKernel\n \\see CUpti_ActivityPreemption\n \\see CUpti_ActivityMemcpy\n \\see CUpti_ActivityMemcpy3\n \\see CUpti_ActivityMemcpy4\n \\see CUpti_ActivityMemcpy5\n \\see CUpti_ActivityMemcpy6\n \\see CUpti_ActivityMemcpyPtoP\n \\see CUpti_ActivityMemcpyPtoP2\n \\see CUpti_ActivityMemcpyPtoP3\n \\see CUpti_ActivityMemcpyPtoP4\n \\see CUpti_ActivityMemset\n \\see CUpti_ActivityMemset2\n \\see CUpti_ActivityMemset3\n \\see CUpti_ActivityMemset4\n \\see CUpti_ActivityMemory\n \\see CUpti_ActivityMemory2\n \\see CUpti_ActivityMemory3\n \\see CUpti_ActivityMemory4\n \\see CUpti_ActivityMemoryPool\n \\see CUpti_ActivityMemoryPool2\n \\see CUpti_ActivityMemoryPool3\n \\see CUpti_ActivityMetric\n \\see CUpti_ActivityMetricInstance\n \\see CUpti_ActivityName\n \\see CUpti_ActivityMarker\n \\see CUpti_ActivityMarker2\n \\see CUpti_ActivityMarkerData\n \\see CUpti_ActivitySourceLocator\n \\see CUpti_ActivityGlobalAccess\n \\see CUpti_ActivityGlobalAccess2\n \\see CUpti_ActivityGlobalAccess3\n \\see CUpti_ActivityBranch\n \\see CUpti_ActivityBranch2\n \\see CUpti_ActivityOverhead3\n \\see CUpti_ActivityEnvironment\n \\see CUpti_ActivityInstructionExecution\n \\see CUpti_ActivityUnifiedMemoryCounter\n \\see CUpti_ActivityFunction\n \\see CUpti_ActivityModule\n \\see CUpti_ActivitySharedAccess\n \\see CUpti_ActivityPCSampling\n \\see CUpti_ActivityPCSampling2\n \\see CUpti_ActivityPCSampling3\n \\see CUpti_ActivityPCSamplingRecordInfo\n \\see CUpti_ActivityCudaEvent2\n \\see CUpti_ActivityStream\n \\see CUpti_ActivitySynchronization2\n \\see CUpti_ActivityInstructionCorrelation\n \\see CUpti_ActivityExternalCorrelation\n \\see CUpti_ActivityUnifiedMemoryCounter3\n \\see CUpti_ActivityOpenAccData\n \\see CUpti_ActivityOpenAccLaunch\n \\see CUpti_ActivityOpenAccOther\n \\see CUpti_ActivityOpenMp\n \\see CUpti_ActivityNvLink\n \\see CUpti_ActivityNvLink2\n \\see CUpti_ActivityNvLink3\n \\see CUpti_ActivityNvLink4\n \\see CUpti_ActivityPcie\n \\see CUpti_ActivityConfidentialComputeRotation"]
 pub type CUpti_ActivityKind = ::std::os::raw::c_uint;
 #[doc = " The object kind is not known."]
 pub const CUPTI_ACTIVITY_OBJECT_UNKNOWN: CUpti_ActivityObjectKind = 0;
@@ -2382,7 +2513,7 @@ impl ::std::fmt::Debug for CUpti_ActivityObjectKindId {
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct CUpti_ActivityOverheadCommandBufferFullData {
-    #[doc = " The length of the command buffer.\n"]
+    #[doc = " The remaining space in the command buffer. This field will always be zero\n when the command buffer is full, making it not useful in such cases.\n"]
     pub commandBufferLength: u32,
     #[doc = " The channel ID of the command buffer.\n"]
     pub channelID: u32,
@@ -2424,7 +2555,9 @@ pub const CUPTI_ACTIVITY_OVERHEAD_LAZY_FUNCTION_LOADING: CUpti_ActivityOverheadK
 pub const CUPTI_ACTIVITY_OVERHEAD_COMMAND_BUFFER_FULL: CUpti_ActivityOverheadKind = 393216;
 #[doc = " Overhead due to activity buffer request."]
 pub const CUPTI_ACTIVITY_OVERHEAD_ACTIVITY_BUFFER_REQUEST: CUpti_ActivityOverheadKind = 458752;
-#[doc = " Overhead due to activity buffer request."]
+#[doc = " Overhead due to UVM activity initialization."]
+pub const CUPTI_ACTIVITY_OVERHEAD_UVM_ACTIVITY_INIT: CUpti_ActivityOverheadKind = 524288;
+#[doc = " Overhead due to UVM activity initialization."]
 pub const CUPTI_ACTIVITY_OVERHEAD_FORCE_INT: CUpti_ActivityOverheadKind = 2147483647;
 #[doc = " \\brief The kinds of activity overhead."]
 pub type CUpti_ActivityOverheadKind = ::std::os::raw::c_uint;
@@ -2514,7 +2647,7 @@ pub const CUPTI_ACTIVITY_PC_SAMPLING_STALL_CONSTANT_MEMORY_DEPENDENCY:
     CUpti_ActivityPCSamplingStallReason = 7;
 #[doc = " Compute operation cannot be performed due to the required resources not\n being available."]
 pub const CUPTI_ACTIVITY_PC_SAMPLING_STALL_PIPE_BUSY: CUpti_ActivityPCSamplingStallReason = 8;
-#[doc = " Warp is blocked because there are too many pending memory operations.\n In Kepler architecture it often indicates high number of memory replays."]
+#[doc = " Warp is blocked because there are too many pending memory operations."]
 pub const CUPTI_ACTIVITY_PC_SAMPLING_STALL_MEMORY_THROTTLE: CUpti_ActivityPCSamplingStallReason = 9;
 #[doc = " Warp was ready to issue, but some other warp issued instead."]
 pub const CUPTI_ACTIVITY_PC_SAMPLING_STALL_NOT_SELECTED: CUpti_ActivityPCSamplingStallReason = 10;
@@ -2826,7 +2959,7 @@ pub const CUPTI_ACTIVITY_SYNCHRONIZATION_TYPE_CONTEXT_SYNCHRONIZE:
 #[doc = " Context synchronize API."]
 pub const CUPTI_ACTIVITY_SYNCHRONIZATION_TYPE_FORCE_INT: CUpti_ActivitySynchronizationType =
     2147483647;
-#[doc = " \\brief Synchronization type.\n\n The types of synchronization to be used with CUpti_ActivitySynchronization."]
+#[doc = " \\brief Synchronization type.\n\n The types of synchronization to be used with\n CUpti_ActivitySynchronization2."]
 pub type CUpti_ActivitySynchronizationType = ::std::os::raw::c_uint;
 #[doc = " Unknown data."]
 pub const CUPTI_ACTIVITY_STREAM_CREATE_FLAG_UNKNOWN: CUpti_ActivityStreamFlag = 0;
@@ -2899,7 +3032,9 @@ pub const CUPTI_CHANNEL_TYPE_INVALID: CUpti_ChannelType = 0;
 pub const CUPTI_CHANNEL_TYPE_COMPUTE: CUpti_ChannelType = 1;
 #[doc = " Channel is used by an asynchronous copy engine\n For confidential compute configurations, work launch and\n completion are done using the copy engines."]
 pub const CUPTI_CHANNEL_TYPE_ASYNC_MEMCPY: CUpti_ChannelType = 2;
-#[doc = " Channel is used by an asynchronous copy engine\n For confidential compute configurations, work launch and\n completion are done using the copy engines."]
+#[doc = " Channel is used for memory decompression operations"]
+pub const CUPTI_CHANNEL_TYPE_DECOMP: CUpti_ChannelType = 3;
+#[doc = " Channel is used for memory decompression operations"]
 pub const CUPTI_CHANNEL_TYPE_FORCE_INT: CUpti_ChannelType = 2147483647;
 pub type CUpti_ChannelType = ::std::os::raw::c_uint;
 #[doc = " Regular (non-CIG) mode"]
@@ -2912,6 +3047,47 @@ pub const CUPTI_CONTEXT_CIG_MODE_CIG_FALLBACK: CUpti_ContextCigMode = 2;
 pub const CUPTI_CONTEXT_CIG_MODE_FORCE_INT: CUpti_ContextCigMode = 2147483647;
 #[doc = " \\brief CIG (CUDA in Graphics) Modes.\n\n Describes the CIG modes associated with the CUDA context."]
 pub type CUpti_ContextCigMode = ::std::os::raw::c_uint;
+#[doc = " The payload type is not known."]
+pub const CUPTI_NVTX_EXT_PAYLOAD_TYPE_UNKNOWN: CUpti_NvtxExtPayloadType = 0;
+#[doc = " The payload type is a schema."]
+pub const CUPTI_NVTX_EXT_PAYLOAD_TYPE_SCHEMA: CUpti_NvtxExtPayloadType = 1;
+#[doc = " The payload type is an enum."]
+pub const CUPTI_NVTX_EXT_PAYLOAD_TYPE_ENUM: CUpti_NvtxExtPayloadType = 2;
+#[doc = " The payload type is an enum."]
+pub const CUPTI_NVTX_EXT_PAYLOAD_TYPE_FORCE_INT: CUpti_NvtxExtPayloadType = 2147483647;
+pub type CUpti_NvtxExtPayloadType = ::std::os::raw::c_uint;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_NvtxExtPayloadAttr {
+    #[doc = " Size of the struct in bytes."]
+    pub structSize: u32,
+    #[doc = " The payload type. \\ref CUpti_NvtxExtPayloadType"]
+    pub type_: u32,
+    #[doc = " The attributes of the payload.\n Depending on the type, typecast the pointer:\n CUPTI_NVTX_EXT_PAYLOAD_TYPE_SCHEMA: nvtxPayloadSchemaAttr_t\n CUPTI_NVTX_EXT_PAYLOAD_TYPE_ENUM: nvtxPayloadEnumAttr_t"]
+    pub attributes: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_NvtxExtPayloadAttr"]
+        [::std::mem::size_of::<CUpti_NvtxExtPayloadAttr>() - 16usize];
+    ["Alignment of CUpti_NvtxExtPayloadAttr"]
+        [::std::mem::align_of::<CUpti_NvtxExtPayloadAttr>() - 8usize];
+    ["Offset of field: CUpti_NvtxExtPayloadAttr::structSize"]
+        [::std::mem::offset_of!(CUpti_NvtxExtPayloadAttr, structSize) - 0usize];
+    ["Offset of field: CUpti_NvtxExtPayloadAttr::type_"]
+        [::std::mem::offset_of!(CUpti_NvtxExtPayloadAttr, type_) - 4usize];
+    ["Offset of field: CUpti_NvtxExtPayloadAttr::attributes"]
+        [::std::mem::offset_of!(CUpti_NvtxExtPayloadAttr, attributes) - 8usize];
+};
+impl Default for CUpti_NvtxExtPayloadAttr {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " \\brief Unified Memory counters configuration structure\n\n This structure controls the enable/disable of the various\n Unified Memory counters consisting of scope, kind and other parameters.\n See function \\ref cuptiActivityConfigureUnifiedMemoryCounter"]
 #[repr(C)]
 #[repr(align(8))]
@@ -3032,7 +3208,7 @@ impl Default for CUpti_Activity {
 #[doc = " \\brief The activity record for memory copies.\n\n This activity record represents a memory copy\n (CUPTI_ACTIVITY_KIND_MEMCPY)."]
 #[repr(C, packed(8))]
 #[derive(Debug, Copy, Clone)]
-pub struct CUpti_ActivityMemcpy5 {
+pub struct CUpti_ActivityMemcpy6 {
     #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_MEMCPY."]
     pub kind: CUpti_ActivityKind,
     #[doc = " The kind of the memory copy, stored as a byte to reduce record\n size. \\see CUpti_ActivityMemcpyKind"]
@@ -3071,56 +3247,64 @@ pub struct CUpti_ActivityMemcpy5 {
     pub channelID: u32,
     #[doc = " The type of the channel"]
     pub channelType: CUpti_ChannelType,
+    #[doc = " This field is used to indicate if the memcpy operation is part of a device graph launch."]
+    pub isDeviceLaunched: u8,
     #[doc = "  Reserved for internal use."]
-    pub pad2: u32,
+    pub pad2: [u8; 3usize],
+    #[doc = " The total number of memcopy operations traced in this record.\n This field is valid for memcpy operations happening using\n MemcpyBatchAsync APIs in CUDA.\n In MemcpyBatchAsync APIs, multiple memcpy operations are batched\n together for optimization purposes based on certain heuristics.\n For other memcpy operations, this field will be 1."]
+    pub copyCount: u64,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of CUpti_ActivityMemcpy5"][::std::mem::size_of::<CUpti_ActivityMemcpy5>() - 88usize];
-    ["Alignment of CUpti_ActivityMemcpy5"]
-        [::std::mem::align_of::<CUpti_ActivityMemcpy5>() - 8usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::kind"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, kind) - 0usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::copyKind"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, copyKind) - 4usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::srcKind"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, srcKind) - 5usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::dstKind"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, dstKind) - 6usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::flags"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, flags) - 7usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::bytes"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, bytes) - 8usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::start"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, start) - 16usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::end"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, end) - 24usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::deviceId"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, deviceId) - 32usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::contextId"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, contextId) - 36usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::streamId"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, streamId) - 40usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::correlationId"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, correlationId) - 44usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::runtimeCorrelationId"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, runtimeCorrelationId) - 48usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::pad"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, pad) - 52usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::reserved0"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, reserved0) - 56usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::graphNodeId"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, graphNodeId) - 64usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::graphId"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, graphId) - 72usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::channelID"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, channelID) - 76usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::channelType"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, channelType) - 80usize];
-    ["Offset of field: CUpti_ActivityMemcpy5::pad2"]
-        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, pad2) - 84usize];
+    ["Size of CUpti_ActivityMemcpy6"][::std::mem::size_of::<CUpti_ActivityMemcpy6>() - 96usize];
+    ["Alignment of CUpti_ActivityMemcpy6"]
+        [::std::mem::align_of::<CUpti_ActivityMemcpy6>() - 8usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::copyKind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, copyKind) - 4usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::srcKind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, srcKind) - 5usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::dstKind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, dstKind) - 6usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::flags"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, flags) - 7usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::bytes"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, bytes) - 8usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::start"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, start) - 16usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::end"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, end) - 24usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::deviceId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, deviceId) - 32usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, contextId) - 36usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, streamId) - 40usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, correlationId) - 44usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::runtimeCorrelationId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, runtimeCorrelationId) - 48usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::pad"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, pad) - 52usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::reserved0"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, reserved0) - 56usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::graphNodeId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, graphNodeId) - 64usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::graphId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, graphId) - 72usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::channelID"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, channelID) - 76usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::channelType"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, channelType) - 80usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::isDeviceLaunched"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, isDeviceLaunched) - 84usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::pad2"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, pad2) - 85usize];
+    ["Offset of field: CUpti_ActivityMemcpy6::copyCount"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy6, copyCount) - 88usize];
 };
-impl Default for CUpti_ActivityMemcpy5 {
+impl Default for CUpti_ActivityMemcpy6 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -3272,8 +3456,10 @@ pub struct CUpti_ActivityMemset4 {
     pub channelID: u32,
     #[doc = " The type of the channel"]
     pub channelType: CUpti_ChannelType,
+    #[doc = " This field is used to indicate if the memset operation is part of a device graph launch."]
+    pub isDeviceLaunched: u8,
     #[doc = "  Undefined. Reserved for internal use"]
-    pub pad2: u32,
+    pub pad2: [u8; 3usize],
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
@@ -3314,8 +3500,10 @@ const _: () = {
         [::std::mem::offset_of!(CUpti_ActivityMemset4, channelID) - 76usize];
     ["Offset of field: CUpti_ActivityMemset4::channelType"]
         [::std::mem::offset_of!(CUpti_ActivityMemset4, channelType) - 80usize];
+    ["Offset of field: CUpti_ActivityMemset4::isDeviceLaunched"]
+        [::std::mem::offset_of!(CUpti_ActivityMemset4, isDeviceLaunched) - 84usize];
     ["Offset of field: CUpti_ActivityMemset4::pad2"]
-        [::std::mem::offset_of!(CUpti_ActivityMemset4, pad2) - 84usize];
+        [::std::mem::offset_of!(CUpti_ActivityMemset4, pad2) - 85usize];
 };
 impl Default for CUpti_ActivityMemset4 {
     fn default() -> Self {
@@ -3582,7 +3770,7 @@ impl ::std::fmt::Debug for CUpti_ActivityMemory4 {
 #[doc = " \\brief The activity record for memory pool.\n\n This activity record represents a memory pool creation, destruction and\n trimming (CUPTI_ACTIVITY_KIND_MEMORY_POOL).\n This activity record provides separate records for memory pool creation,\n destruction and trimming operations.\n This allows to correlate the corresponding driver and runtime API\n activity record with the memory pool operation.\n"]
 #[repr(C, packed(8))]
 #[derive(Debug, Copy, Clone)]
-pub struct CUpti_ActivityMemoryPool2 {
+pub struct CUpti_ActivityMemoryPool3 {
     #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_MEMORY_POOL"]
     pub kind: CUpti_ActivityKind,
     #[doc = " The memory operation requested by the user, \\ref CUpti_ActivityMemoryPoolOperationType."]
@@ -3607,39 +3795,47 @@ pub struct CUpti_ActivityMemoryPool2 {
     pub timestamp: u64,
     #[doc = " The utilized size of the memory pool. \\p utilizedSize is\n valid for CUPTI_ACTIVITY_MEMORY_POOL_TYPE_LOCAL, \\ref CUpti_ActivityMemoryPoolType."]
     pub utilizedSize: u64,
+    #[doc = " Whether the pool is of managed memory allocation or pinned memory allocation.\n If it is 0, it is pinned and if it is 1, the memory pool allocation is of managed memory type."]
+    pub isManagedPool: u8,
+    #[doc = " Undefined. Reserved for internal use."]
+    pub pad2: [u8; 7usize],
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of CUpti_ActivityMemoryPool2"]
-        [::std::mem::size_of::<CUpti_ActivityMemoryPool2>() - 72usize];
-    ["Alignment of CUpti_ActivityMemoryPool2"]
-        [::std::mem::align_of::<CUpti_ActivityMemoryPool2>() - 8usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::kind"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, kind) - 0usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::memoryPoolOperationType"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, memoryPoolOperationType) - 4usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::memoryPoolType"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, memoryPoolType) - 8usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::correlationId"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, correlationId) - 12usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::processId"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, processId) - 16usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::deviceId"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, deviceId) - 20usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::minBytesToKeep"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, minBytesToKeep) - 24usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::address"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, address) - 32usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::size"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, size) - 40usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::releaseThreshold"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, releaseThreshold) - 48usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::timestamp"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, timestamp) - 56usize];
-    ["Offset of field: CUpti_ActivityMemoryPool2::utilizedSize"]
-        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, utilizedSize) - 64usize];
+    ["Size of CUpti_ActivityMemoryPool3"]
+        [::std::mem::size_of::<CUpti_ActivityMemoryPool3>() - 80usize];
+    ["Alignment of CUpti_ActivityMemoryPool3"]
+        [::std::mem::align_of::<CUpti_ActivityMemoryPool3>() - 8usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::memoryPoolOperationType"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, memoryPoolOperationType) - 4usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::memoryPoolType"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, memoryPoolType) - 8usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, correlationId) - 12usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::processId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, processId) - 16usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::deviceId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, deviceId) - 20usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::minBytesToKeep"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, minBytesToKeep) - 24usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::address"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, address) - 32usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::size"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, size) - 40usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::releaseThreshold"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, releaseThreshold) - 48usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::timestamp"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, timestamp) - 56usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::utilizedSize"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, utilizedSize) - 64usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::isManagedPool"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, isManagedPool) - 72usize];
+    ["Offset of field: CUpti_ActivityMemoryPool3::pad2"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool3, pad2) - 73usize];
 };
-impl Default for CUpti_ActivityMemoryPool2 {
+impl Default for CUpti_ActivityMemoryPool3 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -3669,10 +3865,10 @@ pub type CUpti_FuncShmemLimitConfig = ::std::os::raw::c_uint;
 #[doc = " \\brief The activity record for kernel.\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL)"]
 #[repr(C, packed(8))]
 #[derive(Copy, Clone)]
-pub struct CUpti_ActivityKernel9 {
+pub struct CUpti_ActivityKernel10 {
     #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_KERNEL or\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL."]
     pub kind: CUpti_ActivityKind,
-    pub cacheConfig: CUpti_ActivityKernel9__bindgen_ty_1,
+    pub cacheConfig: CUpti_ActivityKernel10__bindgen_ty_1,
     #[doc = " The shared memory configuration used for the kernel. The value is one of\n the CUsharedconfig enumeration values from cuda.h."]
     pub sharedMemoryConfig: u8,
     #[doc = " The number of registers required for each thread executing the\n kernel."]
@@ -3761,28 +3957,31 @@ pub struct CUpti_ActivityKernel9 {
     pub maxPotentialClusterSize: u32,
     #[doc = " The maximum clusters that could co-exist on the target device for the kernel"]
     pub maxActiveClusters: u32,
+    #[doc = " This field is set to 1 if the kernel is part of a device launched graph."]
+    pub isDeviceLaunched: u8,
+    pub padding3: [u8; 7usize],
 }
-#[doc = " For devices with compute capability 7.0+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
+#[doc = " For devices with compute capability 7.5+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub union CUpti_ActivityKernel9__bindgen_ty_1 {
+pub union CUpti_ActivityKernel10__bindgen_ty_1 {
     pub both: u8,
-    pub config: CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1,
+    pub config: CUpti_ActivityKernel10__bindgen_ty_1__bindgen_ty_1,
 }
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
-pub struct CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1 {
+pub struct CUpti_ActivityKernel10__bindgen_ty_1__bindgen_ty_1 {
     pub _bitfield_align_1: [u8; 0],
     pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize]>,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1"]
-        [::std::mem::size_of::<CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1>() - 1usize];
-    ["Alignment of CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1"]
-        [::std::mem::align_of::<CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1>() - 1usize];
+    ["Size of CUpti_ActivityKernel10__bindgen_ty_1__bindgen_ty_1"]
+        [::std::mem::size_of::<CUpti_ActivityKernel10__bindgen_ty_1__bindgen_ty_1>() - 1usize];
+    ["Alignment of CUpti_ActivityKernel10__bindgen_ty_1__bindgen_ty_1"]
+        [::std::mem::align_of::<CUpti_ActivityKernel10__bindgen_ty_1__bindgen_ty_1>() - 1usize];
 };
-impl CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1 {
+impl CUpti_ActivityKernel10__bindgen_ty_1__bindgen_ty_1 {
     #[inline]
     pub fn requested(&self) -> u8 {
         unsafe { ::std::mem::transmute(self._bitfield_1.get(0usize, 4u8) as u8) }
@@ -3865,16 +4064,16 @@ impl CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1 {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of CUpti_ActivityKernel9__bindgen_ty_1"]
-        [::std::mem::size_of::<CUpti_ActivityKernel9__bindgen_ty_1>() - 1usize];
-    ["Alignment of CUpti_ActivityKernel9__bindgen_ty_1"]
-        [::std::mem::align_of::<CUpti_ActivityKernel9__bindgen_ty_1>() - 1usize];
-    ["Offset of field: CUpti_ActivityKernel9__bindgen_ty_1::both"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9__bindgen_ty_1, both) - 0usize];
-    ["Offset of field: CUpti_ActivityKernel9__bindgen_ty_1::config"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9__bindgen_ty_1, config) - 0usize];
+    ["Size of CUpti_ActivityKernel10__bindgen_ty_1"]
+        [::std::mem::size_of::<CUpti_ActivityKernel10__bindgen_ty_1>() - 1usize];
+    ["Alignment of CUpti_ActivityKernel10__bindgen_ty_1"]
+        [::std::mem::align_of::<CUpti_ActivityKernel10__bindgen_ty_1>() - 1usize];
+    ["Offset of field: CUpti_ActivityKernel10__bindgen_ty_1::both"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10__bindgen_ty_1, both) - 0usize];
+    ["Offset of field: CUpti_ActivityKernel10__bindgen_ty_1::config"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10__bindgen_ty_1, config) - 0usize];
 };
-impl Default for CUpti_ActivityKernel9__bindgen_ty_1 {
+impl Default for CUpti_ActivityKernel10__bindgen_ty_1 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -3883,110 +4082,116 @@ impl Default for CUpti_ActivityKernel9__bindgen_ty_1 {
         }
     }
 }
-impl ::std::fmt::Debug for CUpti_ActivityKernel9__bindgen_ty_1 {
+impl ::std::fmt::Debug for CUpti_ActivityKernel10__bindgen_ty_1 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write!(f, "CUpti_ActivityKernel9__bindgen_ty_1 {{ union }}")
+        write!(f, "CUpti_ActivityKernel10__bindgen_ty_1 {{ union }}")
     }
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of CUpti_ActivityKernel9"][::std::mem::size_of::<CUpti_ActivityKernel9>() - 208usize];
-    ["Alignment of CUpti_ActivityKernel9"]
-        [::std::mem::align_of::<CUpti_ActivityKernel9>() - 8usize];
-    ["Offset of field: CUpti_ActivityKernel9::kind"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, kind) - 0usize];
-    ["Offset of field: CUpti_ActivityKernel9::cacheConfig"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, cacheConfig) - 4usize];
-    ["Offset of field: CUpti_ActivityKernel9::sharedMemoryConfig"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, sharedMemoryConfig) - 5usize];
-    ["Offset of field: CUpti_ActivityKernel9::registersPerThread"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, registersPerThread) - 6usize];
-    ["Offset of field: CUpti_ActivityKernel9::partitionedGlobalCacheRequested"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, partitionedGlobalCacheRequested) - 8usize];
-    ["Offset of field: CUpti_ActivityKernel9::partitionedGlobalCacheExecuted"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, partitionedGlobalCacheExecuted) - 12usize];
-    ["Offset of field: CUpti_ActivityKernel9::start"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, start) - 16usize];
-    ["Offset of field: CUpti_ActivityKernel9::end"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, end) - 24usize];
-    ["Offset of field: CUpti_ActivityKernel9::completed"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, completed) - 32usize];
-    ["Offset of field: CUpti_ActivityKernel9::deviceId"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, deviceId) - 40usize];
-    ["Offset of field: CUpti_ActivityKernel9::contextId"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, contextId) - 44usize];
-    ["Offset of field: CUpti_ActivityKernel9::streamId"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, streamId) - 48usize];
-    ["Offset of field: CUpti_ActivityKernel9::gridX"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, gridX) - 52usize];
-    ["Offset of field: CUpti_ActivityKernel9::gridY"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, gridY) - 56usize];
-    ["Offset of field: CUpti_ActivityKernel9::gridZ"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, gridZ) - 60usize];
-    ["Offset of field: CUpti_ActivityKernel9::blockX"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, blockX) - 64usize];
-    ["Offset of field: CUpti_ActivityKernel9::blockY"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, blockY) - 68usize];
-    ["Offset of field: CUpti_ActivityKernel9::blockZ"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, blockZ) - 72usize];
-    ["Offset of field: CUpti_ActivityKernel9::staticSharedMemory"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, staticSharedMemory) - 76usize];
-    ["Offset of field: CUpti_ActivityKernel9::dynamicSharedMemory"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, dynamicSharedMemory) - 80usize];
-    ["Offset of field: CUpti_ActivityKernel9::localMemoryPerThread"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, localMemoryPerThread) - 84usize];
-    ["Offset of field: CUpti_ActivityKernel9::localMemoryTotal"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, localMemoryTotal) - 88usize];
-    ["Offset of field: CUpti_ActivityKernel9::correlationId"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, correlationId) - 92usize];
-    ["Offset of field: CUpti_ActivityKernel9::gridId"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, gridId) - 96usize];
-    ["Offset of field: CUpti_ActivityKernel9::name"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, name) - 104usize];
-    ["Offset of field: CUpti_ActivityKernel9::reserved0"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, reserved0) - 112usize];
-    ["Offset of field: CUpti_ActivityKernel9::queued"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, queued) - 120usize];
-    ["Offset of field: CUpti_ActivityKernel9::submitted"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, submitted) - 128usize];
-    ["Offset of field: CUpti_ActivityKernel9::launchType"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, launchType) - 136usize];
-    ["Offset of field: CUpti_ActivityKernel9::isSharedMemoryCarveoutRequested"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, isSharedMemoryCarveoutRequested) - 137usize];
-    ["Offset of field: CUpti_ActivityKernel9::sharedMemoryCarveoutRequested"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, sharedMemoryCarveoutRequested) - 138usize];
-    ["Offset of field: CUpti_ActivityKernel9::padding"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, padding) - 139usize];
-    ["Offset of field: CUpti_ActivityKernel9::sharedMemoryExecuted"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, sharedMemoryExecuted) - 140usize];
-    ["Offset of field: CUpti_ActivityKernel9::graphNodeId"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, graphNodeId) - 144usize];
-    ["Offset of field: CUpti_ActivityKernel9::shmemLimitConfig"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, shmemLimitConfig) - 152usize];
-    ["Offset of field: CUpti_ActivityKernel9::graphId"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, graphId) - 156usize];
-    ["Offset of field: CUpti_ActivityKernel9::pAccessPolicyWindow"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, pAccessPolicyWindow) - 160usize];
-    ["Offset of field: CUpti_ActivityKernel9::channelID"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, channelID) - 168usize];
-    ["Offset of field: CUpti_ActivityKernel9::channelType"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, channelType) - 172usize];
-    ["Offset of field: CUpti_ActivityKernel9::clusterX"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, clusterX) - 176usize];
-    ["Offset of field: CUpti_ActivityKernel9::clusterY"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, clusterY) - 180usize];
-    ["Offset of field: CUpti_ActivityKernel9::clusterZ"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, clusterZ) - 184usize];
-    ["Offset of field: CUpti_ActivityKernel9::clusterSchedulingPolicy"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, clusterSchedulingPolicy) - 188usize];
-    ["Offset of field: CUpti_ActivityKernel9::localMemoryTotal_v2"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, localMemoryTotal_v2) - 192usize];
-    ["Offset of field: CUpti_ActivityKernel9::maxPotentialClusterSize"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, maxPotentialClusterSize) - 200usize];
-    ["Offset of field: CUpti_ActivityKernel9::maxActiveClusters"]
-        [::std::mem::offset_of!(CUpti_ActivityKernel9, maxActiveClusters) - 204usize];
+    ["Size of CUpti_ActivityKernel10"][::std::mem::size_of::<CUpti_ActivityKernel10>() - 216usize];
+    ["Alignment of CUpti_ActivityKernel10"]
+        [::std::mem::align_of::<CUpti_ActivityKernel10>() - 8usize];
+    ["Offset of field: CUpti_ActivityKernel10::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityKernel10::cacheConfig"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, cacheConfig) - 4usize];
+    ["Offset of field: CUpti_ActivityKernel10::sharedMemoryConfig"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, sharedMemoryConfig) - 5usize];
+    ["Offset of field: CUpti_ActivityKernel10::registersPerThread"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, registersPerThread) - 6usize];
+    ["Offset of field: CUpti_ActivityKernel10::partitionedGlobalCacheRequested"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, partitionedGlobalCacheRequested) - 8usize];
+    ["Offset of field: CUpti_ActivityKernel10::partitionedGlobalCacheExecuted"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, partitionedGlobalCacheExecuted) - 12usize];
+    ["Offset of field: CUpti_ActivityKernel10::start"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, start) - 16usize];
+    ["Offset of field: CUpti_ActivityKernel10::end"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, end) - 24usize];
+    ["Offset of field: CUpti_ActivityKernel10::completed"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, completed) - 32usize];
+    ["Offset of field: CUpti_ActivityKernel10::deviceId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, deviceId) - 40usize];
+    ["Offset of field: CUpti_ActivityKernel10::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, contextId) - 44usize];
+    ["Offset of field: CUpti_ActivityKernel10::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, streamId) - 48usize];
+    ["Offset of field: CUpti_ActivityKernel10::gridX"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, gridX) - 52usize];
+    ["Offset of field: CUpti_ActivityKernel10::gridY"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, gridY) - 56usize];
+    ["Offset of field: CUpti_ActivityKernel10::gridZ"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, gridZ) - 60usize];
+    ["Offset of field: CUpti_ActivityKernel10::blockX"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, blockX) - 64usize];
+    ["Offset of field: CUpti_ActivityKernel10::blockY"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, blockY) - 68usize];
+    ["Offset of field: CUpti_ActivityKernel10::blockZ"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, blockZ) - 72usize];
+    ["Offset of field: CUpti_ActivityKernel10::staticSharedMemory"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, staticSharedMemory) - 76usize];
+    ["Offset of field: CUpti_ActivityKernel10::dynamicSharedMemory"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, dynamicSharedMemory) - 80usize];
+    ["Offset of field: CUpti_ActivityKernel10::localMemoryPerThread"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, localMemoryPerThread) - 84usize];
+    ["Offset of field: CUpti_ActivityKernel10::localMemoryTotal"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, localMemoryTotal) - 88usize];
+    ["Offset of field: CUpti_ActivityKernel10::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, correlationId) - 92usize];
+    ["Offset of field: CUpti_ActivityKernel10::gridId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, gridId) - 96usize];
+    ["Offset of field: CUpti_ActivityKernel10::name"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, name) - 104usize];
+    ["Offset of field: CUpti_ActivityKernel10::reserved0"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, reserved0) - 112usize];
+    ["Offset of field: CUpti_ActivityKernel10::queued"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, queued) - 120usize];
+    ["Offset of field: CUpti_ActivityKernel10::submitted"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, submitted) - 128usize];
+    ["Offset of field: CUpti_ActivityKernel10::launchType"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, launchType) - 136usize];
+    ["Offset of field: CUpti_ActivityKernel10::isSharedMemoryCarveoutRequested"][::std::mem::offset_of!(
+        CUpti_ActivityKernel10,
+        isSharedMemoryCarveoutRequested
+    ) - 137usize];
+    ["Offset of field: CUpti_ActivityKernel10::sharedMemoryCarveoutRequested"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, sharedMemoryCarveoutRequested) - 138usize];
+    ["Offset of field: CUpti_ActivityKernel10::padding"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, padding) - 139usize];
+    ["Offset of field: CUpti_ActivityKernel10::sharedMemoryExecuted"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, sharedMemoryExecuted) - 140usize];
+    ["Offset of field: CUpti_ActivityKernel10::graphNodeId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, graphNodeId) - 144usize];
+    ["Offset of field: CUpti_ActivityKernel10::shmemLimitConfig"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, shmemLimitConfig) - 152usize];
+    ["Offset of field: CUpti_ActivityKernel10::graphId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, graphId) - 156usize];
+    ["Offset of field: CUpti_ActivityKernel10::pAccessPolicyWindow"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, pAccessPolicyWindow) - 160usize];
+    ["Offset of field: CUpti_ActivityKernel10::channelID"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, channelID) - 168usize];
+    ["Offset of field: CUpti_ActivityKernel10::channelType"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, channelType) - 172usize];
+    ["Offset of field: CUpti_ActivityKernel10::clusterX"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, clusterX) - 176usize];
+    ["Offset of field: CUpti_ActivityKernel10::clusterY"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, clusterY) - 180usize];
+    ["Offset of field: CUpti_ActivityKernel10::clusterZ"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, clusterZ) - 184usize];
+    ["Offset of field: CUpti_ActivityKernel10::clusterSchedulingPolicy"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, clusterSchedulingPolicy) - 188usize];
+    ["Offset of field: CUpti_ActivityKernel10::localMemoryTotal_v2"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, localMemoryTotal_v2) - 192usize];
+    ["Offset of field: CUpti_ActivityKernel10::maxPotentialClusterSize"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, maxPotentialClusterSize) - 200usize];
+    ["Offset of field: CUpti_ActivityKernel10::maxActiveClusters"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, maxActiveClusters) - 204usize];
+    ["Offset of field: CUpti_ActivityKernel10::isDeviceLaunched"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, isDeviceLaunched) - 208usize];
+    ["Offset of field: CUpti_ActivityKernel10::padding3"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel10, padding3) - 209usize];
 };
-impl Default for CUpti_ActivityKernel9 {
+impl Default for CUpti_ActivityKernel10 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -3995,9 +4200,9 @@ impl Default for CUpti_ActivityKernel9 {
         }
     }
 }
-impl ::std::fmt::Debug for CUpti_ActivityKernel9 {
+impl ::std::fmt::Debug for CUpti_ActivityKernel10 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write ! (f , "CUpti_ActivityKernel9 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType)
+        write ! (f , "CUpti_ActivityKernel10 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?}, padding3: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType , self . padding3)
     }
 }
 #[doc = " \\brief The activity record for CDP (CUDA Dynamic Parallelism)\n kernel.\n\n This activity record represents a CDP kernel execution."]
@@ -4796,7 +5001,7 @@ pub struct CUpti_ActivityDevice5 {
     pub eccEnabled: u32,
     #[doc = " The device UUID. This value is the globally unique immutable\n alphanumeric identifier of the device."]
     pub uuid: CUuuid,
-    #[doc = " The device name. This name is shared across all activity records\n representing instances of the device, and so should not be\n modified."]
+    #[doc = " The device name. Client is responsible for freeing this memory using the free function when done."]
     pub name: *const ::std::os::raw::c_char,
     #[doc = " Flag to indicate whether the device is visible to CUDA. Users can\n set the device visibility using CUDA_VISIBLE_DEVICES environment"]
     pub isCudaVisible: u8,
@@ -5197,7 +5402,7 @@ impl ::std::fmt::Debug for CUpti_ActivityMarker2 {
 #[doc = " \\brief The activity record providing detailed information for a marker.\n\n User must enable CUPTI_ACTIVITY_KIND_MARKER as well\n to get records for marker data.\n The marker data contains color, payload, and category.\n (CUPTI_ACTIVITY_KIND_MARKER_DATA)."]
 #[repr(C, packed(8))]
 #[derive(Copy, Clone)]
-pub struct CUpti_ActivityMarkerData {
+pub struct CUpti_ActivityMarkerData2 {
     #[doc = " The activity record kind, must be\n CUPTI_ACTIVITY_KIND_MARKER_DATA."]
     pub kind: CUpti_ActivityKind,
     #[doc = " The flags associated with the marker. \\see CUpti_ActivityFlag"]
@@ -5212,29 +5417,37 @@ pub struct CUpti_ActivityMarkerData {
     pub color: u32,
     #[doc = " The category for the marker."]
     pub category: u32,
+    #[doc = " CUPTI maintained domain id required for NVTX extended payloads.\n To parse the payload correctly, the domain id must be used to\n identify the payload attributes as they are domain specific."]
+    pub cuptiDomainId: u32,
+    #[doc = " Reserved for internal use."]
+    pub padding: u32,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of CUpti_ActivityMarkerData"]
-        [::std::mem::size_of::<CUpti_ActivityMarkerData>() - 32usize];
-    ["Alignment of CUpti_ActivityMarkerData"]
-        [::std::mem::align_of::<CUpti_ActivityMarkerData>() - 8usize];
-    ["Offset of field: CUpti_ActivityMarkerData::kind"]
-        [::std::mem::offset_of!(CUpti_ActivityMarkerData, kind) - 0usize];
-    ["Offset of field: CUpti_ActivityMarkerData::flags"]
-        [::std::mem::offset_of!(CUpti_ActivityMarkerData, flags) - 4usize];
-    ["Offset of field: CUpti_ActivityMarkerData::id"]
-        [::std::mem::offset_of!(CUpti_ActivityMarkerData, id) - 8usize];
-    ["Offset of field: CUpti_ActivityMarkerData::payloadKind"]
-        [::std::mem::offset_of!(CUpti_ActivityMarkerData, payloadKind) - 12usize];
-    ["Offset of field: CUpti_ActivityMarkerData::payload"]
-        [::std::mem::offset_of!(CUpti_ActivityMarkerData, payload) - 16usize];
-    ["Offset of field: CUpti_ActivityMarkerData::color"]
-        [::std::mem::offset_of!(CUpti_ActivityMarkerData, color) - 24usize];
-    ["Offset of field: CUpti_ActivityMarkerData::category"]
-        [::std::mem::offset_of!(CUpti_ActivityMarkerData, category) - 28usize];
+    ["Size of CUpti_ActivityMarkerData2"]
+        [::std::mem::size_of::<CUpti_ActivityMarkerData2>() - 40usize];
+    ["Alignment of CUpti_ActivityMarkerData2"]
+        [::std::mem::align_of::<CUpti_ActivityMarkerData2>() - 8usize];
+    ["Offset of field: CUpti_ActivityMarkerData2::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData2, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityMarkerData2::flags"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData2, flags) - 4usize];
+    ["Offset of field: CUpti_ActivityMarkerData2::id"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData2, id) - 8usize];
+    ["Offset of field: CUpti_ActivityMarkerData2::payloadKind"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData2, payloadKind) - 12usize];
+    ["Offset of field: CUpti_ActivityMarkerData2::payload"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData2, payload) - 16usize];
+    ["Offset of field: CUpti_ActivityMarkerData2::color"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData2, color) - 24usize];
+    ["Offset of field: CUpti_ActivityMarkerData2::category"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData2, category) - 28usize];
+    ["Offset of field: CUpti_ActivityMarkerData2::cuptiDomainId"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData2, cuptiDomainId) - 32usize];
+    ["Offset of field: CUpti_ActivityMarkerData2::padding"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData2, padding) - 36usize];
 };
-impl Default for CUpti_ActivityMarkerData {
+impl Default for CUpti_ActivityMarkerData2 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -5243,12 +5456,12 @@ impl Default for CUpti_ActivityMarkerData {
         }
     }
 }
-impl ::std::fmt::Debug for CUpti_ActivityMarkerData {
+impl ::std::fmt::Debug for CUpti_ActivityMarkerData2 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        write ! (f , "CUpti_ActivityMarkerData {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}" , self . kind , self . flags , self . payloadKind , self . payload)
+        write ! (f , "CUpti_ActivityMarkerData2 {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}" , self . kind , self . flags , self . payloadKind , self . payload)
     }
 }
-#[doc = " \\brief The activity record for CUPTI and driver overheads.\n\n This activity record provides CUPTI and driver overhead information\n (CUPTI_ACTIVITY_OVERHEAD)."]
+#[doc = " \\brief The activity record for CUPTI and driver overheads.\n\n This activity record provides CUPTI and driver overhead information\n (CUPTI_ACTIVITY_KIND_OVERHEAD)."]
 #[repr(C, packed(8))]
 #[derive(Copy, Clone)]
 pub struct CUpti_ActivityOverhead3 {
@@ -5673,7 +5886,7 @@ impl Default for CUpti_ActivityPCSamplingRecordInfo {
 #[doc = " \\brief The activity record for Unified Memory counters (CUDA 7.0 and beyond)\n\n This activity record represents a Unified Memory counter\n (CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER)."]
 #[repr(C, packed(8))]
 #[derive(Debug, Copy, Clone)]
-pub struct CUpti_ActivityUnifiedMemoryCounter2 {
+pub struct CUpti_ActivityUnifiedMemoryCounter3 {
     #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER"]
     pub kind: CUpti_ActivityKind,
     #[doc = " The Unified Memory counter kind"]
@@ -5686,7 +5899,7 @@ pub struct CUpti_ActivityUnifiedMemoryCounter2 {
     pub end: u64,
     #[doc = " This is the virtual base address of the page/s being transferred. For cpu and\n gpu faults, the virtual address for the page that faulted."]
     pub address: u64,
-    #[doc = " The ID of the source CPU/device involved in the memory transfer, page fault, thrashing,\n throttling or remote map operation. For counterKind\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THRASHING, it is a bitwise ORing of the\n device IDs fighting for the memory region. Ignore this field if counterKind is\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT"]
+    #[doc = " The ID of the source CPU/device involved in the memory transfer, page fault, thrashing,\n throttling or remote map operation. For counterKind\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THRASHING, it is a bitwise ORing of the\n device IDs fighting for the memory region, ONLY if there are less than 32 devices. Ignore this field if counterKind is\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT"]
     pub srcId: u32,
     #[doc = " The ID of the destination CPU/device involved in the memory transfer or remote map\n operation. Ignore this field if counterKind is\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THRASHING or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THROTTLING"]
     pub dstId: u32,
@@ -5698,39 +5911,43 @@ pub struct CUpti_ActivityUnifiedMemoryCounter2 {
     pub flags: u32,
     #[doc = " Undefined. Reserved for internal use."]
     pub pad: u32,
+    #[doc = " \\brief The bitmask of devices involved in the operation.\n\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THRASHING, it is a bitwise ORing of the\n device IDs fighting for the memory region. processors[0] represents the device ID of the device 0 to device 63,\n processors[1] represents device ID of device 64 to device 127 and so on.\n Ignore this field if counterKind is\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THROTTLING or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_REMOTE_MAP or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_HTOD or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_DTOH or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_DTOD or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_FAULT_REPLAY"]
+    pub processors: [u64; 5usize],
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of CUpti_ActivityUnifiedMemoryCounter2"]
-        [::std::mem::size_of::<CUpti_ActivityUnifiedMemoryCounter2>() - 64usize];
-    ["Alignment of CUpti_ActivityUnifiedMemoryCounter2"]
-        [::std::mem::align_of::<CUpti_ActivityUnifiedMemoryCounter2>() - 8usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::kind"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, kind) - 0usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::counterKind"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, counterKind) - 4usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::value"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, value) - 8usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::start"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, start) - 16usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::end"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, end) - 24usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::address"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, address) - 32usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::srcId"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, srcId) - 40usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::dstId"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, dstId) - 44usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::streamId"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, streamId) - 48usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::processId"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, processId) - 52usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::flags"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, flags) - 56usize];
-    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::pad"]
-        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, pad) - 60usize];
+    ["Size of CUpti_ActivityUnifiedMemoryCounter3"]
+        [::std::mem::size_of::<CUpti_ActivityUnifiedMemoryCounter3>() - 104usize];
+    ["Alignment of CUpti_ActivityUnifiedMemoryCounter3"]
+        [::std::mem::align_of::<CUpti_ActivityUnifiedMemoryCounter3>() - 8usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::counterKind"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, counterKind) - 4usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::value"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, value) - 8usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::start"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, start) - 16usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::end"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, end) - 24usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::address"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, address) - 32usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::srcId"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, srcId) - 40usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::dstId"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, dstId) - 44usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, streamId) - 48usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::processId"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, processId) - 52usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::flags"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, flags) - 56usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::pad"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, pad) - 60usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter3::processors"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter3, processors) - 64usize];
 };
-impl Default for CUpti_ActivityUnifiedMemoryCounter2 {
+impl Default for CUpti_ActivityUnifiedMemoryCounter3 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -5894,10 +6111,9 @@ impl Default for CUpti_ActivitySharedAccess {
     }
 }
 #[doc = " \\brief The activity record for CUDA event.\n\n This activity is used to track recorded events.\n (CUPTI_ACTIVITY_KIND_CUDA_EVENT)."]
-#[repr(C)]
-#[repr(align(8))]
+#[repr(C, packed(8))]
 #[derive(Debug, Copy, Clone)]
-pub struct CUpti_ActivityCudaEvent {
+pub struct CUpti_ActivityCudaEvent2 {
     #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_CUDA_EVENT."]
     pub kind: CUpti_ActivityKind,
     #[doc = " The correlation ID of the API to which this result is associated."]
@@ -5910,26 +6126,47 @@ pub struct CUpti_ActivityCudaEvent {
     pub eventId: u32,
     #[doc = " Undefined. Reserved for internal use."]
     pub pad: u32,
+    #[doc = " The ID of the device where the event was recorded."]
+    pub deviceId: u32,
+    #[doc = " Undefined. Reserved for internal use."]
+    pub pad2: u32,
+    #[doc = " Undefined. Reserved for internal use."]
+    pub reserved0: *mut ::std::os::raw::c_void,
+    #[doc = " The device-side timestamp on CUDA event record.\n Timestamp is in nanoseconds. Collection of this field is disabled by default.\n It can be enabled by calling CUPTI API \\ref cuptiActivityEnableCudaEventDeviceTimestamps"]
+    pub deviceTimestamp: u64,
+    #[doc = " A unique ID to associate event synchronization records\n with the latest CUDA Event record. Similar field is added\n in CUpti_ActivitySynchronization2 to associate CUDA Event\n record to the synchronization record.\n\n The same CUDA event can be used multiple times, so the\n event id will not be unique to correlate the synchronization\n record with the latest CUDA Event record.\n This field will be unique and can be used to do the required\n correlation."]
+    pub cudaEventSyncId: u64,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of CUpti_ActivityCudaEvent"][::std::mem::size_of::<CUpti_ActivityCudaEvent>() - 24usize];
-    ["Alignment of CUpti_ActivityCudaEvent"]
-        [::std::mem::align_of::<CUpti_ActivityCudaEvent>() - 8usize];
-    ["Offset of field: CUpti_ActivityCudaEvent::kind"]
-        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, kind) - 0usize];
-    ["Offset of field: CUpti_ActivityCudaEvent::correlationId"]
-        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, correlationId) - 4usize];
-    ["Offset of field: CUpti_ActivityCudaEvent::contextId"]
-        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, contextId) - 8usize];
-    ["Offset of field: CUpti_ActivityCudaEvent::streamId"]
-        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, streamId) - 12usize];
-    ["Offset of field: CUpti_ActivityCudaEvent::eventId"]
-        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, eventId) - 16usize];
-    ["Offset of field: CUpti_ActivityCudaEvent::pad"]
-        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, pad) - 20usize];
+    ["Size of CUpti_ActivityCudaEvent2"]
+        [::std::mem::size_of::<CUpti_ActivityCudaEvent2>() - 56usize];
+    ["Alignment of CUpti_ActivityCudaEvent2"]
+        [::std::mem::align_of::<CUpti_ActivityCudaEvent2>() - 8usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, correlationId) - 4usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, contextId) - 8usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, streamId) - 12usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::eventId"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, eventId) - 16usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::pad"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, pad) - 20usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::deviceId"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, deviceId) - 24usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::pad2"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, pad2) - 28usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::reserved0"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, reserved0) - 32usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::deviceTimestamp"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, deviceTimestamp) - 40usize];
+    ["Offset of field: CUpti_ActivityCudaEvent2::cudaEventSyncId"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent2, cudaEventSyncId) - 48usize];
 };
-impl Default for CUpti_ActivityCudaEvent {
+impl Default for CUpti_ActivityCudaEvent2 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -5985,7 +6222,7 @@ impl Default for CUpti_ActivityStream {
 #[doc = " \\brief The activity record for synchronization management.\n\n This activity is used to track various CUDA synchronization APIs.\n (CUPTI_ACTIVITY_KIND_SYNCHRONIZATION)."]
 #[repr(C, packed(8))]
 #[derive(Debug, Copy, Clone)]
-pub struct CUpti_ActivitySynchronization {
+pub struct CUpti_ActivitySynchronization2 {
     #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_SYNCHRONIZATION."]
     pub kind: CUpti_ActivityKind,
     #[doc = " The type of record."]
@@ -6002,31 +6239,43 @@ pub struct CUpti_ActivitySynchronization {
     pub streamId: u32,
     #[doc = " The event ID for which the synchronization API is called.\n A CUPTI_SYNCHRONIZATION_INVALID_VALUE value indicate the field is not applicable for this record.\n Not valid for cuCtxSynchronize, cuStreamSynchronize."]
     pub cudaEventId: u32,
+    #[doc = " A unique ID to associate event synchronization records\n with the latest CUDA Event record. Similar field is added\n in CUpti_ActivityCudaEvent2 to associate synchronization\n record to the CUDA Event record.\n\n The same CUDA event can be used multiple times, so the\n event id will not be unique to correlate the synchronization\n record with the latest CUDA Event record.\n This field will be unique and can be used to do the required\n correlation.\n\n A CUPTI_SYNCHRONIZATION_INVALID_VALUE value indicates that\n the field is not applicable for this record.\n Valid only for synchronization records related to CUDA Events."]
+    pub cudaEventSyncId: u64,
+    #[doc = " The return value for the synchronization record.\n Use cuptiActivityEnableAllSyncRecords API to enable/disable\n collection of synchronization records with return value being\n non-zero. This will be a CUresult value."]
+    pub returnValue: u32,
+    #[doc = " Undefined. Reserved for internal use."]
+    pub pad: u32,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of CUpti_ActivitySynchronization"]
-        [::std::mem::size_of::<CUpti_ActivitySynchronization>() - 40usize];
-    ["Alignment of CUpti_ActivitySynchronization"]
-        [::std::mem::align_of::<CUpti_ActivitySynchronization>() - 8usize];
-    ["Offset of field: CUpti_ActivitySynchronization::kind"]
-        [::std::mem::offset_of!(CUpti_ActivitySynchronization, kind) - 0usize];
-    ["Offset of field: CUpti_ActivitySynchronization::type_"]
-        [::std::mem::offset_of!(CUpti_ActivitySynchronization, type_) - 4usize];
-    ["Offset of field: CUpti_ActivitySynchronization::start"]
-        [::std::mem::offset_of!(CUpti_ActivitySynchronization, start) - 8usize];
-    ["Offset of field: CUpti_ActivitySynchronization::end"]
-        [::std::mem::offset_of!(CUpti_ActivitySynchronization, end) - 16usize];
-    ["Offset of field: CUpti_ActivitySynchronization::correlationId"]
-        [::std::mem::offset_of!(CUpti_ActivitySynchronization, correlationId) - 24usize];
-    ["Offset of field: CUpti_ActivitySynchronization::contextId"]
-        [::std::mem::offset_of!(CUpti_ActivitySynchronization, contextId) - 28usize];
-    ["Offset of field: CUpti_ActivitySynchronization::streamId"]
-        [::std::mem::offset_of!(CUpti_ActivitySynchronization, streamId) - 32usize];
-    ["Offset of field: CUpti_ActivitySynchronization::cudaEventId"]
-        [::std::mem::offset_of!(CUpti_ActivitySynchronization, cudaEventId) - 36usize];
+    ["Size of CUpti_ActivitySynchronization2"]
+        [::std::mem::size_of::<CUpti_ActivitySynchronization2>() - 56usize];
+    ["Alignment of CUpti_ActivitySynchronization2"]
+        [::std::mem::align_of::<CUpti_ActivitySynchronization2>() - 8usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::kind"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, kind) - 0usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::type_"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, type_) - 4usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::start"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, start) - 8usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::end"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, end) - 16usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, correlationId) - 24usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, contextId) - 28usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, streamId) - 32usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::cudaEventId"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, cudaEventId) - 36usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::cudaEventSyncId"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, cudaEventSyncId) - 40usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::returnValue"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, returnValue) - 48usize];
+    ["Offset of field: CUpti_ActivitySynchronization2::pad"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization2, pad) - 52usize];
 };
-impl Default for CUpti_ActivitySynchronization {
+impl Default for CUpti_ActivitySynchronization2 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -7107,10 +7356,76 @@ pub const CUPTI_PCIE_GEN_GEN3: CUpti_PcieGen = 3;
 pub const CUPTI_PCIE_GEN_GEN4: CUpti_PcieGen = 4;
 #[doc = " PCIE Generation 5"]
 pub const CUPTI_PCIE_GEN_GEN5: CUpti_PcieGen = 5;
-#[doc = " PCIE Generation 5"]
+#[doc = " PCIE Generation 6"]
+pub const CUPTI_PCIE_GEN_GEN6: CUpti_PcieGen = 6;
+#[doc = " PCIE Generation 6"]
 pub const CUPTI_PCIE_GEN_FORCE_INT: CUpti_PcieGen = 2147483647;
 #[doc = " \\brief PCIE Generation.\n\n Enumeration of PCIE Generation for\n pcie activity attribute pcieGeneration"]
 pub type CUpti_PcieGen = ::std::os::raw::c_uint;
+pub const CUPTI_CONFIDENTIAL_COMPUTE_INVALID_ROTATION_EVENT:
+    CUpti_ConfidentialComputeRotationEventType = 0;
+#[doc = " This channel has been blocked from accepting new CUDA work so a key rotation can be done."]
+pub const CUPTI_CONFIDENTIAL_COMPUTE_KEY_ROTATION_CHANNEL_BLOCKED:
+    CUpti_ConfidentialComputeRotationEventType = 1;
+#[doc = " This channel remains blocked and all queued CUDA work has completed.\n Other clients or channels may cause delays in starting the key rotation."]
+pub const CUPTI_CONFIDENTIAL_COMPUTE_KEY_ROTATION_CHANNEL_DRAINED:
+    CUpti_ConfidentialComputeRotationEventType = 2;
+#[doc = " Key rotations have completed and this channel is unblocked."]
+pub const CUPTI_CONFIDENTIAL_COMPUTE_KEY_ROTATION_CHANNEL_UNBLOCKED:
+    CUpti_ConfidentialComputeRotationEventType = 3;
+#[doc = " Key rotations have completed and this channel is unblocked."]
+pub const CUPTI_CONFIDENTIAL_COMPUTE_EVENT_TYPE_FORCE_INT:
+    CUpti_ConfidentialComputeRotationEventType = 2147483647;
+pub type CUpti_ConfidentialComputeRotationEventType = ::std::os::raw::c_uint;
+#[doc = " \\brief Event related to confidential compute encryption rotation\n\n This structure gives timestamps for stages of encryption rotation"]
+#[repr(C, packed(8))]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_ActivityConfidentialComputeRotation {
+    #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_CONFIDENTIAL_COMPUTE_ROTATION."]
+    pub kind: CUpti_ActivityKind,
+    #[doc = " Type of event \\ref CUpti_ConfidentialComputeRotationEventType"]
+    pub eventType: CUpti_ConfidentialComputeRotationEventType,
+    #[doc = " Device ID"]
+    pub deviceId: u32,
+    #[doc = " Context ID"]
+    pub contextId: u32,
+    #[doc = " Channel ID"]
+    pub channelId: u32,
+    #[doc = " Channel Type \\ref CUpti_ChannelType"]
+    pub channelType: CUpti_ChannelType,
+    #[doc = " Timestamp in ns"]
+    pub timestamp: u64,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityConfidentialComputeRotation"]
+        [::std::mem::size_of::<CUpti_ActivityConfidentialComputeRotation>() - 32usize];
+    ["Alignment of CUpti_ActivityConfidentialComputeRotation"]
+        [::std::mem::align_of::<CUpti_ActivityConfidentialComputeRotation>() - 8usize];
+    ["Offset of field: CUpti_ActivityConfidentialComputeRotation::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityConfidentialComputeRotation, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityConfidentialComputeRotation::eventType"]
+        [::std::mem::offset_of!(CUpti_ActivityConfidentialComputeRotation, eventType) - 4usize];
+    ["Offset of field: CUpti_ActivityConfidentialComputeRotation::deviceId"]
+        [::std::mem::offset_of!(CUpti_ActivityConfidentialComputeRotation, deviceId) - 8usize];
+    ["Offset of field: CUpti_ActivityConfidentialComputeRotation::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivityConfidentialComputeRotation, contextId) - 12usize];
+    ["Offset of field: CUpti_ActivityConfidentialComputeRotation::channelId"]
+        [::std::mem::offset_of!(CUpti_ActivityConfidentialComputeRotation, channelId) - 16usize];
+    ["Offset of field: CUpti_ActivityConfidentialComputeRotation::channelType"]
+        [::std::mem::offset_of!(CUpti_ActivityConfidentialComputeRotation, channelType) - 20usize];
+    ["Offset of field: CUpti_ActivityConfidentialComputeRotation::timestamp"]
+        [::std::mem::offset_of!(CUpti_ActivityConfidentialComputeRotation, timestamp) - 24usize];
+};
+impl Default for CUpti_ActivityConfidentialComputeRotation {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " \\brief The activity record for an instantaneous CUPTI event.\n\n This activity record represents a CUPTI event value\n (CUPTI_ACTIVITY_KIND_EVENT) sampled at a particular instant.\n This activity record kind is not produced by the activity API but is\n included for completeness and ease-of-use. Profiler frameworks built on\n top of CUPTI that collect event data at a particular time may choose to\n use this type to store the collected event data."]
 #[repr(C, packed(8))]
 #[derive(Debug, Copy, Clone)]
@@ -7428,11 +7743,11 @@ pub struct CUpti_ActivityGraphTrace2 {
     pub start: u64,
     #[doc = " The end timestamp for the graph execution, in ns. A value of 0\n for both the start and end timestamps indicates that timestamp\n information could not be collected for the graph."]
     pub end: u64,
-    #[doc = " The ID of the device where the first node of the graph is executed."]
+    #[doc = " The ID of the device where the first node of the graph is executed.\n If this is INT_MAX, then the start is on the host."]
     pub deviceId: u32,
     #[doc = " The unique ID of the graph that is launched."]
     pub graphId: u32,
-    #[doc = " The ID of the context where the first node of the graph is executed."]
+    #[doc = " The ID of the context where the first node of the graph is executed.\n If this is INT_MAX, then the start is on the host."]
     pub contextId: u32,
     #[doc = " The ID of the stream where the graph is being launched."]
     pub streamId: u32,
@@ -7481,7 +7796,144 @@ impl Default for CUpti_ActivityGraphTrace2 {
         }
     }
 }
-#[doc = " The device memory size (in bytes) reserved for storing profiling data for concurrent\n kernels (activity kind \\ref CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL), memcopies and memsets\n for each buffer on a context. The value is a size_t.\n\n There is a limit on how many device buffers can be allocated per context. User\n can query and set this limit using the attribute\n \\ref CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_POOL_LIMIT.\n CUPTI doesn't pre-allocate all the buffers, it pre-allocates only those many\n buffers as set by the attribute \\ref CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_PRE_ALLOCATE_VALUE.\n When all of the data in a buffer is consumed, it is added in the reuse pool, and\n CUPTI picks a buffer from this pool when a new buffer is needed. Thus memory\n footprint does not scale with the kernel count. Applications with the high density\n of kernels, memcopies and memsets might result in having CUPTI to allocate more device buffers.\n CUPTI allocates another buffer only when it runs out of the buffers in the\n reuse pool.\n\n Since buffer allocation happens in the main application thread, this might result\n in stalls in the critical path. CUPTI pre-allocates 3 buffers of the same size to\n mitigate this issue. User can query and set the pre-allocation limit using the\n attribute \\ref CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_PRE_ALLOCATE_VALUE.\n\n Having larger buffer size leaves less device memory for the application.\n Having smaller buffer size increases the risk of dropping timestamps for\n records if too many kernels or memcopies or memsets are launched at one time.\n\n This value only applies to new buffer allocations. Set this value before initializing\n CUDA or before creating a context to ensure it is considered for the following allocations.\n\n The default value is 3200000 (~3MB) which can accommodate profiling data\n up to 100,000 kernels, memcopies and memsets combined.\n\n Note: Starting with the CUDA 12.0 Update 1 release, CUPTI allocates profiling buffer in the\n device memory by default as this might help in improving the performance of the\n tracing run. Refer to the description of the attribute\n \\ref CUPTI_ACTIVITY_ATTR_MEM_ALLOCATION_TYPE_HOST_PINNED for more details.\n Size of the memory and maximum number of pools are still controlled by the attributes\n \\ref CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE and \\ref CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_POOL_LIMIT.\n\n Note: The actual amount of device memory per buffer reserved by CUPTI might be larger."]
+pub const CUPTI_DEVICE_GRAPH_LAUNCH_MODE_INVALID: CUpti_DeviceGraphLaunchMode = 0;
+pub const CUPTI_DEVICE_GRAPH_LAUNCH_MODE_FIRE_AND_FORGET: CUpti_DeviceGraphLaunchMode = 1;
+pub const CUPTI_DEVICE_GRAPH_LAUNCH_MODE_TAIL: CUpti_DeviceGraphLaunchMode = 2;
+pub const CUPTI_DEVICE_GRAPH_LAUNCH_MODE_FIRE_AND_FORGET_AS_SIBLING: CUpti_DeviceGraphLaunchMode =
+    3;
+#[doc = " \\brief The launch mode for device graph execution."]
+pub type CUpti_DeviceGraphLaunchMode = ::std::os::raw::c_uint;
+#[doc = " \\brief The activity record for trace of device graph execution.\n\n This activity record represents execution for a device launched graph without giving visibility\n about the execution of its nodes. This is intended to reduce overheads in tracing\n each node. The activity kind is CUPTI_ACTIVITY_KIND_DEVICE_GRAPH_TRACE"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_ActivityDeviceGraphTrace {
+    #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_DEVICE_GRAPH_TRACE"]
+    pub kind: CUpti_ActivityKind,
+    #[doc = " The ID of the device where the first node of the graph is executed."]
+    pub deviceId: u32,
+    #[doc = " The start timestamp for the graph execution, in ns. A value of 0\n for both the start and end timestamps indicates that timestamp\n information could not be collected for the graph."]
+    pub start: u64,
+    #[doc = " The end timestamp for the graph execution, in ns. A value of 0\n for both the start and end timestamps indicates that timestamp\n information could not be collected for the graph."]
+    pub end: u64,
+    #[doc = " The unique ID of the graph that is launched."]
+    pub graphId: u32,
+    #[doc = " The unique ID of the graph that has launched this graph."]
+    pub launcherGraphId: u32,
+    #[doc = " The type of launch. See \\ref CUpti_DeviceGraphLaunchMode"]
+    pub deviceLaunchMode: u32,
+    #[doc = " The ID of the context where the first node of the graph is executed."]
+    pub contextId: u32,
+    #[doc = " The ID of the stream where the graph is being launched."]
+    pub streamId: u64,
+    #[doc = " This field is reserved for internal use"]
+    pub reserved: *mut ::std::os::raw::c_void,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityDeviceGraphTrace"]
+        [::std::mem::size_of::<CUpti_ActivityDeviceGraphTrace>() - 56usize];
+    ["Alignment of CUpti_ActivityDeviceGraphTrace"]
+        [::std::mem::align_of::<CUpti_ActivityDeviceGraphTrace>() - 8usize];
+    ["Offset of field: CUpti_ActivityDeviceGraphTrace::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityDeviceGraphTrace, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityDeviceGraphTrace::deviceId"]
+        [::std::mem::offset_of!(CUpti_ActivityDeviceGraphTrace, deviceId) - 4usize];
+    ["Offset of field: CUpti_ActivityDeviceGraphTrace::start"]
+        [::std::mem::offset_of!(CUpti_ActivityDeviceGraphTrace, start) - 8usize];
+    ["Offset of field: CUpti_ActivityDeviceGraphTrace::end"]
+        [::std::mem::offset_of!(CUpti_ActivityDeviceGraphTrace, end) - 16usize];
+    ["Offset of field: CUpti_ActivityDeviceGraphTrace::graphId"]
+        [::std::mem::offset_of!(CUpti_ActivityDeviceGraphTrace, graphId) - 24usize];
+    ["Offset of field: CUpti_ActivityDeviceGraphTrace::launcherGraphId"]
+        [::std::mem::offset_of!(CUpti_ActivityDeviceGraphTrace, launcherGraphId) - 28usize];
+    ["Offset of field: CUpti_ActivityDeviceGraphTrace::deviceLaunchMode"]
+        [::std::mem::offset_of!(CUpti_ActivityDeviceGraphTrace, deviceLaunchMode) - 32usize];
+    ["Offset of field: CUpti_ActivityDeviceGraphTrace::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivityDeviceGraphTrace, contextId) - 36usize];
+    ["Offset of field: CUpti_ActivityDeviceGraphTrace::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivityDeviceGraphTrace, streamId) - 40usize];
+    ["Offset of field: CUpti_ActivityDeviceGraphTrace::reserved"]
+        [::std::mem::offset_of!(CUpti_ActivityDeviceGraphTrace, reserved) - 48usize];
+};
+impl Default for CUpti_ActivityDeviceGraphTrace {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief The activity record for trace of decompression operations.\n\n This activity record represents execution for a batch of decompression operatios.\n The activity kind is CUPTI_ACTIVITY_KIND_MEM_DECOMPRESS"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_ActivityMemDecompress {
+    #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_MEM_DECOMPRESS"]
+    pub kind: CUpti_ActivityKind,
+    #[doc = " The ID of the device."]
+    pub deviceId: u32,
+    #[doc = " The ID of the context."]
+    pub contextId: u32,
+    #[doc = " The ID of the stream."]
+    pub streamId: u32,
+    #[doc = " The ID of the HW channel on which the memory copy is occurring."]
+    pub channelID: u32,
+    #[doc = " The type of the channel"]
+    pub channelType: CUpti_ChannelType,
+    #[doc = " The correlation ID of the decompression operations. Each operation is\n assigned a unique correlation ID that is identical to the\n correlation ID in the driver API activity record that launched\n the operation."]
+    pub correlationId: u32,
+    #[doc = " The number of operations in the batch."]
+    pub numberOfOperations: u32,
+    #[doc = " The number of bytes to be read and decompressed in the\n batch operation."]
+    pub sourceBytes: u64,
+    #[doc = " This field is reserved for internal use"]
+    pub reserved0: *mut ::std::os::raw::c_void,
+    #[doc = " The start timestamp.\n A value of CUPTI_TIMESTAMP_UNKNOWN indicates that\n the start time is unknown."]
+    pub start: u64,
+    #[doc = " The end timestamp.\n A value of CUPTI_TIMESTAMP_UNKNOWN indicates that\n the start time is unknown."]
+    pub end: u64,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityMemDecompress"]
+        [::std::mem::size_of::<CUpti_ActivityMemDecompress>() - 64usize];
+    ["Alignment of CUpti_ActivityMemDecompress"]
+        [::std::mem::align_of::<CUpti_ActivityMemDecompress>() - 8usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::deviceId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, deviceId) - 4usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, contextId) - 8usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, streamId) - 12usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::channelID"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, channelID) - 16usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::channelType"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, channelType) - 20usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, correlationId) - 24usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::numberOfOperations"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, numberOfOperations) - 28usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::sourceBytes"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, sourceBytes) - 32usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::reserved0"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, reserved0) - 40usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::start"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, start) - 48usize];
+    ["Offset of field: CUpti_ActivityMemDecompress::end"]
+        [::std::mem::offset_of!(CUpti_ActivityMemDecompress, end) - 56usize];
+};
+impl Default for CUpti_ActivityMemDecompress {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " The device memory size (in bytes) reserved for storing profiling data for concurrent\n kernels (activity kind \\ref CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL), memcopies and memsets\n for each buffer on a context. The value is a size_t.\n\n There is a limit on how many device buffers can be allocated per context. User\n can query and set this limit using the attribute\n \\ref CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_POOL_LIMIT.\n CUPTI doesn't pre-allocate all the buffers, it pre-allocates only those many\n buffers as set by the attribute \\ref CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_PRE_ALLOCATE_VALUE.\n When all of the data in a buffer is consumed, it is added in the reuse pool, and\n CUPTI picks a buffer from this pool when a new buffer is needed. Thus memory\n footprint does not scale with the kernel count. Applications with the high density\n of kernels, memcopies and memsets might result in having CUPTI to allocate more device buffers.\n CUPTI allocates another buffer only when it runs out of the buffers in the\n reuse pool.\n\n Since buffer allocation happens in the main application thread, this might result\n in stalls in the critical path. CUPTI pre-allocates 3 buffers of the same size to\n mitigate this issue. User can query and set the pre-allocation limit using the\n attribute \\ref CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_PRE_ALLOCATE_VALUE.\n\n Having larger buffer size leaves less device memory for the application.\n Having smaller buffer size increases the risk of dropping timestamps for\n records if too many kernels or memcopies or memsets are launched at one time.\n\n This value only applies to new buffer allocations. Set this value before initializing\n CUDA or before creating a context to ensure it is considered for the following allocations.\n\n The default value is 3200000 (~3MB) which can accommodate profiling data\n up to 100,000 kernels, memcopies and memsets combined.\n\n Note: Starting with the CUDA 12.0 Update 1 release, CUPTI allocates the profiling buffer\n in the device memory by default, which may improve the performance of the tracing run.\n To change the preferred location to page-locked host memory, refer to the attribute\n \\ref CUPTI_ACTIVITY_ATTR_MEM_ALLOCATION_TYPE_HOST_PINNED.\n The size of the memory and maximum number of pools are still controlled by the attributes\n \\ref CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE and \\ref CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_POOL_LIMIT.\n\n Note: The actual amount of device memory per buffer reserved by CUPTI might be larger."]
 pub const CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE: CUpti_ActivityAttribute = 0;
 #[doc = " The device memory size (in bytes) reserved for storing profiling\n data for CDP operations for each buffer on a context. The\n value is a size_t.\n\n Having larger buffer size means less flush operations but\n consumes more device memory. This value only applies to new\n allocations.\n\n Set this value before initializing CUDA or before creating a\n context to ensure it is considered for the following allocations.\n\n The default value is 8388608 (8MB).\n\n Note: The actual amount of device memory per context reserved by\n CUPTI might be larger."]
 pub const CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE_CDP: CUpti_ActivityAttribute = 1;
@@ -7497,11 +7949,13 @@ pub const CUPTI_ACTIVITY_ATTR_ZEROED_OUT_ACTIVITY_BUFFER: CUpti_ActivityAttribut
 pub const CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_PRE_ALLOCATE_VALUE: CUpti_ActivityAttribute = 6;
 #[doc = " This attribute is not supported starting with CUDA 12.3\n CUPTI no longer uses profiling semaphore pool to store profiling data.\n\n Number of profiling semaphore pools to pre-allocate for a context during the\n initialization phase. The value is a size_t.\n\n Refer to the description of the attribute \\ref CUPTI_ACTIVITY_ATTR_PROFILING_SEMAPHORE_POOL_SIZE\n for details.\n\n This value must be less than the maximum number of profiling semaphore pools set\n using the attribute \\ref CUPTI_ACTIVITY_ATTR_PROFILING_SEMAPHORE_POOL_LIMIT\n\n Set this value before initializing CUDA or before creating a context to ensure it\n is considered by the CUPTI.\n\n The default value is set to 3 to ping pong between these pools (if possible)."]
 pub const CUPTI_ACTIVITY_ATTR_PROFILING_SEMAPHORE_PRE_ALLOCATE_VALUE: CUpti_ActivityAttribute = 7;
-#[doc = " Allocate page-locked (pinned) host memory for storing profiling data for concurrent\n kernels, memcopies and memsets for each buffer on a context. The value is a uint8_t.\n\n Starting with the CUDA 11.2 release, CUPTI allocates profiling buffer in the pinned host\n memory by default as this might help in improving the performance of the tracing run.\n Allocating excessive amounts of pinned memory may degrade system performance, since it\n reduces the amount of memory available to the system for paging. For this reason user\n might want to change the location from pinned host memory to device memory by setting\n value of this attribute to 0.\n\n Using page-locked (pinned) host memory buffers is not supported on confidential computing\n devices. On setting this attribute to 1, CUPTI will return CUPTI_ERROR_NOT_SUPPORTED.\n\n The default value is 1."]
+#[doc = " Allocate page-locked (pinned) host memory for storing profiling data for concurrent\n kernels, memcopies and memsets for each buffer on a context. The value is a uint8_t.\n\n From CUDA 11.2 through CUDA 12.0 GA releases, CUPTI allocated the profiling buffer\n in pinned host memory by default.\n Allocating excessive amounts of pinned memory may degrade system performance, as it\n reduces the amount of memory available to the system for paging. For this reason user\n might want to change the location from pinned host memory to device memory by setting\n value of this attribute to 0.\n\n Using page-locked (pinned) host memory buffers is not supported on confidential computing\n devices. If this attribute is set to 1, CUPTI will return error CUPTI_ERROR_NOT_SUPPORTED.\n\n The default value is 0."]
 pub const CUPTI_ACTIVITY_ATTR_MEM_ALLOCATION_TYPE_HOST_PINNED: CUpti_ActivityAttribute = 8;
-#[doc = " Request activity buffers per-thread to store CUPTI activity records\n in the activity buffer on per-thread basis. The value is a uint8_t.\n\n The attribute should be set before registering the buffer callbacks using\n cuptiActivityRegisterCallbacks API and before any of the CUPTI activity kinds are enabled.\n This makes sure that all the records are stored in activity buffers allocated per-thread.\n Changing this attribute in the middle of the profiling session will result in undefined behavior.\n\n The default value is 0."]
+#[doc = " Request activity buffers per-thread to store CUPTI activity records\n in the activity buffer on per-thread basis. The value is a uint8_t.\n\n The attribute should be set before registering the buffer callbacks using\n cuptiActivityRegisterCallbacks API and before any of the CUPTI activity kinds are enabled.\n This makes sure that all the records are stored in activity buffers allocated per-thread.\n Changing this attribute in the middle of the profiling session will result in undefined behavior.\n\n The default value is 1."]
 pub const CUPTI_ACTIVITY_ATTR_PER_THREAD_ACTIVITY_BUFFER: CUpti_ActivityAttribute = 9;
-#[doc = " Request activity buffers per-thread to store CUPTI activity records\n in the activity buffer on per-thread basis. The value is a uint8_t.\n\n The attribute should be set before registering the buffer callbacks using\n cuptiActivityRegisterCallbacks API and before any of the CUPTI activity kinds are enabled.\n This makes sure that all the records are stored in activity buffers allocated per-thread.\n Changing this attribute in the middle of the profiling session will result in undefined behavior.\n\n The default value is 0."]
+#[doc = " The device memory size (in bytes) reserved for storing profiling\n data for device graph operations for each buffer on a context. The\n value is a size_t.\n\n Having larger buffer size means less flush operations but\n consumes more device memory. This value only applies to new\n allocations.\n\n Set this value before initializing CUDA or before creating a\n context to ensure it is considered for the following allocations.\n\n The default value is 16777216 (16MB).\n\n Note: The actual amount of device memory per context reserved by\n CUPTI might be larger."]
+pub const CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_SIZE_DEVICE_GRAPHS: CUpti_ActivityAttribute = 10;
+#[doc = " The device memory size (in bytes) reserved for storing profiling\n data for device graph operations for each buffer on a context. The\n value is a size_t.\n\n Having larger buffer size means less flush operations but\n consumes more device memory. This value only applies to new\n allocations.\n\n Set this value before initializing CUDA or before creating a\n context to ensure it is considered for the following allocations.\n\n The default value is 16777216 (16MB).\n\n Note: The actual amount of device memory per context reserved by\n CUPTI might be larger."]
 pub const CUPTI_ACTIVITY_ATTR_DEVICE_BUFFER_FORCE_INT: CUpti_ActivityAttribute = 2147483647;
 #[doc = " \\brief Activity attributes.\n\n These attributes are used to control the behavior of the activity\n API."]
 pub type CUpti_ActivityAttribute = ::std::os::raw::c_uint;
@@ -7639,7 +8093,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Set Unified Memory Counter configuration.\n\n \\param config A pointer to \\ref CUpti_ActivityUnifiedMemoryCounterConfig structures\n containing Unified Memory counter configuration.\n \\param count Number of Unified Memory counter configuration structures\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p config is NULL or\n any parameter in the \\p config structures is not a valid value\n \\retval CUPTI_ERROR_UM_PROFILING_NOT_SUPPORTED One potential reason is that\n platform (OS/arch) does not support the unified memory counters\n \\retval CUPTI_ERROR_UM_PROFILING_NOT_SUPPORTED_ON_DEVICE Indicates that the device\n does not support the unified memory counters\n \\retval CUPTI_ERROR_UM_PROFILING_NOT_SUPPORTED_ON_NON_P2P_DEVICES Indicates that\n multi-GPU configuration without P2P support between any pair of devices\n does not support the unified memory counters"]
+    #[doc = " \\brief Set Unified Memory Counter configuration.\n\n Set the configuration before enabling the corresponding activity kind\n CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER.\n The API should be called after CUDA driver initialization.\n\n \\param config A pointer to \\ref CUpti_ActivityUnifiedMemoryCounterConfig structures\n containing Unified Memory counter configuration.\n \\param count Number of Unified Memory counter configuration structures\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p config is NULL or\n any parameter in the \\p config structures is not a valid value\n \\retval CUPTI_ERROR_UM_PROFILING_NOT_SUPPORTED One potential reason is that\n platform (OS/arch) does not support the unified memory counters\n \\retval CUPTI_ERROR_UM_PROFILING_NOT_SUPPORTED_ON_DEVICE Indicates that the device\n does not support the unified memory counters\n \\retval CUPTI_ERROR_UM_PROFILING_NOT_SUPPORTED_ON_NON_P2P_DEVICES Indicates that\n multi-GPU configuration without P2P support between any pair of devices\n does not support the unified memory counters"]
     pub fn cuptiActivityConfigureUnifiedMemoryCounter(
         config: *mut CUpti_ActivityUnifiedMemoryCounterConfig,
         count: u32,
@@ -7653,7 +8107,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Set PC sampling configuration.\n\n For Pascal and older GPU architectures this API must be called before enabling\n activity kind CUPTI_ACTIVITY_KIND_PC_SAMPLING. There is no such requirement\n for Volta and newer GPU architectures.\n\n For Volta and newer GPU architectures if this API is called in the middle of\n execution, PC sampling configuration will be updated for subsequent kernel launches.\n\n \\param ctx The context\n \\param config A pointer to \\ref CUpti_ActivityPCSamplingConfig structure\n containing PC sampling configuration.\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_OPERATION if this api is called while\n some valid event collection method is set.\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p config is NULL or\n any parameter in the \\p config structures is not a valid value\n \\retval CUPTI_ERROR_NOT_SUPPORTED Indicates that the system/device\n does not support the unified memory counters"]
+    #[doc = " \\brief Set PC sampling configuration.\n\n For Pascal and older GPU architectures this API must be called before enabling\n activity kind CUPTI_ACTIVITY_KIND_PC_SAMPLING. There is no such requirement\n for Volta and newer GPU architectures.\n\n For Volta and newer GPU architectures if this API is called in the middle of\n execution, PC sampling configuration will be updated for subsequent kernel launches.\n\n Starting with CUDA 13.0, this function is unsupported and should not be used. It always returns the error code CUPTI_ERROR_LEGACY_PROFILER_NOT_SUPPORTED.\n\n \\param ctx The context\n \\param config A pointer to \\ref CUpti_ActivityPCSamplingConfig structure\n containing PC sampling configuration.\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_OPERATION if this api is called while\n some valid event collection method is set.\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p config is NULL or\n any parameter in the \\p config structures is not a valid value\n \\retval CUPTI_ERROR_NOT_SUPPORTED Indicates that the system/device\n does not support the unified memory counters"]
     pub fn cuptiActivityConfigurePCSampling(
         ctx: CUcontext,
         config: *mut CUpti_ActivityPCSamplingConfig,
@@ -7719,7 +8173,7 @@ unsafe extern "C" {
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Controls the collection of queued and submitted timestamps for kernels.\n\n This API is used to control the collection of queued and submitted timestamps\n for kernels whose records are provided through the struct \\ref CUpti_ActivityKernel9.\n Default value is 0, i.e. these timestamps are not collected. This API needs\n to be called before initialization of CUDA and this setting should not be\n changed during the profiling session.\n\n \\param enable is a boolean, denoting whether these timestamps should be\n collected\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED"]
+    #[doc = " \\brief Controls the collection of queued and submitted timestamps for kernels.\n\n This API is used to control the collection of queued and submitted timestamps\n for kernels whose records are provided through the struct \\ref CUpti_ActivityKernel10.\n Default value is 0, i.e. these timestamps are not collected. This API needs\n to be called before initialization of CUDA and this setting should not be\n changed during the profiling session.\n\n This API is not supported if the HW trace is enabled through the API \\ref cuptiActivityEnableHWTrace.\n \\param enable is a boolean, denoting whether these timestamps should be\n collected\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED"]
     pub fn cuptiActivityEnableLatencyTimestamps(enable: u8) -> CUptiResult;
 }
 unsafe extern "C" {
@@ -7727,19 +8181,19 @@ unsafe extern "C" {
     pub fn cuptiActivityFlushPeriod(time: u32) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Controls the collection of launch attributes for kernels.\n\n This API is used to control the collection of launch attributes for kernels whose\n records are provided through the struct \\ref CUpti_ActivityKernel9.\n Default value is 0, i.e. these attributes are not collected.\n\n \\param enable is a boolean denoting whether these launch attributes should be collected"]
+    #[doc = " \\brief Controls the collection of launch attributes for kernels.\n\n This API is used to control the collection of launch attributes for kernels whose\n records are provided through the struct \\ref CUpti_ActivityKernel10.\n Default value is 0, i.e. these attributes are not collected.\n\n \\param enable is a boolean denoting whether these launch attributes should be collected"]
     pub fn cuptiActivityEnableLaunchAttributes(enable: u8) -> CUptiResult;
 }
 #[doc = " \\brief Function type for callback used by CUPTI to request a timestamp\n to be used in activity records.\n\n This callback function signals the CUPTI client that a timestamp needs\n to be returned. This timestamp would be treated as normalized timestamp\n to be used for various purposes in CUPTI. For example to store start and\n end timestamps reported in the CUPTI activity records.\n The returned timestamp must be in nanoseconds.\n\n \\sa ::cuptiActivityRegisterTimestampCallback"]
 pub type CUpti_TimestampCallbackFunc = ::std::option::Option<unsafe extern "C" fn() -> u64>;
 unsafe extern "C" {
-    #[doc = " \\brief Registers callback function with CUPTI for providing timestamp.\n\n This function registers a callback function to obtain timestamp of user's\n choice instead of using CUPTI provided timestamp.\n By default CUPTI uses different methods, based on the underlying platform,\n to retrieve the timestamp\n Linux and Android use clock_gettime(CLOCK_REALTIME, ..)\n Windows uses QueryPerformanceCounter()\n Mac uses mach_absolute_time()\n QNX uses ClockCycles()\n Timestamps retrieved using these methods are converted to nanosecond if needed\n before usage.\n\n The registration of timestamp callback should be done before any of the CUPTI\n activity kinds are enabled to make sure that all the records report the timestamp using\n the callback function registered through cuptiActivityRegisterTimestampCallback API.\n\n Changing the timestamp callback function in CUPTI through\n cuptiActivityRegisterTimestampCallback API in the middle of the profiling\n session can cause records generated prior to the change to report\n timestamps through previous timestamp method.\n\n \\param funcTimestamp callback which is invoked when a timestamp is\n needed by CUPTI\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p funcTimestamp is NULL\n \\retval CUPTI_ERROR_NOT_INITIALIZED"]
+    #[doc = " \\brief Registers callback function with CUPTI for providing timestamp.\n\n This function registers a callback function to obtain timestamp of user's\n choice instead of using CUPTI provided timestamp.\n By default CUPTI uses different methods, based on the underlying platform,\n to retrieve the timestamp\n Linux (x86_64, aarch64 sbsa, aarch64) uses clock_gettime(CLOCK_REALTIME)\n Windows uses QueryPerformanceCounter()\n WSL (Windows Subsystem for Linux) uses clock_gettime(CLOCK_MONOTONIC_RAW) as CLOCK_REALTIME can cause backward jumps.\n QNX uses ClockCycles()\n Timestamps retrieved using these methods are converted to nanosecond if needed\n before usage.\n\n Timestamps for GPU activities such as kernels, memory copies and memset operations are\n recorded directly on the GPU. To provide a unified and normalized view of these timestamps\n in relation to CPU time, CUPTI performs a linear interpolation to convert GPU timestamps\n into CPU timestamps during post-processing.\n For activities where timestamps are captured on the GPU, the timestamp callback is invoked\n during the post-processing phase, while converting GPU timestamps into CPU timestamps.\n For activities for which timestamps are captured directly on the CPU, the timestamp callback\n is invoked immediately at the time of the activity.\n\n The registration of timestamp callback should be done before any of the CUPTI\n activity kinds are enabled to make sure that all the records report the timestamp using\n the callback function registered through cuptiActivityRegisterTimestampCallback API.\n\n Changing the timestamp callback function in CUPTI through\n cuptiActivityRegisterTimestampCallback API in the middle of the profiling\n session can cause records generated prior to the change to report\n timestamps through previous timestamp method.\n\n \\param funcTimestamp callback which is invoked when a timestamp is\n needed by CUPTI\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_INVALID_PARAMETER if \\p funcTimestamp is NULL\n \\retval CUPTI_ERROR_NOT_INITIALIZED"]
     pub fn cuptiActivityRegisterTimestampCallback(
         funcTimestamp: CUpti_TimestampCallbackFunc,
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Controls the collection of records for device launched graphs.\n\n This API is used to control the collection of records for device launched graphs.\n Default value is 0, i.e. these records are not collected. This API needs\n to be called before initialization of CUDA and this setting should not be\n changed during the profiling session.\n\n \\param enable is a boolean, denoting whether these records should be\n collected\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED"]
+    #[doc = " \\brief Controls the collection of records for device launched graphs.\n\n This API is used to control the collection of records for device launched graphs.\n Default value is 0, i.e. these records are not collected.\n Default value is 1 if HW trace is enabled using API cuptiActivityEnableHWTrace.\n This API needs to be called before initialization of CUDA and this setting should not be\n changed during the profiling session.\n\n \\param enable is a boolean, denoting whether these records should be\n collected\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED"]
     pub fn cuptiActivityEnableDeviceGraph(enable: u8) -> CUptiResult;
 }
 unsafe extern "C" {
@@ -7751,8 +8205,20 @@ unsafe extern "C" {
     pub fn cuptiActivityEnableRuntimeApi(cbid: CUpti_CallbackId, enable: u8) -> CUptiResult;
 }
 unsafe extern "C" {
+    #[doc = " \\brief Enables the collection of CUDA kernel timestamps through Hardware Event System(HES).\n\n This API enables the collection of CUDA kernel timestamps through HW events instead\n of the traditional SW instrumentation and semaphore based approach.\n This option is only available on Blackwell architecture.\n This API should be called after driver is initialized.\n\n \\param enable is a boolean, denoting whether to enable or disable the collection through HW events\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED if CUPTI is not initialized or the CUDA driver is not initialized\n \\retval CUPTI_ERROR_NOT_SUPPORTED if HW trace cannot be enabled on the current platform\n \\retval CUPTI_ERROR_VIRTUALIZED_DEVICE_NOT_SUPPORTED\n \\retval CUPTI_ERROR_CONFIDENTIAL_COMPUTING_NOT_SUPPORTED\n \\retval CUPTI_ERROR_CMP_DEVICE_NOT_SUPPORTED\n \\retval CUPTI_ERROR_MIG_DEVICE_NOT_SUPPORTED\n \\retval CUPTI_ERROR_SLI_DEVICE_NOT_SUPPORTED\n \\retval CUPTI_ERROR_WSL_DEVICE_NOT_SUPPORTED"]
+    pub fn cuptiActivityEnableHWTrace(enable: u8) -> CUptiResult;
+}
+unsafe extern "C" {
     #[doc = "  \\brief Enables tracking the source library for memory allocation requests.\n\n This API is used to control whether or not we track the source library of\n memory allocation requests. Default value is 0, i.e. it is not tracked. The\n activity kind CUPTI_ACTIVITY_KIND_MEMORY2 needs to be enabled, and if this flag is\n set, we get the full path of the shared object responsible for the GPU memory allocation\n request in the member source in the CUpti_ActivityMemory4 records. Also note that this feature\n adds runtime overhead.\n\n \\param enable is a boolean, denoting whether the source library of the memory allocation\n request needs to be tracked\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED"]
     pub fn cuptiActivityEnableAllocationSource(enable: u8) -> CUptiResult;
+}
+unsafe extern "C" {
+    #[doc = " \\brief Enables collecting records for all synchronization operations.\n\n CUPTI provides CUDA event query and stream query records via CUPTI_ACTIVITY_KIND_SYNCHRONIZATION.\n Using this API, CUPTI client can disable to record CUDA event query and stream query records\n for queries for which the operations have not yet been completed on the CUDA event/stream.\n\n By default, the record is generated for all CUDA events and stream irrespective of whether the\n operations have been completed on the CUDA event/stream.\n\n \\param enable is a boolean, denoting whether to enable or disable the collection of all CUDA event query\n and stream query records\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED"]
+    pub fn cuptiActivityEnableAllSyncRecords(enable: u8) -> CUptiResult;
+}
+unsafe extern "C" {
+    #[doc = " \\brief Enable/Disable collecting device timestamp for CUPTI_ACTIVITY_KIND_CUDA_EVENT record.\n\n CUPTI provides device timestamps via 'deviceTimestamp' field in CUPTI_ACTIVITY_KIND_CUDA_EVENT records.\n Using this API, CUPTI client can enable or disable the collection of CUDA event device timestamps.\n By default, the collection of CUDA event device timestamps is disabled.\n\n \\param enable is a boolean, denoting whether to enable or disable the collection of CUDA event device timestamps\n\n \\retval CUPTI_SUCCESS\n \\retval CUPTI_ERROR_NOT_INITIALIZED"]
+    pub fn cuptiActivityEnableCudaEventDeviceTimestamps(enable: u8) -> CUptiResult;
 }
 #[doc = " \\brief The activity record for CUPTI and driver overheads.\n (Deprecated in CUDA 12.2)\n\n This activity record provides CUPTI and driver overhead information\n (CUPTI_ACTIVITY_OVERHEAD). These records are now reported using\n CUpti_ActivityOverhead3"]
 #[repr(C, packed(8))]
@@ -9120,7 +9586,7 @@ pub struct CUpti_ActivityKernel4 {
     #[doc = " Shared memory size set by the driver."]
     pub sharedMemoryExecuted: u32,
 }
-#[doc = " For devices with compute capability 7.0+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
+#[doc = " For devices with compute capability 7.5+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union CUpti_ActivityKernel4__bindgen_ty_1 {
@@ -9408,7 +9874,7 @@ pub struct CUpti_ActivityKernel5 {
     #[doc = " The unique ID of the graph that launched this kernel through graph launch APIs.\n This field will be 0 if the kernel is not launched through graph launch APIs."]
     pub graphId: u32,
 }
-#[doc = " For devices with compute capability 7.0+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
+#[doc = " For devices with compute capability 7.5+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union CUpti_ActivityKernel5__bindgen_ty_1 {
@@ -9704,7 +10170,7 @@ pub struct CUpti_ActivityKernel6 {
     #[doc = " The pointer to the access policy window. The structure CUaccessPolicyWindow is\n defined in cuda.h."]
     pub pAccessPolicyWindow: *mut CUaccessPolicyWindow,
 }
-#[doc = " For devices with compute capability 7.0+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
+#[doc = " For devices with compute capability 7.5+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union CUpti_ActivityKernel6__bindgen_ty_1 {
@@ -10006,7 +10472,7 @@ pub struct CUpti_ActivityKernel7 {
     #[doc = " The type of the channel"]
     pub channelType: CUpti_ChannelType,
 }
-#[doc = " For devices with compute capability 7.0+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
+#[doc = " For devices with compute capability 7.5+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union CUpti_ActivityKernel7__bindgen_ty_1 {
@@ -10322,7 +10788,7 @@ pub struct CUpti_ActivityKernel8 {
     #[doc = " The total amount of local memory reserved for the kernel, in\n bytes."]
     pub localMemoryTotal_v2: u64,
 }
-#[doc = " For devices with compute capability 7.0+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
+#[doc = " For devices with compute capability 7.5+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union CUpti_ActivityKernel8__bindgen_ty_1 {
@@ -10554,6 +11020,340 @@ impl Default for CUpti_ActivityKernel8 {
 impl ::std::fmt::Debug for CUpti_ActivityKernel8 {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         write ! (f , "CUpti_ActivityKernel8 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType)
+    }
+}
+#[doc = " \\brief The activity record for kernel.\n\n This activity record represents a kernel execution\n (CUPTI_ACTIVITY_KIND_KERNEL and\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL)"]
+#[repr(C, packed(8))]
+#[derive(Copy, Clone)]
+pub struct CUpti_ActivityKernel9 {
+    #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_KERNEL or\n CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL."]
+    pub kind: CUpti_ActivityKind,
+    pub cacheConfig: CUpti_ActivityKernel9__bindgen_ty_1,
+    #[doc = " The shared memory configuration used for the kernel. The value is one of\n the CUsharedconfig enumeration values from cuda.h."]
+    pub sharedMemoryConfig: u8,
+    #[doc = " The number of registers required for each thread executing the\n kernel."]
+    pub registersPerThread: u16,
+    #[doc = " The partitioned global caching requested for the kernel. Partitioned\n global caching is required to enable caching on certain chips, such as\n devices with compute capability 5.2."]
+    pub partitionedGlobalCacheRequested: CUpti_ActivityPartitionedGlobalCacheConfig,
+    #[doc = " The partitioned global caching executed for the kernel. Partitioned\n global caching is required to enable caching on certain chips, such as\n devices with compute capability 5.2. Partitioned global caching can be\n automatically disabled if the occupancy requirement of the launch cannot\n support caching."]
+    pub partitionedGlobalCacheExecuted: CUpti_ActivityPartitionedGlobalCacheConfig,
+    #[doc = " The start timestamp for the kernel execution, in ns. A value of 0\n for both the start and end timestamps indicates that timestamp\n information could not be collected for the kernel."]
+    pub start: u64,
+    #[doc = " The end timestamp for the kernel execution, in ns. A value of 0\n for both the start and end timestamps indicates that timestamp\n information could not be collected for the kernel."]
+    pub end: u64,
+    #[doc = " The completed timestamp for the kernel execution, in ns.  It\n represents the completion of all it's child kernels and the\n kernel itself. A value of CUPTI_TIMESTAMP_UNKNOWN indicates that\n the completion time is unknown."]
+    pub completed: u64,
+    #[doc = " The ID of the device where the kernel is executing."]
+    pub deviceId: u32,
+    #[doc = " The ID of the context where the kernel is executing."]
+    pub contextId: u32,
+    #[doc = " The ID of the stream where the kernel is executing."]
+    pub streamId: u32,
+    #[doc = " The X-dimension grid size for the kernel."]
+    pub gridX: i32,
+    #[doc = " The Y-dimension grid size for the kernel."]
+    pub gridY: i32,
+    #[doc = " The Z-dimension grid size for the kernel."]
+    pub gridZ: i32,
+    #[doc = " The X-dimension block size for the kernel."]
+    pub blockX: i32,
+    #[doc = " The Y-dimension block size for the kernel."]
+    pub blockY: i32,
+    #[doc = " The Z-dimension grid size for the kernel."]
+    pub blockZ: i32,
+    #[doc = " The static shared memory allocated for the kernel, in bytes."]
+    pub staticSharedMemory: i32,
+    #[doc = " The dynamic shared memory reserved for the kernel, in bytes."]
+    pub dynamicSharedMemory: i32,
+    #[doc = " The amount of local memory reserved for each thread, in bytes."]
+    pub localMemoryPerThread: u32,
+    #[doc = " The total amount of local memory reserved for the kernel, in\n bytes (deprecated in CUDA 11.8).\n Refer field localMemoryTotal_v2"]
+    pub localMemoryTotal: u32,
+    #[doc = " The correlation ID of the kernel. Each kernel execution is\n assigned a unique correlation ID that is identical to the\n correlation ID in the driver or runtime API activity record that\n launched the kernel."]
+    pub correlationId: u32,
+    #[doc = " The grid ID of the kernel. Each kernel is assigned a unique\n grid ID at runtime."]
+    pub gridId: i64,
+    #[doc = " The name of the kernel. This name is shared across all activity\n records representing the same kernel, and so should not be\n modified."]
+    pub name: *const ::std::os::raw::c_char,
+    #[doc = " Undefined. Reserved for internal use."]
+    pub reserved0: *mut ::std::os::raw::c_void,
+    #[doc = " The timestamp when the kernel is queued up in the command buffer, in ns.\n A value of CUPTI_TIMESTAMP_UNKNOWN indicates that the queued time\n could not be collected for the kernel. This timestamp is not collected\n by default. Use API \\ref cuptiActivityEnableLatencyTimestamps() to\n enable collection.\n\n Command buffer is a buffer written by CUDA driver to send commands\n like kernel launch, memory copy etc to the GPU. All launches of CUDA\n kernels are asynchronous with respect to the host, the host requests\n the launch by writing commands into the command buffer, then returns\n without checking the GPU's progress."]
+    pub queued: u64,
+    #[doc = " The timestamp when the command buffer containing the kernel launch\n is submitted to the GPU, in ns. A value of CUPTI_TIMESTAMP_UNKNOWN\n indicates that the submitted time could not be collected for the kernel.\n This timestamp is not collected by default. Use API \\ref\n cuptiActivityEnableLatencyTimestamps() to enable collection."]
+    pub submitted: u64,
+    #[doc = " The indicates if the kernel was executed via a regular launch or via a\n single/multi device cooperative launch. \\see CUpti_ActivityLaunchType"]
+    pub launchType: u8,
+    #[doc = " This indicates if CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT was\n updated for the kernel launch"]
+    pub isSharedMemoryCarveoutRequested: u8,
+    #[doc = " Shared memory carveout value requested for the function in percentage of\n the total resource. The value will be updated only if field\n isSharedMemoryCarveoutRequested is set."]
+    pub sharedMemoryCarveoutRequested: u8,
+    #[doc = " Undefined. Reserved for internal use."]
+    pub padding: u8,
+    #[doc = " Shared memory size set by the driver."]
+    pub sharedMemoryExecuted: u32,
+    #[doc = " The unique ID of the graph node that launched this kernel through graph launch APIs.\n This field will be 0 if the kernel is not launched through graph launch APIs."]
+    pub graphNodeId: u64,
+    #[doc = " The shared memory limit config for the kernel. This field shows whether user has opted for a\n higher per block limit of dynamic shared memory."]
+    pub shmemLimitConfig: CUpti_FuncShmemLimitConfig,
+    #[doc = " The unique ID of the graph that launched this kernel through graph launch APIs.\n This field will be 0 if the kernel is not launched through graph launch APIs."]
+    pub graphId: u32,
+    #[doc = " The pointer to the access policy window. The structure CUaccessPolicyWindow is\n defined in cuda.h."]
+    pub pAccessPolicyWindow: *mut CUaccessPolicyWindow,
+    #[doc = " The ID of the HW channel on which the kernel is launched."]
+    pub channelID: u32,
+    #[doc = " The type of the channel"]
+    pub channelType: CUpti_ChannelType,
+    #[doc = " The X-dimension cluster size for the kernel.\n Field is valid for devices with compute capability 9.0 and higher"]
+    pub clusterX: u32,
+    #[doc = " The Y-dimension cluster size for the kernel.\n Field is valid for devices with compute capability 9.0 and higher"]
+    pub clusterY: u32,
+    #[doc = " The Z-dimension cluster size for the kernel.\n Field is valid for devices with compute capability 9.0 and higher"]
+    pub clusterZ: u32,
+    #[doc = " The cluster scheduling policy for the kernel. Refer CUclusterSchedulingPolicy\n Field is valid for devices with compute capability 9.0 and higher"]
+    pub clusterSchedulingPolicy: u32,
+    #[doc = " The total amount of local memory reserved for the kernel, in\n bytes."]
+    pub localMemoryTotal_v2: u64,
+    #[doc = " The maximum cluster size for the kernel"]
+    pub maxPotentialClusterSize: u32,
+    #[doc = " The maximum clusters that could co-exist on the target device for the kernel"]
+    pub maxActiveClusters: u32,
+}
+#[doc = " For devices with compute capability 7.5+ cacheConfig values are not updated\n in case field isSharedMemoryCarveoutRequested is set"]
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union CUpti_ActivityKernel9__bindgen_ty_1 {
+    pub both: u8,
+    pub config: CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1 {
+    pub _bitfield_align_1: [u8; 0],
+    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize]>,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1"]
+        [::std::mem::size_of::<CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1>() - 1usize];
+    ["Alignment of CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1"]
+        [::std::mem::align_of::<CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1>() - 1usize];
+};
+impl CUpti_ActivityKernel9__bindgen_ty_1__bindgen_ty_1 {
+    #[inline]
+    pub fn requested(&self) -> u8 {
+        unsafe { ::std::mem::transmute(self._bitfield_1.get(0usize, 4u8) as u8) }
+    }
+    #[inline]
+    pub fn set_requested(&mut self, val: u8) {
+        unsafe {
+            let val: u8 = ::std::mem::transmute(val);
+            self._bitfield_1.set(0usize, 4u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn requested_raw(this: *const Self) -> u8 {
+        unsafe {
+            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::std::ptr::addr_of!((*this)._bitfield_1),
+                0usize,
+                4u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_requested_raw(this: *mut Self, val: u8) {
+        unsafe {
+            let val: u8 = ::std::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+                0usize,
+                4u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn executed(&self) -> u8 {
+        unsafe { ::std::mem::transmute(self._bitfield_1.get(4usize, 4u8) as u8) }
+    }
+    #[inline]
+    pub fn set_executed(&mut self, val: u8) {
+        unsafe {
+            let val: u8 = ::std::mem::transmute(val);
+            self._bitfield_1.set(4usize, 4u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn executed_raw(this: *const Self) -> u8 {
+        unsafe {
+            ::std::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::std::ptr::addr_of!((*this)._bitfield_1),
+                4usize,
+                4u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_executed_raw(this: *mut Self, val: u8) {
+        unsafe {
+            let val: u8 = ::std::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::std::ptr::addr_of_mut!((*this)._bitfield_1),
+                4usize,
+                4u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn new_bitfield_1(requested: u8, executed: u8) -> __BindgenBitfieldUnit<[u8; 1usize]> {
+        let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 1usize]> = Default::default();
+        __bindgen_bitfield_unit.set(0usize, 4u8, {
+            let requested: u8 = unsafe { ::std::mem::transmute(requested) };
+            requested as u64
+        });
+        __bindgen_bitfield_unit.set(4usize, 4u8, {
+            let executed: u8 = unsafe { ::std::mem::transmute(executed) };
+            executed as u64
+        });
+        __bindgen_bitfield_unit
+    }
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityKernel9__bindgen_ty_1"]
+        [::std::mem::size_of::<CUpti_ActivityKernel9__bindgen_ty_1>() - 1usize];
+    ["Alignment of CUpti_ActivityKernel9__bindgen_ty_1"]
+        [::std::mem::align_of::<CUpti_ActivityKernel9__bindgen_ty_1>() - 1usize];
+    ["Offset of field: CUpti_ActivityKernel9__bindgen_ty_1::both"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9__bindgen_ty_1, both) - 0usize];
+    ["Offset of field: CUpti_ActivityKernel9__bindgen_ty_1::config"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9__bindgen_ty_1, config) - 0usize];
+};
+impl Default for CUpti_ActivityKernel9__bindgen_ty_1 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+impl ::std::fmt::Debug for CUpti_ActivityKernel9__bindgen_ty_1 {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        write!(f, "CUpti_ActivityKernel9__bindgen_ty_1 {{ union }}")
+    }
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityKernel9"][::std::mem::size_of::<CUpti_ActivityKernel9>() - 208usize];
+    ["Alignment of CUpti_ActivityKernel9"]
+        [::std::mem::align_of::<CUpti_ActivityKernel9>() - 8usize];
+    ["Offset of field: CUpti_ActivityKernel9::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityKernel9::cacheConfig"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, cacheConfig) - 4usize];
+    ["Offset of field: CUpti_ActivityKernel9::sharedMemoryConfig"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, sharedMemoryConfig) - 5usize];
+    ["Offset of field: CUpti_ActivityKernel9::registersPerThread"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, registersPerThread) - 6usize];
+    ["Offset of field: CUpti_ActivityKernel9::partitionedGlobalCacheRequested"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, partitionedGlobalCacheRequested) - 8usize];
+    ["Offset of field: CUpti_ActivityKernel9::partitionedGlobalCacheExecuted"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, partitionedGlobalCacheExecuted) - 12usize];
+    ["Offset of field: CUpti_ActivityKernel9::start"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, start) - 16usize];
+    ["Offset of field: CUpti_ActivityKernel9::end"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, end) - 24usize];
+    ["Offset of field: CUpti_ActivityKernel9::completed"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, completed) - 32usize];
+    ["Offset of field: CUpti_ActivityKernel9::deviceId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, deviceId) - 40usize];
+    ["Offset of field: CUpti_ActivityKernel9::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, contextId) - 44usize];
+    ["Offset of field: CUpti_ActivityKernel9::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, streamId) - 48usize];
+    ["Offset of field: CUpti_ActivityKernel9::gridX"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, gridX) - 52usize];
+    ["Offset of field: CUpti_ActivityKernel9::gridY"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, gridY) - 56usize];
+    ["Offset of field: CUpti_ActivityKernel9::gridZ"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, gridZ) - 60usize];
+    ["Offset of field: CUpti_ActivityKernel9::blockX"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, blockX) - 64usize];
+    ["Offset of field: CUpti_ActivityKernel9::blockY"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, blockY) - 68usize];
+    ["Offset of field: CUpti_ActivityKernel9::blockZ"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, blockZ) - 72usize];
+    ["Offset of field: CUpti_ActivityKernel9::staticSharedMemory"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, staticSharedMemory) - 76usize];
+    ["Offset of field: CUpti_ActivityKernel9::dynamicSharedMemory"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, dynamicSharedMemory) - 80usize];
+    ["Offset of field: CUpti_ActivityKernel9::localMemoryPerThread"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, localMemoryPerThread) - 84usize];
+    ["Offset of field: CUpti_ActivityKernel9::localMemoryTotal"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, localMemoryTotal) - 88usize];
+    ["Offset of field: CUpti_ActivityKernel9::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, correlationId) - 92usize];
+    ["Offset of field: CUpti_ActivityKernel9::gridId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, gridId) - 96usize];
+    ["Offset of field: CUpti_ActivityKernel9::name"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, name) - 104usize];
+    ["Offset of field: CUpti_ActivityKernel9::reserved0"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, reserved0) - 112usize];
+    ["Offset of field: CUpti_ActivityKernel9::queued"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, queued) - 120usize];
+    ["Offset of field: CUpti_ActivityKernel9::submitted"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, submitted) - 128usize];
+    ["Offset of field: CUpti_ActivityKernel9::launchType"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, launchType) - 136usize];
+    ["Offset of field: CUpti_ActivityKernel9::isSharedMemoryCarveoutRequested"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, isSharedMemoryCarveoutRequested) - 137usize];
+    ["Offset of field: CUpti_ActivityKernel9::sharedMemoryCarveoutRequested"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, sharedMemoryCarveoutRequested) - 138usize];
+    ["Offset of field: CUpti_ActivityKernel9::padding"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, padding) - 139usize];
+    ["Offset of field: CUpti_ActivityKernel9::sharedMemoryExecuted"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, sharedMemoryExecuted) - 140usize];
+    ["Offset of field: CUpti_ActivityKernel9::graphNodeId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, graphNodeId) - 144usize];
+    ["Offset of field: CUpti_ActivityKernel9::shmemLimitConfig"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, shmemLimitConfig) - 152usize];
+    ["Offset of field: CUpti_ActivityKernel9::graphId"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, graphId) - 156usize];
+    ["Offset of field: CUpti_ActivityKernel9::pAccessPolicyWindow"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, pAccessPolicyWindow) - 160usize];
+    ["Offset of field: CUpti_ActivityKernel9::channelID"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, channelID) - 168usize];
+    ["Offset of field: CUpti_ActivityKernel9::channelType"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, channelType) - 172usize];
+    ["Offset of field: CUpti_ActivityKernel9::clusterX"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, clusterX) - 176usize];
+    ["Offset of field: CUpti_ActivityKernel9::clusterY"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, clusterY) - 180usize];
+    ["Offset of field: CUpti_ActivityKernel9::clusterZ"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, clusterZ) - 184usize];
+    ["Offset of field: CUpti_ActivityKernel9::clusterSchedulingPolicy"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, clusterSchedulingPolicy) - 188usize];
+    ["Offset of field: CUpti_ActivityKernel9::localMemoryTotal_v2"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, localMemoryTotal_v2) - 192usize];
+    ["Offset of field: CUpti_ActivityKernel9::maxPotentialClusterSize"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, maxPotentialClusterSize) - 200usize];
+    ["Offset of field: CUpti_ActivityKernel9::maxActiveClusters"]
+        [::std::mem::offset_of!(CUpti_ActivityKernel9, maxActiveClusters) - 204usize];
+};
+impl Default for CUpti_ActivityKernel9 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+impl ::std::fmt::Debug for CUpti_ActivityKernel9 {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        write ! (f , "CUpti_ActivityKernel9 {{ kind: {:?}, cacheConfig: {:?}, partitionedGlobalCacheRequested: {:?}, partitionedGlobalCacheExecuted: {:?}, name: {:?}, reserved0: {:?}, shmemLimitConfig: {:?}, pAccessPolicyWindow: {:?}, channelType: {:?} }}" , self . kind , self . cacheConfig , self . partitionedGlobalCacheRequested , self . partitionedGlobalCacheExecuted , self . name , self . reserved0 , self . shmemLimitConfig , self . pAccessPolicyWindow , self . channelType)
     }
 }
 #[doc = " \\brief The activity record for memory copies. (deprecated)\n\n This activity record represents a memory copy\n (CUPTI_ACTIVITY_KIND_MEMCPY)."]
@@ -11744,6 +12544,75 @@ impl Default for CUpti_ActivityMemoryPool {
         }
     }
 }
+#[doc = " \\brief The activity record for memory pool.\n\n This activity record represents a memory pool creation, destruction and\n trimming (CUPTI_ACTIVITY_KIND_MEMORY_POOL).\n This activity record provides separate records for memory pool creation,\n destruction and trimming operations.\n This allows to correlate the corresponding driver and runtime API\n activity record with the memory pool operation.\n"]
+#[repr(C, packed(8))]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_ActivityMemoryPool2 {
+    #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_MEMORY_POOL"]
+    pub kind: CUpti_ActivityKind,
+    #[doc = " The memory operation requested by the user, \\ref CUpti_ActivityMemoryPoolOperationType."]
+    pub memoryPoolOperationType: CUpti_ActivityMemoryPoolOperationType,
+    #[doc = " The type of the memory pool, \\ref CUpti_ActivityMemoryPoolType"]
+    pub memoryPoolType: CUpti_ActivityMemoryPoolType,
+    #[doc = " The correlation ID of the memory pool operation. Each memory pool\n operation is assigned a unique correlation ID that is identical to the\n correlation ID in the driver and runtime API activity record that\n launched the memory operation."]
+    pub correlationId: u32,
+    #[doc = " The ID of the process to which this record belongs to."]
+    pub processId: u32,
+    #[doc = " The ID of the device where the memory pool is created."]
+    pub deviceId: u32,
+    #[doc = " The minimum bytes to keep of the memory pool. \\p minBytesToKeep is\n valid for CUPTI_ACTIVITY_MEMORY_POOL_OPERATION_TYPE_TRIMMED,\n \\ref CUpti_ActivityMemoryPoolOperationType"]
+    pub minBytesToKeep: usize,
+    #[doc = " The virtual address of the allocation."]
+    pub address: u64,
+    #[doc = " The size of the memory pool operation in bytes. \\p size is\n valid for CUPTI_ACTIVITY_MEMORY_POOL_TYPE_LOCAL, \\ref CUpti_ActivityMemoryPoolType."]
+    pub size: u64,
+    #[doc = " The release threshold of the memory pool. \\p releaseThreshold is\n valid for CUPTI_ACTIVITY_MEMORY_POOL_TYPE_LOCAL, \\ref CUpti_ActivityMemoryPoolType."]
+    pub releaseThreshold: u64,
+    #[doc = " The start timestamp for the memory operation, in ns."]
+    pub timestamp: u64,
+    #[doc = " The utilized size of the memory pool. \\p utilizedSize is\n valid for CUPTI_ACTIVITY_MEMORY_POOL_TYPE_LOCAL, \\ref CUpti_ActivityMemoryPoolType."]
+    pub utilizedSize: u64,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityMemoryPool2"]
+        [::std::mem::size_of::<CUpti_ActivityMemoryPool2>() - 72usize];
+    ["Alignment of CUpti_ActivityMemoryPool2"]
+        [::std::mem::align_of::<CUpti_ActivityMemoryPool2>() - 8usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::memoryPoolOperationType"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, memoryPoolOperationType) - 4usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::memoryPoolType"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, memoryPoolType) - 8usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, correlationId) - 12usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::processId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, processId) - 16usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::deviceId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, deviceId) - 20usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::minBytesToKeep"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, minBytesToKeep) - 24usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::address"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, address) - 32usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::size"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, size) - 40usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::releaseThreshold"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, releaseThreshold) - 48usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::timestamp"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, timestamp) - 56usize];
+    ["Offset of field: CUpti_ActivityMemoryPool2::utilizedSize"]
+        [::std::mem::offset_of!(CUpti_ActivityMemoryPool2, utilizedSize) - 64usize];
+};
+impl Default for CUpti_ActivityMemoryPool2 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " \\brief The activity record providing a marker which is an\n instantaneous point in time. (deprecated in CUDA 8.0)\n\n The marker is specified with a descriptive name and unique id\n (CUPTI_ACTIVITY_KIND_MARKER).\n Marker activity is now reported using the\n CUpti_ActivityMarker2 activity record."]
 #[repr(C, packed(8))]
 #[derive(Copy, Clone)]
@@ -12125,6 +12994,75 @@ const _: () = {
         [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter, pad) - 36usize];
 };
 impl Default for CUpti_ActivityUnifiedMemoryCounter {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief The activity record for Unified Memory counters (deprecated in 12.8)\n\n This activity record represents a Unified Memory counter\n (CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER)."]
+#[repr(C, packed(8))]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_ActivityUnifiedMemoryCounter2 {
+    #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER"]
+    pub kind: CUpti_ActivityKind,
+    #[doc = " The Unified Memory counter kind"]
+    pub counterKind: CUpti_ActivityUnifiedMemoryCounterKind,
+    #[doc = " Value of the counter\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_HTOD,\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_DTOH,\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THREASHING and\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_REMOTE_MAP, it is the size of the\n memory region in bytes.\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT, it\n is the number of page fault groups for the same page.\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT,\n it is the program counter for the instruction that caused fault."]
+    pub value: u64,
+    #[doc = " The start timestamp of the counter, in ns.\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_HTOD and\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_DTOH, timestamp is\n captured when activity starts on GPU.\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT and\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT, timestamp is\n captured when CUDA driver started processing the fault.\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THRASHING, timestamp\n is captured when CUDA driver detected thrashing of memory region.\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THROTTLING,\n timestamp is captured when throttling operation was started by CUDA driver.\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_REMOTE_MAP,\n timestamp is captured when CUDA driver has pushed all required operations\n to the processor specified by dstId."]
+    pub start: u64,
+    #[doc = " The end timestamp of the counter, in ns.\n Ignore this field if counterKind is\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THRASHING or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_REMOTE_MAP.\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_HTOD and\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_DTOH, timestamp is\n captured when activity finishes on GPU.\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT, timestamp is\n captured when CUDA driver queues the replay of faulting memory accesses on the GPU\n For counterKind CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THROTTLING, timestamp\n is captured when throttling operation was finished by CUDA driver"]
+    pub end: u64,
+    #[doc = " This is the virtual base address of the page/s being transferred. For cpu and\n gpu faults, the virtual address for the page that faulted."]
+    pub address: u64,
+    #[doc = " The ID of the source CPU/device involved in the memory transfer, page fault, thrashing,\n throttling or remote map operation. For counterKind\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THRASHING, it is a bitwise ORing of the\n device IDs fighting for the memory region. Ignore this field if counterKind is\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT"]
+    pub srcId: u32,
+    #[doc = " The ID of the destination CPU/device involved in the memory transfer or remote map\n operation. Ignore this field if counterKind is\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THRASHING or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THROTTLING"]
+    pub dstId: u32,
+    #[doc = " The ID of the stream causing the transfer.\n This value of this field is invalid."]
+    pub streamId: u32,
+    #[doc = " The ID of the process to which this record belongs to."]
+    pub processId: u32,
+    #[doc = " The flags associated with this record. See enums \\ref CUpti_ActivityUnifiedMemoryAccessType\n if counterKind is CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT\n and \\ref CUpti_ActivityUnifiedMemoryMigrationCause if counterKind is\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_HTOD or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_HTOD\n and \\ref CUpti_ActivityUnifiedMemoryRemoteMapCause if counterKind is\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_REMOTE_MAP and \\ref CUpti_ActivityFlag\n if counterKind is CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THRASHING or\n CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_THROTTLING"]
+    pub flags: u32,
+    #[doc = " Undefined. Reserved for internal use."]
+    pub pad: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityUnifiedMemoryCounter2"]
+        [::std::mem::size_of::<CUpti_ActivityUnifiedMemoryCounter2>() - 64usize];
+    ["Alignment of CUpti_ActivityUnifiedMemoryCounter2"]
+        [::std::mem::align_of::<CUpti_ActivityUnifiedMemoryCounter2>() - 8usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::counterKind"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, counterKind) - 4usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::value"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, value) - 8usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::start"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, start) - 16usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::end"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, end) - 24usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::address"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, address) - 32usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::srcId"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, srcId) - 40usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::dstId"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, dstId) - 44usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, streamId) - 48usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::processId"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, processId) - 52usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::flags"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, flags) - 56usize];
+    ["Offset of field: CUpti_ActivityUnifiedMemoryCounter2::pad"]
+        [::std::mem::offset_of!(CUpti_ActivityUnifiedMemoryCounter2, pad) - 60usize];
+};
+impl Default for CUpti_ActivityUnifiedMemoryCounter2 {
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -12874,6 +13812,258 @@ impl Default for CUpti_ActivityJit {
             ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
             s.assume_init()
         }
+    }
+}
+#[doc = " \\brief The activity record for CUDA event.\n\n This activity is used to track recorded events.\n (CUPTI_ACTIVITY_KIND_CUDA_EVENT).\n\n Structure deprecated in CUDA 12.8: Refer to CUpti_ActivityCudaEvent2\n for the latest structure."]
+#[repr(C)]
+#[repr(align(8))]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_ActivityCudaEvent {
+    #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_CUDA_EVENT."]
+    pub kind: CUpti_ActivityKind,
+    #[doc = " The correlation ID of the API to which this result is associated."]
+    pub correlationId: u32,
+    #[doc = " The ID of the context where the event was recorded."]
+    pub contextId: u32,
+    #[doc = " The compute stream where the event was recorded."]
+    pub streamId: u32,
+    #[doc = " A unique event ID to identify the event record."]
+    pub eventId: u32,
+    #[doc = " Undefined. Reserved for internal use."]
+    pub pad: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityCudaEvent"][::std::mem::size_of::<CUpti_ActivityCudaEvent>() - 24usize];
+    ["Alignment of CUpti_ActivityCudaEvent"]
+        [::std::mem::align_of::<CUpti_ActivityCudaEvent>() - 8usize];
+    ["Offset of field: CUpti_ActivityCudaEvent::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityCudaEvent::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, correlationId) - 4usize];
+    ["Offset of field: CUpti_ActivityCudaEvent::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, contextId) - 8usize];
+    ["Offset of field: CUpti_ActivityCudaEvent::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, streamId) - 12usize];
+    ["Offset of field: CUpti_ActivityCudaEvent::eventId"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, eventId) - 16usize];
+    ["Offset of field: CUpti_ActivityCudaEvent::pad"]
+        [::std::mem::offset_of!(CUpti_ActivityCudaEvent, pad) - 20usize];
+};
+impl Default for CUpti_ActivityCudaEvent {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief The activity record for synchronization management.\n\n This activity is used to track various CUDA synchronization APIs.\n (CUPTI_ACTIVITY_KIND_SYNCHRONIZATION).\n\n Structure deprecated in CUDA 12.8: Refer to CUpti_ActivitySynchronization2\n for the latest structure."]
+#[repr(C, packed(8))]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_ActivitySynchronization {
+    #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_SYNCHRONIZATION."]
+    pub kind: CUpti_ActivityKind,
+    #[doc = " The type of record."]
+    pub type_: CUpti_ActivitySynchronizationType,
+    #[doc = " The start timestamp for the function, in ns. A value of 0 for\n both the start and end timestamps indicates that timestamp\n information could not be collected for the function."]
+    pub start: u64,
+    #[doc = " The end timestamp for the function, in ns. A value of 0 for both\n the start and end timestamps indicates that timestamp information\n could not be collected for the function."]
+    pub end: u64,
+    #[doc = " The correlation ID of the API to which this result is associated."]
+    pub correlationId: u32,
+    #[doc = " The ID of the context for which the synchronization API is called.\n In case of context synchronization API it is the context id for which the API is called.\n In case of stream/event synchronization it is the ID of the context where the stream/event was created."]
+    pub contextId: u32,
+    #[doc = " The compute stream for which the synchronization API is called.\n A CUPTI_SYNCHRONIZATION_INVALID_VALUE value indicate the field is not applicable for this record.\n Not valid for cuCtxSynchronize, cuEventSynchronize."]
+    pub streamId: u32,
+    #[doc = " The event ID for which the synchronization API is called.\n A CUPTI_SYNCHRONIZATION_INVALID_VALUE value indicate the field is not applicable for this record.\n Not valid for cuCtxSynchronize, cuStreamSynchronize."]
+    pub cudaEventId: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivitySynchronization"]
+        [::std::mem::size_of::<CUpti_ActivitySynchronization>() - 40usize];
+    ["Alignment of CUpti_ActivitySynchronization"]
+        [::std::mem::align_of::<CUpti_ActivitySynchronization>() - 8usize];
+    ["Offset of field: CUpti_ActivitySynchronization::kind"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization, kind) - 0usize];
+    ["Offset of field: CUpti_ActivitySynchronization::type_"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization, type_) - 4usize];
+    ["Offset of field: CUpti_ActivitySynchronization::start"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization, start) - 8usize];
+    ["Offset of field: CUpti_ActivitySynchronization::end"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization, end) - 16usize];
+    ["Offset of field: CUpti_ActivitySynchronization::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization, correlationId) - 24usize];
+    ["Offset of field: CUpti_ActivitySynchronization::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization, contextId) - 28usize];
+    ["Offset of field: CUpti_ActivitySynchronization::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization, streamId) - 32usize];
+    ["Offset of field: CUpti_ActivitySynchronization::cudaEventId"]
+        [::std::mem::offset_of!(CUpti_ActivitySynchronization, cudaEventId) - 36usize];
+};
+impl Default for CUpti_ActivitySynchronization {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief The activity record for memory copies.\n\n This activity record represents a memory copy\n (CUPTI_ACTIVITY_KIND_MEMCPY).\n\n Structure deprecated in CUDA 12.8: Refer to CUpti_ActivityMemcpy6\n for the latest structure."]
+#[repr(C, packed(8))]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_ActivityMemcpy5 {
+    #[doc = " The activity record kind, must be CUPTI_ACTIVITY_KIND_MEMCPY."]
+    pub kind: CUpti_ActivityKind,
+    #[doc = " The kind of the memory copy, stored as a byte to reduce record\n size. \\see CUpti_ActivityMemcpyKind"]
+    pub copyKind: u8,
+    #[doc = " The source memory kind read by the memory copy, stored as a byte\n to reduce record size. \\see CUpti_ActivityMemoryKind"]
+    pub srcKind: u8,
+    #[doc = " The destination memory kind read by the memory copy, stored as a\n byte to reduce record size. \\see CUpti_ActivityMemoryKind"]
+    pub dstKind: u8,
+    #[doc = " The flags associated with the memory copy. \\see CUpti_ActivityFlag"]
+    pub flags: u8,
+    #[doc = " The number of bytes transferred by the memory copy."]
+    pub bytes: u64,
+    #[doc = " The start timestamp for the memory copy, in ns. A value of 0 for\n both the start and end timestamps indicates that timestamp\n information could not be collected for the memory copy."]
+    pub start: u64,
+    #[doc = " The end timestamp for the memory copy, in ns. A value of 0 for\n both the start and end timestamps indicates that timestamp\n information could not be collected for the memory copy."]
+    pub end: u64,
+    #[doc = " The ID of the device where the memory copy is occurring."]
+    pub deviceId: u32,
+    #[doc = " The ID of the context where the memory copy is occurring."]
+    pub contextId: u32,
+    #[doc = " The ID of the stream where the memory copy is occurring."]
+    pub streamId: u32,
+    #[doc = " The correlation ID of the memory copy. Each memory copy is\n assigned a unique correlation ID that is identical to the\n correlation ID in the driver API activity record that launched\n the memory copy."]
+    pub correlationId: u32,
+    #[doc = " The runtime correlation ID of the memory copy. Each memory copy\n is assigned a unique runtime correlation ID that is identical to\n the correlation ID in the runtime API activity record that\n launched the memory copy."]
+    pub runtimeCorrelationId: u32,
+    #[doc = " Undefined. Reserved for internal use."]
+    pub pad: u32,
+    #[doc = " Undefined. Reserved for internal use."]
+    pub reserved0: *mut ::std::os::raw::c_void,
+    #[doc = " The unique ID of the graph node that executed this memcpy through graph launch.\n This field will be 0 if the memcpy is not done through graph launch."]
+    pub graphNodeId: u64,
+    #[doc = " The unique ID of the graph that executed this memcpy through graph launch.\n This field will be 0 if the memcpy is not done through graph launch."]
+    pub graphId: u32,
+    #[doc = " The ID of the HW channel on which the memory copy is occurring."]
+    pub channelID: u32,
+    #[doc = " The type of the channel"]
+    pub channelType: CUpti_ChannelType,
+    #[doc = "  Reserved for internal use."]
+    pub pad2: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityMemcpy5"][::std::mem::size_of::<CUpti_ActivityMemcpy5>() - 88usize];
+    ["Alignment of CUpti_ActivityMemcpy5"]
+        [::std::mem::align_of::<CUpti_ActivityMemcpy5>() - 8usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::copyKind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, copyKind) - 4usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::srcKind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, srcKind) - 5usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::dstKind"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, dstKind) - 6usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::flags"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, flags) - 7usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::bytes"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, bytes) - 8usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::start"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, start) - 16usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::end"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, end) - 24usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::deviceId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, deviceId) - 32usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::contextId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, contextId) - 36usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::streamId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, streamId) - 40usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::correlationId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, correlationId) - 44usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::runtimeCorrelationId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, runtimeCorrelationId) - 48usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::pad"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, pad) - 52usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::reserved0"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, reserved0) - 56usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::graphNodeId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, graphNodeId) - 64usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::graphId"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, graphId) - 72usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::channelID"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, channelID) - 76usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::channelType"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, channelType) - 80usize];
+    ["Offset of field: CUpti_ActivityMemcpy5::pad2"]
+        [::std::mem::offset_of!(CUpti_ActivityMemcpy5, pad2) - 84usize];
+};
+impl Default for CUpti_ActivityMemcpy5 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[doc = " \\brief The activity record providing detailed information for a marker.\n\n User must enable CUPTI_ACTIVITY_KIND_MARKER as well\n to get records for marker data.\n The marker data contains color, payload, and category.\n (CUPTI_ACTIVITY_KIND_MARKER_DATA).\n\n Structure deprecated in CUDA 13.1: Refer to CUpti_ActivityMarkerData2\n for the latest structure."]
+#[repr(C, packed(8))]
+#[derive(Copy, Clone)]
+pub struct CUpti_ActivityMarkerData {
+    #[doc = " The activity record kind, must be\n CUPTI_ACTIVITY_KIND_MARKER_DATA."]
+    pub kind: CUpti_ActivityKind,
+    #[doc = " The flags associated with the marker. \\see CUpti_ActivityFlag"]
+    pub flags: CUpti_ActivityFlag,
+    #[doc = " The marker ID."]
+    pub id: u32,
+    #[doc = " Defines the payload format for the value associated with the marker."]
+    pub payloadKind: CUpti_MetricValueKind,
+    #[doc = " The payload value."]
+    pub payload: CUpti_MetricValue,
+    #[doc = " The color for the marker."]
+    pub color: u32,
+    #[doc = " The category for the marker."]
+    pub category: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of CUpti_ActivityMarkerData"]
+        [::std::mem::size_of::<CUpti_ActivityMarkerData>() - 32usize];
+    ["Alignment of CUpti_ActivityMarkerData"]
+        [::std::mem::align_of::<CUpti_ActivityMarkerData>() - 8usize];
+    ["Offset of field: CUpti_ActivityMarkerData::kind"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData, kind) - 0usize];
+    ["Offset of field: CUpti_ActivityMarkerData::flags"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData, flags) - 4usize];
+    ["Offset of field: CUpti_ActivityMarkerData::id"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData, id) - 8usize];
+    ["Offset of field: CUpti_ActivityMarkerData::payloadKind"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData, payloadKind) - 12usize];
+    ["Offset of field: CUpti_ActivityMarkerData::payload"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData, payload) - 16usize];
+    ["Offset of field: CUpti_ActivityMarkerData::color"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData, color) - 24usize];
+    ["Offset of field: CUpti_ActivityMarkerData::category"]
+        [::std::mem::offset_of!(CUpti_ActivityMarkerData, category) - 28usize];
+};
+impl Default for CUpti_ActivityMarkerData {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+impl ::std::fmt::Debug for CUpti_ActivityMarkerData {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        write ! (f , "CUpti_ActivityMarkerData {{ kind: {:?}, flags: {:?}, payloadKind: {:?}, payload: {:?} }}" , self . kind , self . flags , self . payloadKind , self . payload)
     }
 }
 pub const CUPTI_DRIVER_TRACE_CBID_INVALID: CUpti_driver_api_trace_cbid_enum = 0;
@@ -13831,7 +15021,68 @@ pub const CUPTI_DRIVER_TRACE_CBID_cuStreamGetCtx_v2_ptsz: CUpti_driver_api_trace
 pub const CUPTI_DRIVER_TRACE_CBID_cuMemBatchDecompressAsync: CUpti_driver_api_trace_cbid_enum = 761;
 pub const CUPTI_DRIVER_TRACE_CBID_cuMemBatchDecompressAsync_ptsz: CUpti_driver_api_trace_cbid_enum =
     762;
-pub const CUPTI_DRIVER_TRACE_CBID_SIZE: CUpti_driver_api_trace_cbid_enum = 763;
+pub const CUPTI_DRIVER_TRACE_CBID_cuLogsRegisterCallback: CUpti_driver_api_trace_cbid_enum = 763;
+pub const CUPTI_DRIVER_TRACE_CBID_cuLogsUnregisterCallback: CUpti_driver_api_trace_cbid_enum = 764;
+pub const CUPTI_DRIVER_TRACE_CBID_cuLogsCurrent: CUpti_driver_api_trace_cbid_enum = 765;
+pub const CUPTI_DRIVER_TRACE_CBID_cuLogsDumpToFile: CUpti_driver_api_trace_cbid_enum = 766;
+pub const CUPTI_DRIVER_TRACE_CBID_cuLogsDumpToMemory: CUpti_driver_api_trace_cbid_enum = 767;
+pub const CUPTI_DRIVER_TRACE_CBID_cuCheckpointProcessGetRestoreThreadId:
+    CUpti_driver_api_trace_cbid_enum = 768;
+pub const CUPTI_DRIVER_TRACE_CBID_cuCheckpointProcessGetState: CUpti_driver_api_trace_cbid_enum =
+    769;
+pub const CUPTI_DRIVER_TRACE_CBID_cuCheckpointProcessLock: CUpti_driver_api_trace_cbid_enum = 770;
+pub const CUPTI_DRIVER_TRACE_CBID_cuCheckpointProcessCheckpoint: CUpti_driver_api_trace_cbid_enum =
+    771;
+pub const CUPTI_DRIVER_TRACE_CBID_cuCheckpointProcessRestore: CUpti_driver_api_trace_cbid_enum =
+    772;
+pub const CUPTI_DRIVER_TRACE_CBID_cuCheckpointProcessUnlock: CUpti_driver_api_trace_cbid_enum = 773;
+pub const CUPTI_DRIVER_TRACE_CBID_cuStreamGetDevice: CUpti_driver_api_trace_cbid_enum = 774;
+pub const CUPTI_DRIVER_TRACE_CBID_cuStreamGetDevice_ptsz: CUpti_driver_api_trace_cbid_enum = 775;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemcpyBatchAsync: CUpti_driver_api_trace_cbid_enum = 776;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemcpyBatchAsync_ptsz: CUpti_driver_api_trace_cbid_enum = 777;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DBatchAsync: CUpti_driver_api_trace_cbid_enum = 778;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DBatchAsync_ptsz: CUpti_driver_api_trace_cbid_enum = 779;
+pub const CUPTI_DRIVER_TRACE_CBID_cuEventElapsedTime_v2: CUpti_driver_api_trace_cbid_enum = 780;
+pub const CUPTI_DRIVER_TRACE_CBID_cuTensorMapEncodeIm2colWide: CUpti_driver_api_trace_cbid_enum =
+    781;
+pub const CUPTI_DRIVER_TRACE_CBID_cuGreenCtxGetId: CUpti_driver_api_trace_cbid_enum = 782;
+pub const CUPTI_DRIVER_TRACE_CBID_cuStreamCreateForCaptureToCig: CUpti_driver_api_trace_cbid_enum =
+    783;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemPrefetchBatchAsync: CUpti_driver_api_trace_cbid_enum = 784;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemPrefetchBatchAsync_ptsz: CUpti_driver_api_trace_cbid_enum =
+    785;
+pub const CUPTI_DRIVER_TRACE_CBID_cuSemaphoreCreate: CUpti_driver_api_trace_cbid_enum = 786;
+pub const CUPTI_DRIVER_TRACE_CBID_cuSemaphoreExport: CUpti_driver_api_trace_cbid_enum = 787;
+pub const CUPTI_DRIVER_TRACE_CBID_cuSemaphoreDestroy: CUpti_driver_api_trace_cbid_enum = 788;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemDiscardBatchAsync: CUpti_driver_api_trace_cbid_enum = 789;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemDiscardBatchAsync_ptsz: CUpti_driver_api_trace_cbid_enum =
+    790;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemDiscardAndPrefetchBatchAsync:
+    CUpti_driver_api_trace_cbid_enum = 791;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemDiscardAndPrefetchBatchAsync_ptsz:
+    CUpti_driver_api_trace_cbid_enum = 792;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMultiKernelCooperativeDomainCreate:
+    CUpti_driver_api_trace_cbid_enum = 793;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMultiKernelCooperativeDomainDestroy:
+    CUpti_driver_api_trace_cbid_enum = 794;
+pub const CUPTI_DRIVER_TRACE_CBID_cuCtxGetDevice_v2: CUpti_driver_api_trace_cbid_enum = 795;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemcpyBatchAsync_v2: CUpti_driver_api_trace_cbid_enum = 796;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemcpyBatchAsync_v2_ptsz: CUpti_driver_api_trace_cbid_enum =
+    797;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DBatchAsync_v2: CUpti_driver_api_trace_cbid_enum = 798;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DBatchAsync_v2_ptsz: CUpti_driver_api_trace_cbid_enum =
+    799;
+pub const CUPTI_DRIVER_TRACE_CBID_cuCtxSynchronize_v2: CUpti_driver_api_trace_cbid_enum = 800;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemGetDefaultMemPool: CUpti_driver_api_trace_cbid_enum = 801;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemGetMemPool: CUpti_driver_api_trace_cbid_enum = 802;
+pub const CUPTI_DRIVER_TRACE_CBID_cuMemSetMemPool: CUpti_driver_api_trace_cbid_enum = 803;
+pub const CUPTI_DRIVER_TRACE_CBID_cuDeviceGetP2PAtomicCapabilities:
+    CUpti_driver_api_trace_cbid_enum = 804;
+pub const CUPTI_DRIVER_TRACE_CBID_cuDeviceGetHostAtomicCapabilities:
+    CUpti_driver_api_trace_cbid_enum = 805;
+pub const CUPTI_DRIVER_TRACE_CBID_cuDriverGetGpuCodeIsaVersion: CUpti_driver_api_trace_cbid_enum =
+    806;
+pub const CUPTI_DRIVER_TRACE_CBID_SIZE: CUpti_driver_api_trace_cbid_enum = 807;
 pub const CUPTI_DRIVER_TRACE_CBID_FORCE_INT: CUpti_driver_api_trace_cbid_enum = 2147483647;
 pub type CUpti_driver_api_trace_cbid_enum = ::std::os::raw::c_uint;
 pub use self::CUpti_driver_api_trace_cbid_enum as CUpti_driver_api_trace_cbid;
@@ -14535,13 +15786,13 @@ pub const CUPTI_RUNTIME_TRACE_CBID_cudaMallocFromPoolAsync_v11020:
     CUpti_runtime_api_trace_cbid_enum = 391;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaMallocFromPoolAsync_ptsz_v11020:
     CUpti_runtime_api_trace_cbid_enum = 392;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaSignalExternalSemaphoresAsync_v2_v11020:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaSignalExternalSemaphoresAsync_v11020:
     CUpti_runtime_api_trace_cbid_enum = 393;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaSignalExternalSemaphoresAsync_v2_ptsz_v11020:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaSignalExternalSemaphoresAsync_ptsz_v11020:
     CUpti_runtime_api_trace_cbid_enum = 394;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaWaitExternalSemaphoresAsync_v2_v11020:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaWaitExternalSemaphoresAsync_v11020:
     CUpti_runtime_api_trace_cbid_enum = 395;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaWaitExternalSemaphoresAsync_v2_ptsz_v11020:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaWaitExternalSemaphoresAsync_ptsz_v11020:
     CUpti_runtime_api_trace_cbid_enum = 396;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphAddExternalSemaphoresSignalNode_v11020:
     CUpti_runtime_api_trace_cbid_enum = 397;
@@ -14628,7 +15879,7 @@ pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphInstantiateWithParams_ptsz_v12000:
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphExecGetFlags_v12000: CUpti_runtime_api_trace_cbid_enum =
     438;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaGetKernel_v12000: CUpti_runtime_api_trace_cbid_enum = 439;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaGetDeviceProperties_v2_v12000:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaGetDeviceProperties_v12000:
     CUpti_runtime_api_trace_cbid_enum = 440;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamGetId_v12000: CUpti_runtime_api_trace_cbid_enum = 441;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamGetId_ptsz_v12000: CUpti_runtime_api_trace_cbid_enum =
@@ -14641,10 +15892,10 @@ pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphNodeSetParams_v12020:
     CUpti_runtime_api_trace_cbid_enum = 446;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphExecNodeSetParams_v12020:
     CUpti_runtime_api_trace_cbid_enum = 447;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemAdvise_v2_v12020: CUpti_runtime_api_trace_cbid_enum = 448;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemPrefetchAsync_v2_v12020:
-    CUpti_runtime_api_trace_cbid_enum = 449;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemPrefetchAsync_v2_ptsz_v12020:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemAdvise_v12020: CUpti_runtime_api_trace_cbid_enum = 448;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemPrefetchAsync_v12020: CUpti_runtime_api_trace_cbid_enum =
+    449;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemPrefetchAsync_ptsz_v12020:
     CUpti_runtime_api_trace_cbid_enum = 450;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaFuncGetName_v12030: CUpti_runtime_api_trace_cbid_enum = 451;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamBeginCaptureToGraph_v12030:
@@ -14653,25 +15904,24 @@ pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamBeginCaptureToGraph_ptsz_v12030:
     CUpti_runtime_api_trace_cbid_enum = 453;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphConditionalHandleCreate_v12030:
     CUpti_runtime_api_trace_cbid_enum = 454;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphGetEdges_v2_v12030: CUpti_runtime_api_trace_cbid_enum =
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphGetEdges_v12030: CUpti_runtime_api_trace_cbid_enum =
     455;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphNodeGetDependencies_v2_v12030:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphNodeGetDependencies_v12030:
     CUpti_runtime_api_trace_cbid_enum = 456;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphNodeGetDependentNodes_v2_v12030:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphNodeGetDependentNodes_v12030:
     CUpti_runtime_api_trace_cbid_enum = 457;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphAddDependencies_v2_v12030:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphAddDependencies_v12030:
     CUpti_runtime_api_trace_cbid_enum = 458;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphRemoveDependencies_v2_v12030:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphRemoveDependencies_v12030:
     CUpti_runtime_api_trace_cbid_enum = 459;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphAddNode_v2_v12030: CUpti_runtime_api_trace_cbid_enum =
-    460;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamGetCaptureInfo_v3_v12030:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaGraphAddNode_v12030: CUpti_runtime_api_trace_cbid_enum = 460;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamGetCaptureInfo_v12030:
     CUpti_runtime_api_trace_cbid_enum = 461;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamGetCaptureInfo_v3_ptsz_v12030:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamGetCaptureInfo_ptsz_v12030:
     CUpti_runtime_api_trace_cbid_enum = 462;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamUpdateCaptureDependencies_v2_v12030:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamUpdateCaptureDependencies_v12030:
     CUpti_runtime_api_trace_cbid_enum = 463;
-pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamUpdateCaptureDependencies_v2_ptsz_v12030:
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamUpdateCaptureDependencies_ptsz_v12030:
     CUpti_runtime_api_trace_cbid_enum = 464;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaDeviceRegisterAsyncNotification_v12040:
     CUpti_runtime_api_trace_cbid_enum = 465;
@@ -14683,17 +15933,110 @@ pub const CUPTI_RUNTIME_TRACE_CBID_cudaGetDriverEntryPointByVersion_v12050:
     CUpti_runtime_api_trace_cbid_enum = 468;
 pub const CUPTI_RUNTIME_TRACE_CBID_cudaGetDriverEntryPointByVersion_ptsz_v12050:
     CUpti_runtime_api_trace_cbid_enum = 469;
-pub const CUPTI_RUNTIME_TRACE_CBID_cuda470_v12060: CUpti_runtime_api_trace_cbid_enum = 470;
-pub const CUPTI_RUNTIME_TRACE_CBID_cuda471_v12060: CUpti_runtime_api_trace_cbid_enum = 471;
-pub const CUPTI_RUNTIME_TRACE_CBID_cuda472_v12060: CUpti_runtime_api_trace_cbid_enum = 472;
-pub const CUPTI_RUNTIME_TRACE_CBID_cuda473_v12060: CUpti_runtime_api_trace_cbid_enum = 473;
-pub const CUPTI_RUNTIME_TRACE_CBID_cuda474_v12060: CUpti_runtime_api_trace_cbid_enum = 474;
-pub const CUPTI_RUNTIME_TRACE_CBID_cuda475_v12060: CUpti_runtime_api_trace_cbid_enum = 475;
-pub const CUPTI_RUNTIME_TRACE_CBID_cuda476_v12060: CUpti_runtime_api_trace_cbid_enum = 476;
-pub const CUPTI_RUNTIME_TRACE_CBID_cuda477_v12060: CUpti_runtime_api_trace_cbid_enum = 477;
-pub const CUPTI_RUNTIME_TRACE_CBID_cuda478_v12060: CUpti_runtime_api_trace_cbid_enum = 478;
-pub const CUPTI_RUNTIME_TRACE_CBID_cuda479_v12060: CUpti_runtime_api_trace_cbid_enum = 479;
-pub const CUPTI_RUNTIME_TRACE_CBID_SIZE: CUpti_runtime_api_trace_cbid_enum = 480;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLibraryLoadData_v12060: CUpti_runtime_api_trace_cbid_enum =
+    470;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLibraryLoadFromFile_v12060:
+    CUpti_runtime_api_trace_cbid_enum = 471;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLibraryUnload_v12060: CUpti_runtime_api_trace_cbid_enum =
+    472;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLibraryGetKernel_v12060: CUpti_runtime_api_trace_cbid_enum =
+    473;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLibraryGetGlobal_v12060: CUpti_runtime_api_trace_cbid_enum =
+    474;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLibraryGetManaged_v12060: CUpti_runtime_api_trace_cbid_enum =
+    475;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLibraryGetUnifiedFunction_v12060:
+    CUpti_runtime_api_trace_cbid_enum = 476;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLibraryGetKernelCount_v12060:
+    CUpti_runtime_api_trace_cbid_enum = 477;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLibraryEnumerateKernels_v12060:
+    CUpti_runtime_api_trace_cbid_enum = 478;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaKernelSetAttributeForDevice_v12060:
+    CUpti_runtime_api_trace_cbid_enum = 479;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamGetDevice_v12080: CUpti_runtime_api_trace_cbid_enum =
+    480;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaStreamGetDevice_ptsz_v12080:
+    CUpti_runtime_api_trace_cbid_enum = 481;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemcpyBatchAsync_v12080: CUpti_runtime_api_trace_cbid_enum =
+    482;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemcpyBatchAsync_ptsz_v12080:
+    CUpti_runtime_api_trace_cbid_enum = 483;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemcpy3DBatchAsync_v12080:
+    CUpti_runtime_api_trace_cbid_enum = 484;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemcpy3DBatchAsync_ptsz_v12080:
+    CUpti_runtime_api_trace_cbid_enum = 485;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaEventElapsedTime_v12080: CUpti_runtime_api_trace_cbid_enum =
+    486;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemPrefetchBatchAsync_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 487;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemPrefetchBatchAsync_ptsz_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 488;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemDiscardBatchAsync_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 489;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemDiscardBatchAsync_ptsz_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 490;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemDiscardAndPrefetchBatchAsync_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 491;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemDiscardAndPrefetchBatchAsync_ptsz_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 492;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaGetExportTable_v13000: CUpti_runtime_api_trace_cbid_enum =
+    493;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaRegisterFatBinary_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 494;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaRegisterFatBinaryEnd_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 495;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaUnregisterFatBinary_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 496;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaRegisterVar_v13000: CUpti_runtime_api_trace_cbid_enum =
+    497;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaRegisterHostVar_v13000: CUpti_runtime_api_trace_cbid_enum =
+    498;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaRegisterFunction_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 499;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaRegisterManagedVar_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 500;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaInitModule_v13000: CUpti_runtime_api_trace_cbid_enum = 501;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaPushCallConfiguration_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 502;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaPopCallConfiguration_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 503;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaGetKernel_v13000: CUpti_runtime_api_trace_cbid_enum = 504;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaLaunchKernel_v13000: CUpti_runtime_api_trace_cbid_enum =
+    505;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaLaunchKernel_ptsz_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 506;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaRegisterUnifiedTable_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 507;
+pub const CUPTI_RUNTIME_TRACE_CBID___cudaGetProcAddress_v13000: CUpti_runtime_api_trace_cbid_enum =
+    508;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemcpyBatchAsync_v13000: CUpti_runtime_api_trace_cbid_enum =
+    509;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemcpyBatchAsync_ptsz_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 510;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemcpy3DBatchAsync_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 511;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemcpy3DBatchAsync_ptsz_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 512;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLogsRegisterCallback_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 513;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLogsUnregisterCallback_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 514;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLogsCurrent_v13000: CUpti_runtime_api_trace_cbid_enum = 515;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLogsDumpToFile_v13000: CUpti_runtime_api_trace_cbid_enum =
+    516;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaLogsDumpToMemory_v13000: CUpti_runtime_api_trace_cbid_enum =
+    517;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemGetDefaultMemPool_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 518;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemGetMemPool_v13000: CUpti_runtime_api_trace_cbid_enum =
+    519;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaMemSetMemPool_v13000: CUpti_runtime_api_trace_cbid_enum =
+    520;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaDeviceGetHostAtomicCapabilities_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 521;
+pub const CUPTI_RUNTIME_TRACE_CBID_cudaDeviceGetP2PAtomicCapabilities_v13000:
+    CUpti_runtime_api_trace_cbid_enum = 522;
+pub const CUPTI_RUNTIME_TRACE_CBID_SIZE: CUpti_runtime_api_trace_cbid_enum = 523;
 pub const CUPTI_RUNTIME_TRACE_CBID_FORCE_INT: CUpti_runtime_api_trace_cbid_enum = 2147483647;
 pub type CUpti_runtime_api_trace_cbid_enum = ::std::os::raw::c_uint;
 pub use self::CUpti_runtime_api_trace_cbid_enum as CUpti_runtime_api_trace_cbid;
@@ -15795,6 +17138,13 @@ pub const CUPTI_PM_SAMPLING_DECODE_STOP_REASON_END_OF_RECORDS: CUpti_PmSampling_
 #[doc = " All the records in the hardware buffer is decoded."]
 pub const CUPTI_PM_SAMPLING_DECODE_STOP_REASON_COUNT: CUpti_PmSampling_DecodeStopReason = 3;
 pub type CUpti_PmSampling_DecodeStopReason = ::std::os::raw::c_uint;
+#[doc = " Keep the oldest records in the hardware buffer.\n CUPTI will report error for overflow in case hardware buffer is getting filled up."]
+pub const CUPTI_PM_SAMPLING_HARDWARE_BUFFER_APPEND_MODE_KEEP_OLDEST:
+    CUpti_PmSampling_HardwareBuffer_AppendMode = 0;
+#[doc = " Keep the latest records in the hardware buffer.\n Note: This mode is not supported on Turing GPU architecture.\n It is supported on Ampere and later GPU architectures."]
+pub const CUPTI_PM_SAMPLING_HARDWARE_BUFFER_APPEND_MODE_KEEP_LATEST:
+    CUpti_PmSampling_HardwareBuffer_AppendMode = 1;
+pub type CUpti_PmSampling_HardwareBuffer_AppendMode = ::std::os::raw::c_uint;
 #[doc = " \\brief Params for cuptiPmSamplingSetConfig"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -15815,6 +17165,8 @@ pub struct CUpti_PmSampling_SetConfig_Params {
     pub samplingInterval: u64,
     #[doc = " [in] Trigger mode.\n Note: CUPTI_PM_SAMPLING_TRIGGER_MODE_GPU_TIME_INTERVAL is not supported in Turing and GA100.\n Supported from GA10x onwards."]
     pub triggerMode: CUpti_PmSampling_TriggerMode,
+    #[doc = " [in] Append mode for the records in hardware buffer.\n For KEEP_OLDEST mode, all the records will be kept in the buffer and in case hardware buffer is getting filled up.\n overflow will be set to 1 in \\ref CUpti_PmSampling_DecodeData_Params. For KEEP_LATEST mode, the new records will\n overwrite the oldest records in the buffer in case of filled buffer."]
+    pub hwBufferAppendMode: CUpti_PmSampling_HardwareBuffer_AppendMode,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
@@ -15838,6 +17190,8 @@ const _: () = {
         [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, samplingInterval) - 48usize];
     ["Offset of field: CUpti_PmSampling_SetConfig_Params::triggerMode"]
         [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, triggerMode) - 56usize];
+    ["Offset of field: CUpti_PmSampling_SetConfig_Params::hwBufferAppendMode"]
+        [::std::mem::offset_of!(CUpti_PmSampling_SetConfig_Params, hwBufferAppendMode) - 60usize];
 };
 impl Default for CUpti_PmSampling_SetConfig_Params {
     fn default() -> Self {
@@ -16597,7 +17951,7 @@ pub struct CUpti_Profiler_Host_GetSubMetrics_Params {
     pub pHostObject: *mut CUpti_Profiler_Host_Object,
     #[doc = " [in] the metric type for queried metric"]
     pub metricType: CUpti_MetricType,
-    #[doc = " [in] metric name for which sub-metric will be listed"]
+    #[doc = " [in] metric name for which sub-metric will be listed. Metric name can be with or without extension (rollup or submetric)"]
     pub pMetricName: *const ::std::os::raw::c_char,
     #[doc = " [out] number of submetrics supported"]
     pub numOfSubmetrics: usize,
@@ -16652,7 +18006,7 @@ pub struct CUpti_Profiler_Host_GetMetricProperties_Params {
     pub pPriv: *mut ::std::os::raw::c_void,
     #[doc = " [in] reference to the profiler host object allocated by CUPTI in cuptiProfilerHostInitialize"]
     pub pHostObject: *mut CUpti_Profiler_Host_Object,
-    #[doc = " [in] metric name for which its properties will be listed"]
+    #[doc = " [in] metric name for which its properties will be listed. Metric name can be with or without extension (rollup or submetric)"]
     pub pMetricName: *const ::std::os::raw::c_char,
     #[doc = " [out] a short description about the metric"]
     pub pDescription: *const ::std::os::raw::c_char,
@@ -17364,7 +18718,7 @@ impl Default for CUpti_Profiler_CounterDataImage_Initialize_Params {
     }
 }
 unsafe extern "C" {
-    #[doc = " \\brief A CounterData image allocates space for values for each counter for each range.\n\n User borne the resposibility of managing the counterDataImage allocations.\n CounterDataPrefix contains meta data about the metrics that will be stored in counterDataImage.\n Use these APIs to calculate the allocation size and initialize counterData image."]
+    #[doc = " \\brief A CounterData image allocates space for values for each counter for each range.\n\n User borne the resposibility of managing the counterDataImage allocations.\n CounterDataPrefix contains meta data about the metrics that will be stored in counterDataImage.\n Use these APIs to calculate the allocation size and initialize counterData image.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerCounterDataImageCalculateSize(
         pParams: *mut CUpti_Profiler_CounterDataImage_CalculateSize_Params,
     ) -> CUptiResult;
@@ -17462,7 +18816,7 @@ impl Default for CUpti_Profiler_CounterDataImage_InitializeScratchBuffer_Params 
     }
 }
 unsafe extern "C" {
-    #[doc = " \\brief A temporary storage for CounterData image needed for internal operations\n\n Use these APIs to calculate the allocation size and initialize counterData image scratch buffer."]
+    #[doc = " \\brief A temporary storage for CounterData image needed for internal operations\n\n Use these APIs to calculate the allocation size and initialize counterData image scratch buffer.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerCounterDataImageCalculateScratchBufferSize(
         pParams: *mut CUpti_Profiler_CounterDataImage_CalculateScratchBufferSize_Params,
     ) -> CUptiResult;
@@ -17590,13 +18944,13 @@ impl Default for CUpti_Profiler_EndSession_Params {
     }
 }
 unsafe extern "C" {
-    #[doc = " \\brief Begin profiling session sets up the profiling on the device\n\n Although, it doesn't start the profiling but GPU resources needed for profiling are allocated.\n Outside of a session, the GPU will return to its normal operating state."]
+    #[doc = " \\brief Begin profiling session sets up the profiling on the device\n\n Although, it doesn't start the profiling but GPU resources needed for profiling are allocated.\n Outside of a session, the GPU will return to its normal operating state.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerBeginSession(
         pParams: *mut CUpti_Profiler_BeginSession_Params,
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Ends profiling session\n\n Frees up the GPU resources acquired for profiling.\n Outside of a session, the GPU will return to it's normal operating state."]
+    #[doc = " \\brief Ends profiling session\n\n Frees up the GPU resources acquired for profiling.\n Outside of a session, the GPU will return to it's normal operating state.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerEndSession(pParams: *mut CUpti_Profiler_EndSession_Params) -> CUptiResult;
 }
 #[doc = " \\brief Params for cuptiProfilerSetConfig"]
@@ -17690,11 +19044,11 @@ impl Default for CUpti_Profiler_UnsetConfig_Params {
     }
 }
 unsafe extern "C" {
-    #[doc = " \\brief Set metrics configuration to be profiled\n\n Use these APIs to set the config to profile in a session. It can be used for advanced cases such as where multiple\n configurations are collected into a single CounterData Image on the need basis, without restarting the session."]
+    #[doc = " \\brief Set metrics configuration to be profiled\n\n Use these APIs to set the config to profile in a session. It can be used for advanced cases such as where multiple\n configurations are collected into a single CounterData Image on the need basis, without restarting the session.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerSetConfig(pParams: *mut CUpti_Profiler_SetConfig_Params) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Unset metrics configuration profiled\n"]
+    #[doc = " \\brief Unset metrics configuration profiled\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerUnsetConfig(pParams: *mut CUpti_Profiler_UnsetConfig_Params)
         -> CUptiResult;
 }
@@ -17776,11 +19130,11 @@ impl Default for CUpti_Profiler_EndPass_Params {
     }
 }
 unsafe extern "C" {
-    #[doc = " \\brief Replay API: used for multipass collection.\n\n These APIs are used if user chooses to replay by itself \\ref CUPTI_UserReplay or \\ref CUPTI_ApplicationReplay\n for multipass collection of the metrics configurations.\n It's a no-op in case of \\ref CUPTI_KernelReplay."]
+    #[doc = " \\brief Replay API: used for multipass collection.\n\n These APIs are used if user chooses to replay by itself \\ref CUPTI_UserReplay or \\ref CUPTI_ApplicationReplay\n for multipass collection of the metrics configurations.\n It's a no-op in case of \\ref CUPTI_KernelReplay.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerBeginPass(pParams: *mut CUpti_Profiler_BeginPass_Params) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Replay API: used for multipass collection.\n\n These APIs are used if user chooses to replay by itself \\ref CUPTI_UserReplay or \\ref CUPTI_ApplicationReplay\n for multipass collection of the metrics configurations.\n Its a no-op in case of \\ref CUPTI_KernelReplay.\n Returns information for next pass."]
+    #[doc = " \\brief Replay API: used for multipass collection.\n\n These APIs are used if user chooses to replay by itself \\ref CUPTI_UserReplay or \\ref CUPTI_ApplicationReplay\n for multipass collection of the metrics configurations.\n Its a no-op in case of \\ref CUPTI_KernelReplay.\n Returns information for next pass.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerEndPass(pParams: *mut CUpti_Profiler_EndPass_Params) -> CUptiResult;
 }
 #[doc = " \\brief Params for cuptiProfilerEnableProfiling"]
@@ -17850,13 +19204,13 @@ impl Default for CUpti_Profiler_DisableProfiling_Params {
     }
 }
 unsafe extern "C" {
-    #[doc = " \\brief Enables Profiling\n\n In \\ref CUPTI_AutoRange, these APIs are used to enable/disable profiling for the kernels to be executed in\n a profiling session."]
+    #[doc = " \\brief Enables Profiling\n\n In \\ref CUPTI_AutoRange, these APIs are used to enable/disable profiling for the kernels to be executed in\n a profiling session.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerEnableProfiling(
         pParams: *mut CUpti_Profiler_EnableProfiling_Params,
     ) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Disable Profiling\n\n In \\ref CUPTI_AutoRange, these APIs are used to enable/disable profiling for the kernels to be executed in\n a profiling session."]
+    #[doc = " \\brief Disable Profiling\n\n In \\ref CUPTI_AutoRange, these APIs are used to enable/disable profiling for the kernels to be executed in\n a profiling session.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerDisableProfiling(
         pParams: *mut CUpti_Profiler_DisableProfiling_Params,
     ) -> CUptiResult;
@@ -17915,7 +19269,7 @@ impl Default for CUpti_Profiler_IsPassCollected_Params {
     }
 }
 unsafe extern "C" {
-    #[doc = " \\brief Asynchronous call to query if the submitted pass to GPU is collected\n"]
+    #[doc = " \\brief Asynchronous call to query if the submitted pass to GPU is collected\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerIsPassCollected(
         pParams: *mut CUpti_Profiler_IsPassCollected_Params,
     ) -> CUptiResult;
@@ -17966,7 +19320,7 @@ impl Default for CUpti_Profiler_FlushCounterData_Params {
     }
 }
 unsafe extern "C" {
-    #[doc = " \\brief Decode all the submitted passes\n\n Flush Counter data API to ensure every pass is decoded into the counterDataImage passed at beginSession.\n This will cause the CPU/GPU sync to collect all the undecoded pass."]
+    #[doc = " \\brief Decode all the submitted passes\n\n Flush Counter data API to ensure every pass is decoded into the counterDataImage passed at beginSession.\n This will cause the CPU/GPU sync to collect all the undecoded pass.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerFlushCounterData(
         pParams: *mut CUpti_Profiler_FlushCounterData_Params,
     ) -> CUptiResult;
@@ -18044,11 +19398,11 @@ impl Default for CUpti_Profiler_PopRange_Params {
     }
 }
 unsafe extern "C" {
-    #[doc = " \\brief Range API's : Push user range\n\n Counter data is collected per unique range-stack. Identified by a string label passsed by the user.\n It's an invalid operation in case of \\ref CUPTI_AutoRange."]
+    #[doc = " \\brief Range API's : Push user range\n\n Counter data is collected per unique range-stack. Identified by a string label passsed by the user.\n It's an invalid operation in case of \\ref CUPTI_AutoRange.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerPushRange(pParams: *mut CUpti_Profiler_PushRange_Params) -> CUptiResult;
 }
 unsafe extern "C" {
-    #[doc = " \\brief Range API's : Pop user range\n\n Counter data is collected per unique range-stack. Identified by a string label passsed by the user.\n It's an invalid operation in case of \\ref CUPTI_AutoRange."]
+    #[doc = " \\brief Range API's : Pop user range\n\n Counter data is collected per unique range-stack. Identified by a string label passsed by the user.\n It's an invalid operation in case of \\ref CUPTI_AutoRange.\n\n **DEPRECATED** This function is deprecated as of CUDA 13.0 and will be removed in the future. It is recommended to use the Range Profiling API from the header cupti_range_profiler.h."]
     pub fn cuptiProfilerPopRange(pParams: *mut CUpti_Profiler_PopRange_Params) -> CUptiResult;
 }
 #[doc = " \\brief Params for cuptiProfilerGetCounterAvailability"]

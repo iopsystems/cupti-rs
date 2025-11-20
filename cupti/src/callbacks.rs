@@ -1,6 +1,6 @@
 //! cupti_callbacks.h
 
-use std::ffi::{CStr, CString, c_void};
+use std::ffi::{CStr, CString, c_char, c_void};
 use std::fmt;
 use std::marker::PhantomData;
 
@@ -124,13 +124,11 @@ c_enum! {
         /// CUDA stream attribute is changed.
         StreamAttributeChanged = CUPTI_CBID_RESOURCE_STREAM_ATTRIBUTE_CHANGED,
 
-        // CUDA 12.6: Removed in this version
-        // /// CUDA graph node is updated.
-        // GraphNodeUpdated = CUPTI_CBID_RESOURCE_GRAPH_NODE_UPDATED,
+        /// CUDA graph node is updated.
+        GraphNodeUpdated = CUPTI_CBID_RESOURCE_GRAPH_NODE_UPDATED,
 
-        // CUDA 12.6: Removed in this version
-        // /// Params are set for the CUDA graph node in the executable graph.
-        // GraphNodeSetParams = CUPTI_CBID_RESOURCE_GRAPH_NODE_SET_PARAMS,
+        /// Params are set for the CUDA graph node in the executable graph.
+        GraphNodeSetParams = CUPTI_CBID_RESOURCE_GRAPH_NODE_SET_PARAMS,
     }
 }
 
@@ -670,87 +668,86 @@ impl Subscriber {
         })
     }
 
-    // CUDA 12.6: Removed in this version - CUpti_SubscriberParams and cuptiSubscribe_v2 not available
-    // /// Initialize a callback subscriber with a callback function and subscriber
-    // /// name.
-    // ///
-    // /// The returned subscriber handle can be used to enable and disable the
-    // /// callback for specific domains and callback IDs.
-    // ///
-    // /// # Parameters
-    // ///
-    // /// - `cb`: The callback function
-    // /// - `name`: Name given to the subscriber. The subscriber name need not
-    // ///   include the "CUPTI" prefix, as the CUPTI library automatically adds it
-    // ///   as "CUPTI for \<subscriberName\>". Maximum size is 53 bytes; longer
-    // ///   names will be truncated.
-    // ///
-    // /// # Notes
-    // ///
-    // /// - Only a single subscriber can be registered at a time. To ensure that
-    // ///   no other CUPTI client interrupts the profiling session, it's the
-    // ///   responsibility of all the CUPTI clients to call this function before
-    // ///   starting the profiling session. In case profiling session is already
-    // ///   started by another CUPTI client, this function returns the error code
-    // ///   [`Error::MultipleSubscribersNotSupported`].
-    // /// - This function returns the same error when application is launched
-    // ///   using NVIDIA tools like Nsight Systems, Nsight Compute, cuda-gdb and
-    // ///   cuda-memcheck.
-    // /// - This function does not enable any callbacks.
-    // ///
-    // /// # Errors
-    // ///
-    // /// - [`Error::NotInitialized`] if unable to initialize CUPTI
-    // /// - [`Error::MultipleSubscribersNotSupported`] if there is already a CUPTI
-    // ///   subscriber, or if the application is launched with NVIDIA tools like
-    // ///   Nsight Systems, Nsight Compute, cuda-gdb and cuda-memcheck. In this
-    // ///   case, the [`SubscribeError`] will contain the name of the incompatible
-    // ///   tool or existing CUPTI subscriber if available.
-    // pub fn new_v2<CB: RawSubscriberCallback>(cb: CB, name: &str) -> Result<Self, SubscribeError> {
-    //     let mut name_bytes = [0u8; CUPTI_SUBSCRIBER_NAME_MAX_LEN as usize + 1];
-    //     let mut old_name_bytes = [0u8; CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN as usize + 1];
-    //
-    //     let name = Self::truncate_to_char_boundary(name, CUPTI_SUBSCRIBER_NAME_MAX_LEN as usize);
-    //     (&mut name_bytes[..name.len()]).copy_from_slice(name.as_bytes());
-    //
-    //     let func = Box::new(cb);
-    //     let mut handle = std::ptr::null_mut();
-    //
-    //     let mut params = CUpti_SubscriberParams::default();
-    //     params.structSize = std::mem::size_of_val(&params);
-    //     params.subscriberName = name_bytes.as_ptr() as *const c_char;
-    //     params.oldSubscriberName = old_name_bytes.as_mut_ptr() as *mut c_char;
-    //     params.oldSubscriberSize = CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN as _;
-    //
-    //     let code = unsafe {
-    //         cuptiSubscribe_v2(
-    //             &mut handle,
-    //             Some(Self::callback::<CB>),
-    //             &*func as *const CB as *mut c_void,
-    //             &mut params,
-    //         )
-    //     };
-    //
-    //     match Error::result(code) {
-    //         Ok(()) => Ok(Self {
-    //             handle,
-    //             _func: func,
-    //             lock: NonPoisonMutex::new(()),
-    //         }),
-    //         Err(error @ Error::MultipleSubscribersNotSupported) => {
-    //             let old_name = CStr::from_bytes_until_nul(&old_name_bytes[..]).unwrap();
-    //
-    //             Err(SubscribeError {
-    //                 error,
-    //                 old_name: old_name.is_empty().then(|| old_name.to_owned()),
-    //             })
-    //         }
-    //         Err(error) => Err(SubscribeError {
-    //             error,
-    //             old_name: None,
-    //         }),
-    //     }
-    // }
+    /// Initialize a callback subscriber with a callback function and subscriber
+    /// name.
+    ///
+    /// The returned subscriber handle can be used to enable and disable the
+    /// callback for specific domains and callback IDs.
+    ///
+    /// # Parameters
+    ///
+    /// - `cb`: The callback function
+    /// - `name`: Name given to the subscriber. The subscriber name need not
+    ///   include the "CUPTI" prefix, as the CUPTI library automatically adds it
+    ///   as "CUPTI for \<subscriberName\>". Maximum size is 53 bytes; longer
+    ///   names will be truncated.
+    ///
+    /// # Notes
+    ///
+    /// - Only a single subscriber can be registered at a time. To ensure that
+    ///   no other CUPTI client interrupts the profiling session, it's the
+    ///   responsibility of all the CUPTI clients to call this function before
+    ///   starting the profiling session. In case profiling session is already
+    ///   started by another CUPTI client, this function returns the error code
+    ///   [`Error::MultipleSubscribersNotSupported`].
+    /// - This function returns the same error when application is launched
+    ///   using NVIDIA tools like Nsight Systems, Nsight Compute, cuda-gdb and
+    ///   cuda-memcheck.
+    /// - This function does not enable any callbacks.
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::NotInitialized`] if unable to initialize CUPTI
+    /// - [`Error::MultipleSubscribersNotSupported`] if there is already a CUPTI
+    ///   subscriber, or if the application is launched with NVIDIA tools like
+    ///   Nsight Systems, Nsight Compute, cuda-gdb and cuda-memcheck. In this
+    ///   case, the [`SubscribeError`] will contain the name of the incompatible
+    ///   tool or existing CUPTI subscriber if available.
+    pub fn new_v2<CB: RawSubscriberCallback>(cb: CB, name: &str) -> Result<Self, SubscribeError> {
+        let mut name_bytes = [0u8; CUPTI_SUBSCRIBER_NAME_MAX_LEN as usize + 1];
+        let mut old_name_bytes = [0u8; CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN as usize + 1];
+
+        let name = Self::truncate_to_char_boundary(name, CUPTI_SUBSCRIBER_NAME_MAX_LEN as usize);
+        (&mut name_bytes[..name.len()]).copy_from_slice(name.as_bytes());
+
+        let func = Box::new(cb);
+        let mut handle = std::ptr::null_mut();
+
+        let mut params = CUpti_SubscriberParams::default();
+        params.structSize = std::mem::size_of_val(&params);
+        params.subscriberName = name_bytes.as_ptr() as *const c_char;
+        params.oldSubscriberName = old_name_bytes.as_mut_ptr() as *mut c_char;
+        params.oldSubscriberSize = CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN as _;
+
+        let code = unsafe {
+            cuptiSubscribe_v2(
+                &mut handle,
+                Some(Self::callback::<CB>),
+                &*func as *const CB as *mut c_void,
+                &mut params,
+            )
+        };
+
+        match Error::result(code) {
+            Ok(()) => Ok(Self {
+                handle,
+                _func: func,
+                lock: NonPoisonMutex::new(()),
+            }),
+            Err(error @ Error::MultipleSubscribersNotSupported) => {
+                let old_name = CStr::from_bytes_until_nul(&old_name_bytes[..]).unwrap();
+
+                Err(SubscribeError {
+                    error,
+                    old_name: old_name.is_empty().then(|| old_name.to_owned()),
+                })
+            }
+            Err(error) => Err(SubscribeError {
+                error,
+                old_name: None,
+            }),
+        }
+    }
 
     /// Get the current enabled/disabled state of a callback for a specific
     /// domain and function ID.

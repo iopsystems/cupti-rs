@@ -123,8 +123,7 @@ c_enum! {
         /// particular device is permitted.
         ///
         /// [`ClusterDimension`]: Self::ClusterDimension
-        // CUDA 12.6: Removed in this version
-        // PreferredClusterDimension = CU_LAUNCH_ATTRIBUTE_PREFERRED_CLUSTER_DIMENSION,
+        PreferredClusterDimension = CU_LAUNCH_ATTRIBUTE_PREFERRED_CLUSTER_DIMENSION,
 
         /// Valid for launches.
         ///
@@ -182,27 +181,26 @@ c_enum! {
         /// CUDA driver can choose a different configuration if required for the launch.
         PreferredSharedMemoryCarveout = CU_LAUNCH_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT,
 
-        // CUDA 12.6: Removed in this version
-        // /// Valid for streams, graph nodes, launches.
-        // ///
-        // /// This attribute is a hint to the CUDA runtime that the launch should attempt to make
-        // /// the kernel maximize its NVLINK utilization.
-        // ///
-        // /// When possible to honor this hint, CUDA will assume each block in the grid launch will
-        // /// carry out an even amount of NVLINK traffic, and make a best-effort attempt to adjust
-        // /// the kernel launch based on that assumption.
-        // ///
-        // /// This attribute is a hint only. CUDA makes no functional or performance guarantee. Its
-        // /// applicability can be affected by many different factors, including driver version
-        // /// (i.e. CUDA doesn't guarantee the performance characteristics will be maintained
-        // /// between driver versions or a driver update could alter or regress previously observed
-        // /// perf characteristics.) It also doesn't guarantee a successful result, i.e. applying
-        // /// the attribute may not improve the performance of either the targeted kernel or the
-        // /// encapsulating application.
-        // ///
-        // /// Valid values for [`CUlaunchAttributeValue::nvlinkUtilCentricScheduling`] are 0
-        // /// (disabled) and 1 (enabled).
-        // NvlinkUtilCentricScheduling = CU_LAUNCH_ATTRIBUTE_NVLINK_UTIL_CENTRIC_SCHEDULING,
+        /// Valid for streams, graph nodes, launches.
+        ///
+        /// This attribute is a hint to the CUDA runtime that the launch should attempt to make
+        /// the kernel maximize its NVLINK utilization.
+        ///
+        /// When possible to honor this hint, CUDA will assume each block in the grid launch will
+        /// carry out an even amount of NVLINK traffic, and make a best-effort attempt to adjust
+        /// the kernel launch based on that assumption.
+        ///
+        /// This attribute is a hint only. CUDA makes no functional or performance guarantee. Its
+        /// applicability can be affected by many different factors, including driver version
+        /// (i.e. CUDA doesn't guarantee the performance characteristics will be maintained
+        /// between driver versions or a driver update could alter or regress previously observed
+        /// perf characteristics.) It also doesn't guarantee a successful result, i.e. applying
+        /// the attribute may not improve the performance of either the targeted kernel or the
+        /// encapsulating application.
+        ///
+        /// Valid values for [`CUlaunchAttributeValue::nvlinkUtilCentricScheduling`] are 0
+        /// (disabled) and 1 (enabled).
+        NvlinkUtilCentricScheduling = CU_LAUNCH_ATTRIBUTE_NVLINK_UTIL_CENTRIC_SCHEDULING,
     }
 }
 
