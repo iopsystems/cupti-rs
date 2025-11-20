@@ -22,14 +22,10 @@ impl Regenerate {
             .parse_callbacks(Box::new(Callbacks))
             .impl_debug(true)
             .derive_default(true)
-            .prepend_enum_name(false)
-            .raw_line("use cuda_sys::cuda::*;");
+            .prepend_enum_name(false);
 
         builder = builder
-            .blocklist_function("cu([^p]|p[^t]|pt[^i]).*")
-            .blocklist_type("CUcontext")
-            .blocklist_type("CUstream(_st)?")
-            .blocklist_type("CUctx_st");
+            .blocklist_function("cu([^p]|p[^t]|pt[^i]).*");
 
         builder
             .clang_args(["-x", "c++"])
