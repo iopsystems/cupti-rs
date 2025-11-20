@@ -712,7 +712,8 @@ impl Subscriber {
         let mut old_name_bytes = [0u8; CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN as usize + 1];
 
         let subscriber_name_ptr = if let Some(name) = name {
-            let name = Self::truncate_to_char_boundary(name, CUPTI_SUBSCRIBER_NAME_MAX_LEN as usize);
+            let name =
+                Self::truncate_to_char_boundary(name, CUPTI_SUBSCRIBER_NAME_MAX_LEN as usize);
             (&mut name_bytes[..name.len()]).copy_from_slice(name.as_bytes());
             name_bytes.as_ptr() as *const c_char
         } else {

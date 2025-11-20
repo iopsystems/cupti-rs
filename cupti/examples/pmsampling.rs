@@ -43,14 +43,12 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     // Initialize the CUPTI profiler interface
-    let _guard = cupti::initialize()
-        .context("failed to initialize CUPTI profiler")?;
+    let _guard = cupti::initialize().context("failed to initialize CUPTI profiler")?;
 
     // Get the chip name for the device
-    let chip_name_str = get_device_chip_name(args.device)
-        .context("failed to get device chip name")?;
-    let chip_name = CString::new(chip_name_str)
-        .context("chip name contains null byte")?;
+    let chip_name_str =
+        get_device_chip_name(args.device).context("failed to get device chip name")?;
+    let chip_name = CString::new(chip_name_str).context("chip name contains null byte")?;
 
     println!("Device {}: {}", args.device, chip_name_str);
 
@@ -88,12 +86,13 @@ fn main() -> anyhow::Result<()> {
         .build(args.device)
         .context("failed to build sampler")?;
 
-    // Convert sampling interval from microseconds to nanoseconds for GpuTimeInterval trigger
+    // Convert sampling interval from microseconds to nanoseconds for
+    // GpuTimeInterval trigger
     let sampling_interval_ns = args.interval * 1000;
 
     // Set the sampling configuration
-    // Note: GpuTimeInterval trigger mode is only supported on Ampere GA10x and later
-    // For Turing/GA100, use GpuSysclkInterval instead
+    // Note: GpuTimeInterval trigger mode is only supported on Ampere GA10x and
+    // later For Turing/GA100, use GpuSysclkInterval instead
     sampler
         .set_config(
             args.buffer_size,
@@ -175,10 +174,7 @@ fn main() -> anyhow::Result<()> {
 
         println!(
             "Sample {}: timestamps [{} - {}] (duration: {} ns)",
-            i,
-            sample_info.start_timestamp,
-            sample_info.end_timestamp,
-            duration_ns
+            i, sample_info.start_timestamp, sample_info.end_timestamp, duration_ns
         );
 
         // Evaluate the metrics for this sample

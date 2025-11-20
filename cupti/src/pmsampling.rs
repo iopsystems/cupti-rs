@@ -238,7 +238,10 @@ impl Sampler {
     ///
     /// - [`Error::InvalidParameter`] if any parameter is not valid
     /// - [`Error::Unknown`] for any internal error
-    pub fn builder(chip_name: &CStr, counter_availability_image: &CounterAvailabilityImage) -> Result<SamplerBuilder> {
+    pub fn builder(
+        chip_name: &CStr,
+        counter_availability_image: &CounterAvailabilityImage,
+    ) -> Result<SamplerBuilder> {
         SamplerBuilder::new(chip_name, counter_availability_image)
     }
 

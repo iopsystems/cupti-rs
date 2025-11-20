@@ -1,11 +1,11 @@
 //! Range profiling API.
 //!
-//! This module is a wrapper around the functions in `cupti_range_profiler.h`. It
-//! allows you to collect GPU performance metrics for specific code regions (ranges)
-//! that you define in your application.
+//! This module is a wrapper around the functions in `cupti_range_profiler.h`.
+//! It allows you to collect GPU performance metrics for specific code regions
+//! (ranges) that you define in your application.
 //!
-//! Range profiling is the recommended approach for GPU performance profiling as of
-//! CUDA 12.6, replacing the deprecated profiler target API.
+//! Range profiling is the recommended approach for GPU performance profiling as
+//! of CUDA 12.6, replacing the deprecated profiler target API.
 //!
 //! These APIs are supported on Turing and later GPU architectures.
 
@@ -79,7 +79,8 @@ impl RangeProfilerBuilder {
     ///
     /// # Parameters
     ///
-    /// - `chip_name`: The chip name (accepted for chips supported at the time-of-release)
+    /// - `chip_name`: The chip name (accepted for chips supported at the
+    ///   time-of-release)
     /// - `counter_availability_image`: Buffer with counter availability image
     ///   (required for future chip support)
     ///
@@ -170,11 +171,13 @@ impl RangeProfilerBuilder {
         self.host.add_metrics(metric_names)
     }
 
-    /// Create a range profiler object and enable range profiling on the CUDA context.
+    /// Create a range profiler object and enable range profiling on the CUDA
+    /// context.
     ///
     /// # Parameters
     ///
-    /// - `ctx`: CUDA context to be used for profiling. Use `None` for the current context.
+    /// - `ctx`: CUDA context to be used for profiling. Use `None` for the
+    ///   current context.
     ///
     /// # Errors
     ///
@@ -221,7 +224,8 @@ impl RangeProfiler {
     ///
     /// # Parameters
     ///
-    /// - `chip_name`: The chip name (accepted for chips supported at the time-of-release)
+    /// - `chip_name`: The chip name (accepted for chips supported at the
+    ///   time-of-release)
     /// - `counter_availability_image`: Buffer with counter availability image
     ///   (required for future chip support)
     ///
@@ -248,7 +252,8 @@ impl RangeProfiler {
     ///
     /// # Parameters
     ///
-    /// - `counter_data`: Counter data image where profiling results will be stored
+    /// - `counter_data`: Counter data image where profiling results will be
+    ///   stored
     /// - `config`: Configuration for the range profiler
     ///
     /// # Errors
@@ -308,8 +313,8 @@ impl RangeProfiler {
     /// # Errors
     ///
     /// - [`Error::InvalidParameter`] if any parameter is not valid
-    /// - [`Error::InvalidOperation`] if range profiler is not enabled or is
-    ///   not started
+    /// - [`Error::InvalidOperation`] if range profiler is not enabled or is not
+    ///   started
     /// - [`Error::Unknown`] for any internal error
     pub fn stop(&mut self) -> Result<StopStatus> {
         let mut params = CUpti_RangeProfiler_Stop_Params::default();
@@ -336,7 +341,8 @@ impl RangeProfiler {
     ///
     /// # Parameters
     ///
-    /// - `range_name`: Name of the range to be profiled (only valid for User range mode)
+    /// - `range_name`: Name of the range to be profiled (only valid for User
+    ///   range mode)
     ///
     /// # Errors
     ///
@@ -398,7 +404,6 @@ impl RangeProfiler {
 
         Ok(params.numOfRangeDropped)
     }
-
 }
 
 impl Drop for RangeProfiler {
@@ -420,7 +425,8 @@ pub struct RangeProfilerConfig {
     pub replay_mode: ProfilerReplayMode,
     /// Maximum number of ranges that can be profiled in a pass.
     pub max_ranges_per_pass: usize,
-    /// Number of nesting levels to be profiled. For Auto range mode, this should be 1.
+    /// Number of nesting levels to be profiled. For Auto range mode, this
+    /// should be 1.
     pub num_nesting_levels: u16,
     /// Minimum nesting level to be profiled.
     pub min_nesting_level: u16,
@@ -459,17 +465,19 @@ pub struct StopStatus {
 pub struct RangeCounterDataImage(Vec<u8>);
 
 impl RangeCounterDataImage {
-    /// Create and initialize a counter data image buffer for storing metric data.
+    /// Create and initialize a counter data image buffer for storing metric
+    /// data.
     ///
-    /// This method combines getting the required buffer size and initializing the buffer
-    /// in a single operation.
+    /// This method combines getting the required buffer size and initializing
+    /// the buffer in a single operation.
     ///
     /// # Parameters
     ///
     /// - `profiler`: Range profiler object
     /// - `metric_names`: Names of the metrics to be collected
     /// - `max_num_of_ranges`: Maximum number of ranges to be stored
-    /// - `max_num_range_tree_nodes`: Maximum number of range tree nodes (must be >= max_num_of_ranges)
+    /// - `max_num_range_tree_nodes`: Maximum number of range tree nodes (must
+    ///   be >= max_num_of_ranges)
     ///
     /// # Errors
     ///
@@ -549,11 +557,7 @@ impl RangeCounterDataImage {
     ///
     /// - [`Error::InvalidParameter`] if any parameter is not valid
     /// - [`Error::Unknown`] for any internal error
-    pub fn get_range_info(
-        &self,
-        range_index: usize,
-        delimiter: &CStr,
-    ) -> Result<&'static CStr> {
+    pub fn get_range_info(&self, range_index: usize, delimiter: &CStr) -> Result<&'static CStr> {
         let mut params = CUpti_RangeProfiler_CounterData_GetRangeInfo_Params::default();
         params.structSize = std::mem::size_of_val(&params);
         params.pCounterDataImage = self.0.as_ptr();
@@ -566,7 +570,8 @@ impl RangeCounterDataImage {
         Ok(unsafe { CStr::from_ptr(params.rangeName) })
     }
 
-    /// Evaluate the metric values for the range index stored in the counter data.
+    /// Evaluate the metric values for the range index stored in the counter
+    /// data.
     ///
     /// # Parameters
     ///
@@ -577,7 +582,8 @@ impl RangeCounterDataImage {
     /// # Errors
     ///
     /// - [`Error::InvalidParameter`] if any of the parameters is not valid
-    /// - [`Error::InvalidMetricName`] if the metric name is not valid or not supported
+    /// - [`Error::InvalidMetricName`] if the metric name is not valid or not
+    ///   supported
     /// - [`Error::Unknown`] for any internal error
     pub fn evaluate(
         &self,

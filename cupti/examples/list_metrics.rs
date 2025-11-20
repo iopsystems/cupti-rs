@@ -7,9 +7,9 @@ use std::ffi::CString;
 
 use anyhow::Context;
 use clap::Parser;
+use cupti::get_device_chip_name;
 use cupti::pmsampling::Sampler;
 use cupti::profiler::MetricType;
-use cupti::get_device_chip_name;
 
 /// List available GPU performance metrics for PM sampling
 #[derive(Parser, Debug)]
@@ -36,14 +36,12 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     // Initialize the CUPTI profiler interface
-    let _guard = cupti::initialize()
-        .context("failed to initialize CUPTI profiler")?;
+    let _guard = cupti::initialize().context("failed to initialize CUPTI profiler")?;
 
     // Get the chip name for the device
-    let chip_name_str = get_device_chip_name(args.device)
-        .context("failed to get device chip name")?;
-    let chip_name = CString::new(chip_name_str)
-        .context("chip name contains null byte")?;
+    let chip_name_str =
+        get_device_chip_name(args.device).context("failed to get device chip name")?;
+    let chip_name = CString::new(chip_name_str).context("chip name contains null byte")?;
 
     println!("Device {}: {}", args.device, chip_name_str);
 
