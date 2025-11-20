@@ -399,66 +399,6 @@ impl RangeProfiler {
         Ok(params.numOfRangeDropped)
     }
 
-    /// Get the size of the counter data image required to store profiling data.
-    ///
-    /// # Parameters
-    ///
-    /// - `metric_names`: Names of the metrics to be collected
-    /// - `max_num_of_ranges`: Maximum number of ranges to be stored
-    /// - `max_num_range_tree_nodes`: Maximum number of range tree nodes (must be >= max_num_of_ranges)
-    ///
-    /// # Errors
-    ///
-    /// - [`Error::InvalidParameter`] if any parameter is not valid
-    /// - [`Error::InvalidOperation`] if range profiler is not enabled
-    /// - [`Error::Unknown`] for any internal error
-    pub fn get_counter_data_size(
-        &self,
-        metric_names: &[&CStr],
-        max_num_of_ranges: usize,
-        max_num_range_tree_nodes: u32,
-    ) -> Result<usize> {
-        let mut metric_names_ptrs: Vec<*const _> =
-            metric_names.iter().map(|c| c.as_ptr()).collect();
-
-        let mut params = CUpti_RangeProfiler_GetCounterDataSize_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
-        params.pRangeProfilerObject = self.raw.as_ptr() as *mut _;
-        params.pMetricNames = metric_names_ptrs.as_mut_ptr();
-        params.numMetrics = metric_names_ptrs.len();
-        params.maxNumOfRanges = max_num_of_ranges;
-        params.maxNumRangeTreeNodes = max_num_range_tree_nodes;
-
-        Error::result(unsafe { cuptiRangeProfilerGetCounterDataSize(&mut params) })?;
-
-        Ok(params.counterDataSize)
-    }
-
-    /// Initialize a counter data image buffer.
-    ///
-    /// This prepares the counter data image for storing profiling results.
-    ///
-    /// # Parameters
-    ///
-    /// - `counter_data`: The counter data image buffer to initialize
-    ///
-    /// # Errors
-    ///
-    /// - [`Error::InvalidParameter`] if any parameter is not valid
-    /// - [`Error::InvalidOperation`] if range profiler is not enabled
-    /// - [`Error::Unknown`] for any internal error
-    pub fn initialize_counter_data_image(
-        &self,
-        counter_data: &mut RangeCounterDataImage,
-    ) -> Result<()> {
-        let mut params = CUpti_RangeProfiler_CounterDataImage_Initialize_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
-        params.pRangeProfilerObject = self.raw.as_ptr() as *mut _;
-        params.counterDataSize = counter_data.0.len();
-        params.pCounterData = counter_data.0.as_mut_ptr();
-
-        Error::result(unsafe { cuptiRangeProfilerCounterDataImageInitialize(&mut params) })
-    }
 }
 
 impl Drop for RangeProfiler {
@@ -519,7 +459,10 @@ pub struct StopStatus {
 pub struct RangeCounterDataImage(Vec<u8>);
 
 impl RangeCounterDataImage {
-    /// Create a counter data image buffer for storing metric data.
+    /// Create and initialize a counter data image buffer for storing metric data.
+    ///
+    /// This method combines getting the required buffer size and initializing the buffer
+    /// in a single operation.
     ///
     /// # Parameters
     ///
@@ -539,25 +482,34 @@ impl RangeCounterDataImage {
         max_num_of_ranges: usize,
         max_num_range_tree_nodes: u32,
     ) -> Result<Self> {
-        let size = profiler.get_counter_data_size(
-            metric_names,
-            max_num_of_ranges,
-            max_num_range_tree_nodes,
-        )?;
+        // Get the required size for the counter data image
+        let mut metric_names_ptrs: Vec<*const _> =
+            metric_names.iter().map(|c| c.as_ptr()).collect();
 
-        let image = vec![0u8; size];
+        let mut size_params = CUpti_RangeProfiler_GetCounterDataSize_Params::default();
+        size_params.structSize = std::mem::size_of_val(&size_params);
+        size_params.pRangeProfilerObject = profiler.raw.as_ptr() as *mut _;
+        size_params.pMetricNames = metric_names_ptrs.as_mut_ptr();
+        size_params.numMetrics = metric_names_ptrs.len();
+        size_params.maxNumOfRanges = max_num_of_ranges;
+        size_params.maxNumRangeTreeNodes = max_num_range_tree_nodes;
+
+        Error::result(unsafe { cuptiRangeProfilerGetCounterDataSize(&mut size_params) })?;
+
+        // Allocate the buffer
+        let image = vec![0u8; size_params.counterDataSize];
         let mut this = Self(image);
 
-        profiler.initialize_counter_data_image(&mut this)?;
+        // Initialize the buffer
+        let mut init_params = CUpti_RangeProfiler_CounterDataImage_Initialize_Params::default();
+        init_params.structSize = std::mem::size_of_val(&init_params);
+        init_params.pRangeProfilerObject = profiler.raw.as_ptr() as *mut _;
+        init_params.counterDataSize = this.0.len();
+        init_params.pCounterData = this.0.as_mut_ptr();
+
+        Error::result(unsafe { cuptiRangeProfilerCounterDataImageInitialize(&mut init_params) })?;
 
         Ok(this)
-    }
-
-    /// Create a counter data image with a specific size.
-    ///
-    /// You must call [`RangeProfiler::initialize_counter_data_image`] before using this.
-    pub fn with_size(size: usize) -> Self {
-        Self(vec![0u8; size])
     }
 
     /// Get the raw bytes of the counter data image.
