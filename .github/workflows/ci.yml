@@ -81,16 +81,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
 
       - name: Generate bindings
-        run: |
-          cd cupti-sys
-          cargo xtask regenerate cupti.cpp \
-            --output src/bindings.rs.new \
-            -- \
-            -I /usr/local/cuda/include
+        run: cd cupti-sys && ./regenerate.sh
 
-      - name: Compare bindings
+      - name: Check for differences
         run: |
-          if ! diff -u cupti-sys/src/bindings.rs cupti-sys/src/bindings.rs.new; then
+          if ! git diff --exit-code cupti-sys/src/bindings.rs; then
             echo "Error: Generated bindings differ from checked-in bindings"
             echo "Please regenerate bindings using: cd cupti-sys && ./regenerate.sh"
             exit 1
