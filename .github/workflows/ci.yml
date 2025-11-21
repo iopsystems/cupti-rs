@@ -1,0 +1,158 @@
+name: CI
+
+# Continuous Integration workflow for cupti-rs
+# - Builds the project, examples, and tests
+# - Checks code formatting with rustfmt
+# - Verifies CUPTI bindings are up-to-date with default CUDA version
+# - Runs clippy and uploads results as CodeQL annotations
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CUDA Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.29
+        with:
+          method: 'network'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build all targets
+        run: cargo build --workspace --all-targets
+
+      - name: Run tests
+        run: cargo test --workspace
+
+  format:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  bindings-check:
+    name: Check CUPTI Bindings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CUDA Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.29
+        with:
+          method: 'network'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install bindgen dependencies
+        run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
+
+      - name: Generate bindings
+        run: cd cupti-sys && ./regenerate.sh
+
+      - name: Check for differences
+        run: |
+          if ! git diff --exit-code cupti-sys/src/bindings.rs; then
+            echo "Error: Generated bindings differ from checked-in bindings"
+            echo "Please regenerate bindings using: cd cupti-sys && ./regenerate.sh"
+            exit 1
+          fi
+          echo "Bindings match!"
+
+  clippy:
+    name: Clippy Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: clippy-sarif,sarif-fmt,cargo-deduplicate-warnings
+
+      - name: Run Clippy and generate SARIF
+        run: |
+          cargo clippy --workspace --all-targets --message-format=json -- -D warnings \
+            | cargo-deduplicate-warnings \
+            | clippy-sarif | tee clippy.sarif | sarif-fmt
+        continue-on-error: true
+
+      - name: Upload SARIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: clippy-sarif
+          path: clippy.sarif
+
+  clippy-upload:
+    name: Upload Clippy Results
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs:
+      - clippy
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download SARIF artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: clippy-sarif
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: clippy.sarif
+
+  check-success:
+    name: Verify all checks pass
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - build
+      - format
+      - bindings-check
+      - clippy
+
+    steps:
+      - name: Fail if any dependencies failed
+        if: contains(needs.*.result, 'failure')
+        shell: bash
+        run: exit 1
+      - name: Success
+        run: echo "All checks passed!"
