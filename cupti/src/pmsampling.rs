@@ -552,7 +552,7 @@ impl CounterDataImage {
     ) -> Result<Vec<f64>> {
         sampler
             .host
-            .evaluate_to_gpu_values(&self, range_index, metric_names)
+            .evaluate_to_gpu_values(self, range_index, metric_names)
     }
 }
 

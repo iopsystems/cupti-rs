@@ -92,8 +92,11 @@ pub fn get_device_chip_name(device_index: usize) -> Result<&'static str> {
 
     use cupti_sys::{CUpti_Device_GetChipName_Params, cuptiDeviceGetChipName};
 
-    let mut params = CUpti_Device_GetChipName_Params::default();
-    params.deviceIndex = device_index;
+    let mut params = CUpti_Device_GetChipName_Params {
+        structSize: std::mem::size_of::<CUpti_Device_GetChipName_Params>(),
+        deviceIndex: device_index,
+        ..Default::default()
+    };
 
     Error::result(unsafe { cuptiDeviceGetChipName(&mut params) })?;
 
