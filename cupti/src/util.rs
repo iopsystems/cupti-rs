@@ -57,7 +57,7 @@ impl CStringSlice {
 
     pub fn iter(&self) -> CStringListIter<'_> {
         CStringListIter {
-            list: self.as_raw_slice().into_iter(),
+            list: self.as_raw_slice().iter(),
         }
     }
 }

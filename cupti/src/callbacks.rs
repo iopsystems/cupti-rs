@@ -714,7 +714,7 @@ impl Subscriber {
         let subscriber_name_ptr = if let Some(name) = name {
             let name =
                 Self::truncate_to_char_boundary(name, CUPTI_SUBSCRIBER_NAME_MAX_LEN as usize);
-            (&mut name_bytes[..name.len()]).copy_from_slice(name.as_bytes());
+            name_bytes[..name.len()].copy_from_slice(name.as_bytes());
             name_bytes.as_ptr() as *const c_char
         } else {
             std::ptr::null()
@@ -886,7 +886,7 @@ impl Subscriber {
         cbdata: *const c_void,
     ) {
         let cb = unsafe { &*(userdata as *const CB) };
-        cb.call(domain.into(), cbid.into(), cbdata);
+        cb.call(domain.into(), cbid, cbdata);
     }
 
     fn truncate_to_char_boundary(s: &str, len: usize) -> &str {
@@ -900,7 +900,7 @@ impl Subscriber {
             }
         }
 
-        return "";
+        ""
     }
 }
 
