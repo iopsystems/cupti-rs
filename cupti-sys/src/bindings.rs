@@ -28651,3 +28651,736 @@ unsafe extern "C" {
         pParams: *mut CUpti_Device_GetChipName_Params,
     ) -> CUptiResult;
 }
+/** SASS metric data will be collected at GPU level.
+ In CUpti_SassMetricsGetDataProperties_Params struct the numOfInstances will be equal to 1*/
+pub const CUPTI_SASS_METRICS_OUTPUT_GRANULARITY_GPU: CUpti_SassMetrics_OutputGranularity = 0;
+/** SASS metric data will be collected at SM level
+ In CUpti_SassMetricsGetDataProperties_Params struct the numOfInstances will be equal to number of SMs in the GPU*/
+pub const CUPTI_SASS_METRICS_OUTPUT_GRANULARITY_SM: CUpti_SassMetrics_OutputGranularity = 1;
+/** SASS metric data will be collected at SM sub-partition level
+ In CUpti_SassMetricsGetDataProperties_Params struct the numOfInstances will be equal to number of SM sub-partitions in the GPU*/
+pub const CUPTI_SASS_METRICS_OUTPUT_GRANULARITY_SMSP: CUpti_SassMetrics_OutputGranularity = 2;
+/** SASS metric data will be collected at SM sub-partition level
+ In CUpti_SassMetricsGetDataProperties_Params struct the numOfInstances will be equal to number of SM sub-partitions in the GPU*/
+pub const CUPTI_SASS_METRICS_OUTPUT_GRANULARITY_INVALID: CUpti_SassMetrics_OutputGranularity = 3;
+/** \defgroup CUPTI_SASS_METRICS_API CUPTI SASS Metrics API
+ Functions, types, and enums that implement the CUPTI SASS Metrics API.
+ @{*/
+pub type CUpti_SassMetrics_OutputGranularity = ::std::os::raw::c_uint;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetrics_MetricDetails {
+    /// unique ID for the SASS metric
+    pub metricId: u64,
+    /// metric name
+    pub pMetricName: *const ::std::os::raw::c_char,
+    /// metric description
+    pub pMetricDescription: *const ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetrics_MetricDetails",
+    ][::std::mem::size_of::<CUpti_SassMetrics_MetricDetails>() - 24usize];
+    [
+        "Alignment of CUpti_SassMetrics_MetricDetails",
+    ][::std::mem::align_of::<CUpti_SassMetrics_MetricDetails>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_MetricDetails::metricId",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_MetricDetails, metricId) - 0usize];
+    [
+        "Offset of field: CUpti_SassMetrics_MetricDetails::pMetricName",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_MetricDetails, pMetricName) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_MetricDetails::pMetricDescription",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_MetricDetails, pMetricDescription)
+        - 16usize];
+};
+impl Default for CUpti_SassMetrics_MetricDetails {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+/// \brief Params for cuptiSassMetricsGetNumOfMetrics
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetrics_GetNumOfMetrics_Params {
+    /// [in] should be equal to CUpti_SassMetrics_GetNumOfMetrics_Params_STRUCT_SIZE
+    pub structSize: usize,
+    /// [in] assign to NULL
+    pub pPriv: *mut ::std::os::raw::c_void,
+    /// [in] chip name for which metrics will be queried
+    pub pChipName: *const ::std::os::raw::c_char,
+    /// [out] number of metrics supported for the queried chip
+    pub numOfMetrics: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetrics_GetNumOfMetrics_Params",
+    ][::std::mem::size_of::<CUpti_SassMetrics_GetNumOfMetrics_Params>() - 32usize];
+    [
+        "Alignment of CUpti_SassMetrics_GetNumOfMetrics_Params",
+    ][::std::mem::align_of::<CUpti_SassMetrics_GetNumOfMetrics_Params>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetNumOfMetrics_Params::structSize",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetNumOfMetrics_Params, structSize)
+        - 0usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetNumOfMetrics_Params::pPriv",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetNumOfMetrics_Params, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetNumOfMetrics_Params::pChipName",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetNumOfMetrics_Params, pChipName)
+        - 16usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetNumOfMetrics_Params::numOfMetrics",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetNumOfMetrics_Params, numOfMetrics)
+        - 24usize];
+};
+impl Default for CUpti_SassMetrics_GetNumOfMetrics_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    /** \brief Get the number of supported SASS metrics for the chip.
+
+ \param pParams A pointer to \ref CUpti_SassMetrics_GetNumOfMetrics_Params
+
+ \retval CUPTI_SUCCESS
+ \retval CUPTI_ERROR_INVALID_PARAMETER if any \p pParams is not valid
+ \retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device doesn't support SASS metric collection*/
+    pub fn cuptiSassMetricsGetNumOfMetrics(
+        pParams: *mut CUpti_SassMetrics_GetNumOfMetrics_Params,
+    ) -> CUptiResult;
+}
+/// \brief Params for cuptiSassMetricsGetMetrics
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetrics_GetMetrics_Params {
+    /// [in] should be equal to CUpti_SassMetrics_GetMetrics_Params_STRUCT_SIZE
+    pub structSize: usize,
+    /// [in] assign to NULL
+    pub pPriv: *mut ::std::os::raw::c_void,
+    /// [in] chip name for which metrics will be queried
+    pub pChipName: *const ::std::os::raw::c_char,
+    /// [in] number of metrics supported for the queried chip (can be queried using cuptiSassMetricsGetNumOfMetrics())
+    pub numOfMetrics: usize,
+    /// [out] list of metrics supported for queried chip
+    pub pMetricsList: *mut CUpti_SassMetrics_MetricDetails,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetrics_GetMetrics_Params",
+    ][::std::mem::size_of::<CUpti_SassMetrics_GetMetrics_Params>() - 40usize];
+    [
+        "Alignment of CUpti_SassMetrics_GetMetrics_Params",
+    ][::std::mem::align_of::<CUpti_SassMetrics_GetMetrics_Params>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetMetrics_Params::structSize",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetMetrics_Params, structSize) - 0usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetMetrics_Params::pPriv",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetMetrics_Params, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetMetrics_Params::pChipName",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetMetrics_Params, pChipName) - 16usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetMetrics_Params::numOfMetrics",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetMetrics_Params, numOfMetrics)
+        - 24usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetMetrics_Params::pMetricsList",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetMetrics_Params, pMetricsList)
+        - 32usize];
+};
+impl Default for CUpti_SassMetrics_GetMetrics_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    /** \brief Get the list of all supported SASS metrics for the chip.
+
+ \param pParams A pointer to \ref CUpti_SassMetrics_GetMetrics_Params
+
+ \retval CUPTI_SUCCESS
+ \retval CUPTI_ERROR_INVALID_PARAMETER if any \p pParams is not valid
+ \retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device doesn't support SASS metric collection*/
+    pub fn cuptiSassMetricsGetMetrics(
+        pParams: *mut CUpti_SassMetrics_GetMetrics_Params,
+    ) -> CUptiResult;
+}
+/// \brief Params for cuptiSassMetricsGetProperties
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetrics_GetProperties_Params {
+    /// [in] should be equal to CUpti_SassMetrics_GetProperties_Params_STRUCT_SIZE
+    pub structSize: usize,
+    /// [in] assign to NULL
+    pub pPriv: *mut ::std::os::raw::c_void,
+    /// [in] chip name for which metric will be queried
+    pub pChipName: *const ::std::os::raw::c_char,
+    /// [in] metric name
+    pub pMetricName: *const ::std::os::raw::c_char,
+    /// [out] returns the metric ID and the metric description
+    pub metric: CUpti_SassMetrics_MetricDetails,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetrics_GetProperties_Params",
+    ][::std::mem::size_of::<CUpti_SassMetrics_GetProperties_Params>() - 56usize];
+    [
+        "Alignment of CUpti_SassMetrics_GetProperties_Params",
+    ][::std::mem::align_of::<CUpti_SassMetrics_GetProperties_Params>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetProperties_Params::structSize",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetProperties_Params, structSize)
+        - 0usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetProperties_Params::pPriv",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetProperties_Params, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetProperties_Params::pChipName",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetProperties_Params, pChipName)
+        - 16usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetProperties_Params::pMetricName",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetProperties_Params, pMetricName)
+        - 24usize];
+    [
+        "Offset of field: CUpti_SassMetrics_GetProperties_Params::metric",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_GetProperties_Params, metric) - 32usize];
+};
+impl Default for CUpti_SassMetrics_GetProperties_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    /** \brief Get metric properties for the queried metric.
+ For a given metric the results will be put in CUpti_SassMetrics_MetricDetails which
+ stores metric ID, description of the metric.
+
+ \param pParams A pointer to \ref CUpti_SassMetrics_GetProperties_Params
+
+ \retval CUPTI_SUCCESS
+ \retval CUPTI_ERROR_INVALID_PARAMETER if any \p pParams is not valid
+ \retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device doesn't support SASS metric data collection*/
+    pub fn cuptiSassMetricsGetProperties(
+        pParams: *mut CUpti_SassMetrics_GetProperties_Params,
+    ) -> CUptiResult;
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUpti_SassMetrics_Config {
+    /// [in] unique id for the SASS metric, can be queried using cuptiSassMetricsGetProperties()
+    pub metricId: u64,
+    /// [in] CUpti_SassMetrics_OutputGranularity
+    pub outputGranularity: u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetrics_Config",
+    ][::std::mem::size_of::<CUpti_SassMetrics_Config>() - 16usize];
+    [
+        "Alignment of CUpti_SassMetrics_Config",
+    ][::std::mem::align_of::<CUpti_SassMetrics_Config>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_Config::metricId",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_Config, metricId) - 0usize];
+    [
+        "Offset of field: CUpti_SassMetrics_Config::outputGranularity",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_Config, outputGranularity) - 8usize];
+};
+/// \brief Params for cuptiSassMetricsSetConfig
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetricsSetConfig_Params {
+    /// [in] equal to CUpti_SassMetricsSetConfig_Params_STRUCT_SIZE
+    pub structSize: usize,
+    /// [in] assign to NULL
+    pub pPriv: *mut ::std::os::raw::c_void,
+    /// [in] num of metric configs, will be equal to number of metrics queried
+    pub numOfMetricConfig: usize,
+    /// [in] list of metric config generated for given sass metrics
+    pub pConfigs: *mut CUpti_SassMetrics_Config,
+    /** [in] device index for which config will be set, user can call this once for
+ the device on which the the SASS metric data will be collected*/
+    pub deviceIndex: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetricsSetConfig_Params",
+    ][::std::mem::size_of::<CUpti_SassMetricsSetConfig_Params>() - 40usize];
+    [
+        "Alignment of CUpti_SassMetricsSetConfig_Params",
+    ][::std::mem::align_of::<CUpti_SassMetricsSetConfig_Params>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsSetConfig_Params::structSize",
+    ][::std::mem::offset_of!(CUpti_SassMetricsSetConfig_Params, structSize) - 0usize];
+    [
+        "Offset of field: CUpti_SassMetricsSetConfig_Params::pPriv",
+    ][::std::mem::offset_of!(CUpti_SassMetricsSetConfig_Params, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsSetConfig_Params::numOfMetricConfig",
+    ][::std::mem::offset_of!(CUpti_SassMetricsSetConfig_Params, numOfMetricConfig)
+        - 16usize];
+    [
+        "Offset of field: CUpti_SassMetricsSetConfig_Params::pConfigs",
+    ][::std::mem::offset_of!(CUpti_SassMetricsSetConfig_Params, pConfigs) - 24usize];
+    [
+        "Offset of field: CUpti_SassMetricsSetConfig_Params::deviceIndex",
+    ][::std::mem::offset_of!(CUpti_SassMetricsSetConfig_Params, deviceIndex) - 32usize];
+};
+impl Default for CUpti_SassMetricsSetConfig_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    /** \brief Set config for the SASS metric data collection for a device.
+ User need to call this API before calling any of the SASS metric data collection APIs.
+ Each set config API call need to be followed by cuptiSassPatchingUnSetConfig API
+ before calling the cuptiSassMetricsSetConfig() API again for the same device.
+
+ \param pParams A pointer to \ref CUpti_SassMetricsSetConfig_Params
+
+ \retval CUPTI_SUCCESS
+ \retval CUPTI_ERROR_INVALID_PARAMETER if any \p pParams is not valid
+ \retval CUPTI_ERROR_INVALID_CONTEXT if any cuda context has not been created prior to this API call
+ \retval CUPTI_ERROR_INVALID_OPERATION if this is called multiple times for the device without calling unset config API
+ \retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device doesn't support SASS metric data collection*/
+    pub fn cuptiSassMetricsSetConfig(
+        pParams: *mut CUpti_SassMetricsSetConfig_Params,
+    ) -> CUptiResult;
+}
+/// \brief Params for cuptiSassMetricsUnsetConfig
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetricsUnsetConfig_Params {
+    /// [in] equal to CUpti_SassMetricsUnsetConfig_Params_STRUCT_SIZE
+    pub structSize: usize,
+    /// [in] assign to NULL
+    pub pPriv: *mut ::std::os::raw::c_void,
+    /** [in] device index for which SASS metric data collection config will get reset, user need to call this API for
+ all the devices on which the the SASS metric data collection have been configured.*/
+    pub deviceIndex: u32,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetricsUnsetConfig_Params",
+    ][::std::mem::size_of::<CUpti_SassMetricsUnsetConfig_Params>() - 24usize];
+    [
+        "Alignment of CUpti_SassMetricsUnsetConfig_Params",
+    ][::std::mem::align_of::<CUpti_SassMetricsUnsetConfig_Params>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsUnsetConfig_Params::structSize",
+    ][::std::mem::offset_of!(CUpti_SassMetricsUnsetConfig_Params, structSize) - 0usize];
+    [
+        "Offset of field: CUpti_SassMetricsUnsetConfig_Params::pPriv",
+    ][::std::mem::offset_of!(CUpti_SassMetricsUnsetConfig_Params, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsUnsetConfig_Params::deviceIndex",
+    ][::std::mem::offset_of!(CUpti_SassMetricsUnsetConfig_Params, deviceIndex)
+        - 16usize];
+};
+impl Default for CUpti_SassMetricsUnsetConfig_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    /** \brief Unset config API will reset the SASS metric data collection configuration for the device.
+ Once this API called CUPTI will deallocate all the memory allocated and remove all
+ the configuration for SASS metric data collection. User can only call this API for a device where
+ cuptiSassMetricsSetConfig() API has been called earlier for the device.
+
+ \param pParams A pointer to \ref CUpti_SassMetricsSetConfig_Params
+
+ \retval CUPTI_SUCCESS
+ \retval CUPTI_ERROR_INVALID_PARAMETER if any \p pParams is not valid
+ \retval CUPTI_ERROR_INVALID_CONTEXT if any cuda context has not been created prior to this API call
+ \retval CUPTI_ERROR_INVALID_OPERATION if this is called multiple times for the device without calling set config API
+ \retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device doesn't support SASS metric data collection*/
+    pub fn cuptiSassMetricsUnsetConfig(
+        pParams: *mut CUpti_SassMetricsUnsetConfig_Params,
+    ) -> CUptiResult;
+}
+/// \brief Params for cuptiSassMetricsEnable
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetricsEnable_Params {
+    /// [in] equal to CUpti_SassMetricsEnable_Params_STRUCT_SIZE
+    pub structSize: usize,
+    /// [in] assign to NULL
+    pub pPriv: *mut ::std::os::raw::c_void,
+    /** [in] CUDA context on which SASS metric data collection will be enabled.
+ If set NULL, default context will be consider for SASS metric data collection.*/
+    pub ctx: CUcontext,
+    /** [in] if false, all the functions will patched regardless of their execution with cuptiSassMetricsEnable() API call.
+ when this parameter is set to true, metric data collection for the function will be done at the very first execution in the enable/disble
+ range.*/
+    pub enableLazyPatching: u8,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetricsEnable_Params",
+    ][::std::mem::size_of::<CUpti_SassMetricsEnable_Params>() - 32usize];
+    [
+        "Alignment of CUpti_SassMetricsEnable_Params",
+    ][::std::mem::align_of::<CUpti_SassMetricsEnable_Params>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsEnable_Params::structSize",
+    ][::std::mem::offset_of!(CUpti_SassMetricsEnable_Params, structSize) - 0usize];
+    [
+        "Offset of field: CUpti_SassMetricsEnable_Params::pPriv",
+    ][::std::mem::offset_of!(CUpti_SassMetricsEnable_Params, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsEnable_Params::ctx",
+    ][::std::mem::offset_of!(CUpti_SassMetricsEnable_Params, ctx) - 16usize];
+    [
+        "Offset of field: CUpti_SassMetricsEnable_Params::enableLazyPatching",
+    ][::std::mem::offset_of!(CUpti_SassMetricsEnable_Params, enableLazyPatching)
+        - 24usize];
+};
+impl Default for CUpti_SassMetricsEnable_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    /** \brief Sass metric data collection enable API will mark the start of a range, between which kernel
+  will be profiled for SASS metrics.
+
+ \param pParams A pointer to \ref CUpti_SassMetricsEnable_Params
+
+ \retval CUPTI_SUCCESS
+ \retval CUPTI_ERROR_INVALID_PARAMETER if any \p pParams is not valid
+ \retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device doesn't support SASS metric data collection
+ \retval CUPTI_ERROR_INVALID_CONTEXT if any cuda context has not been created prior to this API call
+ \retval CUPTI_ERROR_INVALID_OPERATION if this API is called multiple times for a cuda context without calling
+ cuptiSassMetricsDisable() API or called before cuptiSassMetricsSetConfig() API call.*/
+    pub fn cuptiSassMetricsEnable(
+        pParams: *mut CUpti_SassMetricsEnable_Params,
+    ) -> CUptiResult;
+}
+/// \brief Params for cuptiSassMetricsDisable
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetricsDisable_Params {
+    /// [in] equal to CUpti_SassMetricsDisable_Params_STRUCT_SIZE
+    pub structSize: usize,
+    /// [in] assign to NULL
+    pub pPriv: *mut ::std::os::raw::c_void,
+    /** [in] CUDA context on which SASS metric data collection will be disabled.
+ If set NULL, default context will be consider for SASS metric data collection.*/
+    pub ctx: CUcontext,
+    /** [out] Num of dropped SASS records will be equal to numOfPatchedInstructions * numOfInstances.
+ Number of dropped records will be zero when data is flushed prior to calling the disable API.*/
+    pub numOfDroppedRecords: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetricsDisable_Params",
+    ][::std::mem::size_of::<CUpti_SassMetricsDisable_Params>() - 32usize];
+    [
+        "Alignment of CUpti_SassMetricsDisable_Params",
+    ][::std::mem::align_of::<CUpti_SassMetricsDisable_Params>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsDisable_Params::structSize",
+    ][::std::mem::offset_of!(CUpti_SassMetricsDisable_Params, structSize) - 0usize];
+    [
+        "Offset of field: CUpti_SassMetricsDisable_Params::pPriv",
+    ][::std::mem::offset_of!(CUpti_SassMetricsDisable_Params, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsDisable_Params::ctx",
+    ][::std::mem::offset_of!(CUpti_SassMetricsDisable_Params, ctx) - 16usize];
+    [
+        "Offset of field: CUpti_SassMetricsDisable_Params::numOfDroppedRecords",
+    ][::std::mem::offset_of!(CUpti_SassMetricsDisable_Params, numOfDroppedRecords)
+        - 24usize];
+};
+impl Default for CUpti_SassMetricsDisable_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    /** \brief SASS metric data collection disable API will mark the end of a range, any kernel launched after this
+ API call will not be profiled for the SASS metrics.
+
+ \param pParams A pointer to \ref CUpti_SassMetricsDisable_Params
+
+ \retval CUPTI_SUCCESS
+ \retval CUPTI_ERROR_INVALID_PARAMETER if any \p pParams is not valid
+ \retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device doesn't support SASS metric data collection
+ \retval CUPTI_ERROR_INVALID_CONTEXT if any cuda context has not been created prior to this API call
+ \retval CUPTI_ERROR_INVALID_OPERATION if this API is called multiple times for a cuda context without calling
+ cuptiSassMetricsEnable() API or called before cuptiSassMetricsSetConfig() API call.*/
+    pub fn cuptiSassMetricsDisable(
+        pParams: *mut CUpti_SassMetricsDisable_Params,
+    ) -> CUptiResult;
+}
+/// \brief Params for cuptiSassMetricsGetDataProperties
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetricsGetDataProperties_Params {
+    /// [in] equal to CUpti_SassMetricsGetDataProperties_Params_STRUCT_SIZE
+    pub structSize: usize,
+    /// [in] assign to NULL
+    pub pPriv: *mut ::std::os::raw::c_void,
+    /** [in] CUDA context on which SASS metric data collection was enabled.
+ If set NULL, default context will be consider for SASS metric data collection.*/
+    pub ctx: CUcontext,
+    /// [out] total number of SASS records has been collected
+    pub numOfPatchedInstructionRecords: usize,
+    /** [out] number of instances for each metric value per instruction.
+ This will depend on CUpti_SassPatching_OutputGranularity level set for the metric config.*/
+    pub numOfInstances: usize,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetricsGetDataProperties_Params",
+    ][::std::mem::size_of::<CUpti_SassMetricsGetDataProperties_Params>() - 40usize];
+    [
+        "Alignment of CUpti_SassMetricsGetDataProperties_Params",
+    ][::std::mem::align_of::<CUpti_SassMetricsGetDataProperties_Params>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsGetDataProperties_Params::structSize",
+    ][::std::mem::offset_of!(CUpti_SassMetricsGetDataProperties_Params, structSize)
+        - 0usize];
+    [
+        "Offset of field: CUpti_SassMetricsGetDataProperties_Params::pPriv",
+    ][::std::mem::offset_of!(CUpti_SassMetricsGetDataProperties_Params, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsGetDataProperties_Params::ctx",
+    ][::std::mem::offset_of!(CUpti_SassMetricsGetDataProperties_Params, ctx) - 16usize];
+    [
+        "Offset of field: CUpti_SassMetricsGetDataProperties_Params::numOfPatchedInstructionRecords",
+    ][::std::mem::offset_of!(
+        CUpti_SassMetricsGetDataProperties_Params, numOfPatchedInstructionRecords
+    ) - 24usize];
+    [
+        "Offset of field: CUpti_SassMetricsGetDataProperties_Params::numOfInstances",
+    ][::std::mem::offset_of!(CUpti_SassMetricsGetDataProperties_Params, numOfInstances)
+        - 32usize];
+};
+impl Default for CUpti_SassMetricsGetDataProperties_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    /** \brief SASS metric data properties API will give the data regarding number of instances of a metric
+ value and number of SASS instruction data has been collected. The number of instances of a metric
+ will vary as per user set the output granularity level with CUpti_SassMetrics_OutputGranularity value.
+ User need to allocate memory for retriving the SASS data using cuptiSassMetricsFlushData() API.
+
+ \param pParams A pointer to \ref CUpti_SassMetricsGetDataProperties_Params
+
+ \retval CUPTI_SUCCESS
+ \retval CUPTI_ERROR_INVALID_PARAMETER if any \p pParams is not valid
+ \retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device doesn't support SASS metric data collection
+ \retval CUPTI_ERROR_INVALID_OPERATION if this API is called outside the enable/disable range.*/
+    pub fn cuptiSassMetricsGetDataProperties(
+        pParams: *mut CUpti_SassMetricsGetDataProperties_Params,
+    ) -> CUptiResult;
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct CUpti_SassMetrics_InstanceValue {
+    pub metricId: u64,
+    pub value: u64,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetrics_InstanceValue",
+    ][::std::mem::size_of::<CUpti_SassMetrics_InstanceValue>() - 16usize];
+    [
+        "Alignment of CUpti_SassMetrics_InstanceValue",
+    ][::std::mem::align_of::<CUpti_SassMetrics_InstanceValue>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_InstanceValue::metricId",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_InstanceValue, metricId) - 0usize];
+    [
+        "Offset of field: CUpti_SassMetrics_InstanceValue::value",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_InstanceValue, value) - 8usize];
+};
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetrics_Data {
+    /// [in] equal to CUpti_SassMetricsFlushData_Params_STRUCT_SIZE
+    pub structSize: usize,
+    /// [in] assign to NULL
+    pub pPriv: *mut ::std::os::raw::c_void,
+    /// [out] Unique cubin id
+    pub cubinCrc: u32,
+    /// [out] function's unique symbol index in the module.
+    pub functionIndex: u32,
+    /// [out] The function name
+    pub functionName: *const ::std::os::raw::c_char,
+    /// [out] pc offset for the function in a module
+    pub pcOffset: u32,
+    /// [out] array of size equal to number of instances per metric, which contains the metric ID and metric value.
+    pub pInstanceValues: *mut CUpti_SassMetrics_InstanceValue,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetrics_Data",
+    ][::std::mem::size_of::<CUpti_SassMetrics_Data>() - 48usize];
+    [
+        "Alignment of CUpti_SassMetrics_Data",
+    ][::std::mem::align_of::<CUpti_SassMetrics_Data>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_Data::structSize",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_Data, structSize) - 0usize];
+    [
+        "Offset of field: CUpti_SassMetrics_Data::pPriv",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_Data, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetrics_Data::cubinCrc",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_Data, cubinCrc) - 16usize];
+    [
+        "Offset of field: CUpti_SassMetrics_Data::functionIndex",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_Data, functionIndex) - 20usize];
+    [
+        "Offset of field: CUpti_SassMetrics_Data::functionName",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_Data, functionName) - 24usize];
+    [
+        "Offset of field: CUpti_SassMetrics_Data::pcOffset",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_Data, pcOffset) - 32usize];
+    [
+        "Offset of field: CUpti_SassMetrics_Data::pInstanceValues",
+    ][::std::mem::offset_of!(CUpti_SassMetrics_Data, pInstanceValues) - 40usize];
+};
+impl Default for CUpti_SassMetrics_Data {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+/// \brief Params for cuptiSassMetricsFlushData
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct CUpti_SassMetricsFlushData_Params {
+    /// [in] equal to CUpti_SassMetricsFlushData_Params_STRUCT_SIZE
+    pub structSize: usize,
+    /// [in] assign to NULL
+    pub pPriv: *mut ::std::os::raw::c_void,
+    /** [in] CUDA context on which SASS metric data collection was enabled.
+ If set NULL, default context will be consider for SASS metric data collection.*/
+    pub ctx: CUcontext,
+    /** [in] number of patched instruction record will be retrived, user can call cuptiSassMetricsGetDataProperties()
+ for getting total number of records available.*/
+    pub numOfPatchedInstructionRecords: usize,
+    /** [in] number of patched instruction record instances for a metric, user can call cuptiSassMetricsGetDataProperties()
+ for getting total number of instances for each record per metric available.*/
+    pub numOfInstances: usize,
+    /// [out]
+    pub pMetricsData: *mut CUpti_SassMetrics_Data,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    [
+        "Size of CUpti_SassMetricsFlushData_Params",
+    ][::std::mem::size_of::<CUpti_SassMetricsFlushData_Params>() - 48usize];
+    [
+        "Alignment of CUpti_SassMetricsFlushData_Params",
+    ][::std::mem::align_of::<CUpti_SassMetricsFlushData_Params>() - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsFlushData_Params::structSize",
+    ][::std::mem::offset_of!(CUpti_SassMetricsFlushData_Params, structSize) - 0usize];
+    [
+        "Offset of field: CUpti_SassMetricsFlushData_Params::pPriv",
+    ][::std::mem::offset_of!(CUpti_SassMetricsFlushData_Params, pPriv) - 8usize];
+    [
+        "Offset of field: CUpti_SassMetricsFlushData_Params::ctx",
+    ][::std::mem::offset_of!(CUpti_SassMetricsFlushData_Params, ctx) - 16usize];
+    [
+        "Offset of field: CUpti_SassMetricsFlushData_Params::numOfPatchedInstructionRecords",
+    ][::std::mem::offset_of!(
+        CUpti_SassMetricsFlushData_Params, numOfPatchedInstructionRecords
+    ) - 24usize];
+    [
+        "Offset of field: CUpti_SassMetricsFlushData_Params::numOfInstances",
+    ][::std::mem::offset_of!(CUpti_SassMetricsFlushData_Params, numOfInstances)
+        - 32usize];
+    [
+        "Offset of field: CUpti_SassMetricsFlushData_Params::pMetricsData",
+    ][::std::mem::offset_of!(CUpti_SassMetricsFlushData_Params, pMetricsData) - 40usize];
+};
+impl Default for CUpti_SassMetricsFlushData_Params {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    /** \brief Flush SASS metrics data from CUPTI internal buffer to the user buffer.
+ User needs to allocate the buffer for retrieving the data. The number of records collected
+ can be queried using the API cuptiSassMetricsGetDataProperties().
+
+ \param pParams A pointer to \ref CUpti_SassMetricsFlushData_Params
+
+ \retval CUPTI_SUCCESS
+ \retval CUPTI_ERROR_INVALID_PARAMETER if any \p pParams is not valid
+ \retval CUPTI_ERROR_NOT_SUPPORTED indicates that the system/device doesn't support SASS metric data collection.
+ \retval CUPTI_ERROR_INVALID_OPERATION if this API is called outside the enable/disable range.*/
+    pub fn cuptiSassMetricsFlushData(
+        pParams: *mut CUpti_SassMetricsFlushData_Params,
+    ) -> CUptiResult;
+}
