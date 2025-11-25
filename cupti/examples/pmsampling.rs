@@ -43,8 +43,7 @@ struct Args {
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    cust::init(CudaFlags::empty())
-        .context("Failed to initialize the CUDA driver API")?;
+    cust::init(CudaFlags::empty()).context("Failed to initialize the CUDA driver API")?;
 
     // Initialize the CUPTI profiler interface
     let _guard = cupti::initialize().context("failed to initialize CUPTI profiler")?;
@@ -174,7 +173,9 @@ fn main() -> anyhow::Result<()> {
             .get_sample_info(&sampler, i)
             .context("failed to get sample info")?;
 
-        let duration_ns = sample_info.end_timestamp.abs_diff(sample_info.start_timestamp);
+        let duration_ns = sample_info
+            .end_timestamp
+            .abs_diff(sample_info.start_timestamp);
 
         println!(
             "Sample {}: timestamps [{} - {}] (duration: {} ns)",
