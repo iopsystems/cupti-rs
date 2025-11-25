@@ -200,7 +200,7 @@ impl SamplerBuilder {
         let image = self.host.get_config_image()?;
 
         let mut params = CUpti_PmSampling_Enable_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_Enable_Params_STRUCT_SIZE;
         params.deviceIndex = device_index;
 
         Error::result(unsafe { cuptiPmSamplingEnable(&mut params) })?;
@@ -282,7 +282,7 @@ impl Sampler {
         hw_buffer_append_mode: HardwareBufferAppendMode,
     ) -> Result<()> {
         let mut params = CUpti_PmSampling_SetConfig_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_SetConfig_Params_STRUCT_SIZE;
         params.configSize = self.config_image.as_bytes().len();
         params.pPmSamplingObject = self.raw.as_ptr();
         params.pConfig = self.config_image.as_bytes().as_ptr();
@@ -310,7 +310,7 @@ impl Sampler {
     /// [`set_config`]: Self::set_config
     pub fn start(&mut self) -> Result<()> {
         let mut params = CUpti_PmSampling_Start_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_Start_Params_STRUCT_SIZE;
         params.pPmSamplingObject = self.raw.as_ptr();
 
         Error::result(unsafe { cuptiPmSamplingStart(&mut params) })
@@ -328,7 +328,7 @@ impl Sampler {
     /// - [`Error::Unknown`] for any internal error
     pub fn stop(&mut self) -> Result<()> {
         let mut params = CUpti_PmSampling_Stop_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_Stop_Params_STRUCT_SIZE;
         params.pPmSamplingObject = self.raw.as_ptr();
 
         Error::result(unsafe { cuptiPmSamplingStop(&mut params) })
@@ -384,7 +384,7 @@ impl Sampler {
     /// - [`Error::Unknown`] for any internal error
     pub fn get_counter_availability(device_index: usize) -> Result<CounterAvailabilityImage> {
         let mut params = CUpti_PmSampling_GetCounterAvailability_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_GetCounterAvailability_Params_STRUCT_SIZE;
         params.deviceIndex = device_index;
 
         Error::result(unsafe { cuptiPmSamplingGetCounterAvailability(&mut params) })?;
@@ -402,7 +402,7 @@ impl Sampler {
 impl Drop for Sampler {
     fn drop(&mut self) {
         let mut params = CUpti_PmSampling_Disable_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_Disable_Params_STRUCT_SIZE;
         params.pPmSamplingObject = self.raw.as_ptr();
 
         let _ = unsafe { cuptiPmSamplingDisable(&mut params) };
@@ -450,7 +450,7 @@ impl CounterDataImage {
             .collect::<Vec<_>>();
 
         let mut params = CUpti_PmSampling_GetCounterDataSize_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_GetCounterDataSize_Params_STRUCT_SIZE;
         params.pPmSamplingObject = sampler.raw.as_ptr();
         params.pMetricNames = metric_names.as_mut_ptr();
         params.numMetrics = metric_names.len();
@@ -461,7 +461,7 @@ impl CounterDataImage {
         let mut image = Vec::with_capacity(params.counterDataSize);
 
         let mut params = CUpti_PmSampling_CounterDataImage_Initialize_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_CounterDataImage_Initialize_Params_STRUCT_SIZE;
         params.pPmSamplingObject = sampler.raw.as_ptr();
         params.counterDataSize = image.capacity();
         params.pCounterData = image.spare_capacity_mut().as_ptr() as *mut u8;
@@ -486,7 +486,7 @@ impl CounterDataImage {
     /// - [`Error::Unknown`] for any internal error
     pub fn get_data_info(&self) -> Result<CounterDataInfo> {
         let mut params = CUpti_PmSampling_GetCounterDataInfo_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_GetCounterDataInfo_Params_STRUCT_SIZE;
         params.pCounterDataImage = self.0.as_ptr();
         params.counterDataImageSize = self.0.len();
 
@@ -515,7 +515,7 @@ impl CounterDataImage {
     /// - [`Error::Unknown`] for any internal error
     pub fn get_sample_info(&self, sampler: &Sampler, sample_index: usize) -> Result<SampleInfo> {
         let mut params = CUpti_PmSampling_CounterData_GetSampleInfo_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_CounterData_GetSampleInfo_Params_STRUCT_SIZE;
         params.pPmSamplingObject = sampler.raw.as_ptr();
         params.pCounterDataImage = self.0.as_ptr();
         params.counterDataImageSize = self.0.len();

@@ -724,7 +724,7 @@ impl Subscriber {
         let mut handle = std::ptr::null_mut();
 
         let mut params = CUpti_SubscriberParams::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_SubscriberParams_STRUCT_SIZE;
         params.subscriberName = subscriber_name_ptr;
         params.oldSubscriberName = old_name_bytes.as_mut_ptr() as *mut c_char;
         params.oldSubscriberSize = CUPTI_OLD_SUBSCRIBER_NAME_MIN_LEN as _;

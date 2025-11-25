@@ -123,7 +123,7 @@ c_enum! {
 
 fn get_config_attr(ctx: &Context, info: &mut CUpti_PCSamplingConfigurationInfo) -> Result<()> {
     let mut params = CUpti_PCSamplingConfigurationInfoParams {
-        size: std::mem::size_of::<CUpti_PCSamplingConfigurationInfoParams>(),
+        size: CUpti_PCSamplingConfigurationInfoParamsSize,
         ctx: ctx.as_raw(),
         numAttributes: 1,
         pPCSamplingConfigurationInfo: info,
@@ -138,7 +138,7 @@ fn get_config_attr(ctx: &Context, info: &mut CUpti_PCSamplingConfigurationInfo) 
 
 fn set_config_attr(ctx: &Context, info: &mut CUpti_PCSamplingConfigurationInfo) -> Result<()> {
     let mut params = CUpti_PCSamplingConfigurationInfoParams {
-        size: std::mem::size_of::<CUpti_PCSamplingConfigurationInfoParams>(),
+        size: CUpti_PCSamplingConfigurationInfoParamsSize,
         ctx: ctx.as_raw(),
         numAttributes: 1,
         pPCSamplingConfigurationInfo: info,

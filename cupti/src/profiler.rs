@@ -54,7 +54,7 @@ impl HostProfiler {
         counter_availability_image: &CounterAvailabilityImage,
     ) -> Result<Self> {
         let mut params = CUpti_Profiler_Host_Initialize_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_Initialize_Params_STRUCT_SIZE;
         params.profilerType = ty.into();
         params.pChipName = chip_name.as_ptr();
         params.pCounterAvailabilityImage = counter_availability_image.0.as_ptr();
@@ -88,7 +88,7 @@ impl HostProfiler {
     /// - [`Error::Unknown`] for any internal error.
     pub fn supported_chips() -> Result<&'static CStringSlice> {
         let mut params = CUpti_Profiler_Host_GetSupportedChips_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_GetSupportedChips_Params_STRUCT_SIZE;
 
         Error::result(unsafe { cuptiProfilerHostGetSupportedChips(&mut params) })?;
 
@@ -108,7 +108,7 @@ impl HostProfiler {
     /// - [`Error::Unknown`] for any internal error.
     pub fn get_base_metrics(&self, ty: MetricType) -> Result<&'static CStringSlice> {
         let mut params = CUpti_Profiler_Host_GetBaseMetrics_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_GetBaseMetrics_Params_STRUCT_SIZE;
         params.pHostObject = self.raw.as_ptr();
         params.metricType = ty.into();
 
@@ -133,7 +133,7 @@ impl HostProfiler {
     ///   supported for the chip.
     pub fn get_submetrics(&self, ty: MetricType, name: &CStr) -> Result<&'static CStringSlice> {
         let mut params = CUpti_Profiler_Host_GetSubMetrics_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_GetSubMetrics_Params_STRUCT_SIZE;
         params.pHostObject = self.raw.as_ptr();
         params.metricType = ty.into();
         params.pMetricName = name.as_ptr();
@@ -159,7 +159,7 @@ impl HostProfiler {
     /// - [`Error::Unknown`] for any internal error.
     pub fn get_metric_properties(&self, name: &CStr) -> Result<MetricProperties> {
         let mut params = CUpti_Profiler_Host_GetMetricProperties_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_GetMetricProperties_Params_STRUCT_SIZE;
         params.pHostObject = self.raw.as_ptr();
         params.pMetricName = name.as_ptr();
 
@@ -181,7 +181,7 @@ impl HostProfiler {
     /// - [`Error::Unknown`] for any internal error.
     pub fn get_config_image(&self) -> Result<ConfigImage> {
         let mut params = CUpti_Profiler_Host_GetConfigImageSize_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_GetConfigImageSize_Params_STRUCT_SIZE;
         params.pHostObject = self.raw.as_ptr();
 
         Error::result(unsafe { cuptiProfilerHostGetConfigImageSize(&mut params) })?;
@@ -221,7 +221,7 @@ impl HostProfiler {
     /// - [`Error::Unknown`] for any internal error
     pub fn add_metrics(&mut self, metric_names: &CStringSlice) -> Result<()> {
         let mut params = CUpti_Profiler_Host_ConfigAddMetrics_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_ConfigAddMetrics_Params_STRUCT_SIZE;
         params.pHostObject = self.raw.as_ptr();
         params.ppMetricNames = metric_names.as_raw_slice().as_ptr() as *mut _;
         params.numMetrics = metric_names.as_raw_slice().len();
@@ -254,7 +254,7 @@ impl HostProfiler {
         let mut metric_values = Vec::with_capacity(metric_names.len());
 
         let mut params = CUpti_Profiler_Host_EvaluateToGpuValues_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_EvaluateToGpuValues_Params_STRUCT_SIZE;
         params.pHostObject = self.raw.as_ptr();
         params.pCounterDataImage = counter_data.as_bytes().as_ptr();
         params.counterDataImageSize = counter_data.as_bytes().len();
@@ -273,7 +273,7 @@ impl HostProfiler {
 impl Drop for HostProfiler {
     fn drop(&mut self) {
         let mut params = CUpti_Profiler_Host_Deinitialize_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_Deinitialize_Params_STRUCT_SIZE;
         params.pHostObject = self.raw.as_ptr();
 
         let _ = unsafe { cuptiProfilerHostDeinitialize(&mut params) };
@@ -313,7 +313,7 @@ impl ConfigImage {
     /// - [`Error::Unknown`] for any internal error.
     pub fn get_num_of_passes(&self) -> Result<usize> {
         let mut params = CUpti_Profiler_Host_GetNumOfPasses_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_GetNumOfPasses_Params_STRUCT_SIZE;
         params.pConfigImage = self.0.as_ptr() as *mut u8;
         params.configImageSize = self.0.len();
 
@@ -333,7 +333,7 @@ pub struct CounterAvailabilityImage(pub(crate) Vec<u8>);
 impl CounterAvailabilityImage {
     fn get_impl(context: Option<&Context>) -> Result<Self> {
         let mut params = CUpti_Profiler_GetCounterAvailability_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_GetCounterAvailability_Params_STRUCT_SIZE;
         params.ctx = context.map(|c| c.as_raw()).unwrap_or(std::ptr::null_mut());
 
         Error::result(unsafe { cuptiProfilerGetCounterAvailability(&mut params) })?;
@@ -410,7 +410,7 @@ impl CounterAvailabilityImage {
         chip_name: &CStr,
     ) -> Result<usize> {
         let mut params = CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_GetMaxNumHardwareMetricsPerPass_Params_STRUCT_SIZE;
         params.profilerType = profiler_type.into();
         params.pChipName = chip_name.as_ptr();
         params.pCounterAvailabilityImage = self.0.as_ptr() as *mut u8;

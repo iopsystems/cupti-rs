@@ -191,7 +191,7 @@ impl RangeProfilerBuilder {
         let config_image = self.host.get_config_image()?;
 
         let mut params = CUpti_RangeProfiler_Enable_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_RangeProfiler_Enable_Params_STRUCT_SIZE;
         params.ctx = ctx.map(|c| c.as_raw()).unwrap_or(std::ptr::null_mut());
 
         Error::result(unsafe { cuptiRangeProfilerEnable(&mut params) })?;
@@ -265,7 +265,7 @@ impl RangeProfiler {
         config: &RangeProfilerConfig,
     ) -> Result<()> {
         let mut params = CUpti_RangeProfiler_SetConfig_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_RangeProfiler_SetConfig_Params_STRUCT_SIZE;
         params.pRangeProfilerObject = self.raw.as_ptr();
         params.configSize = self.config_image.as_bytes().len();
         params.pConfig = self.config_image.as_bytes().as_ptr();
@@ -299,7 +299,7 @@ impl RangeProfiler {
     /// [`pop_range`]: Self::pop_range
     pub fn start(&mut self) -> Result<()> {
         let mut params = CUpti_RangeProfiler_Start_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_RangeProfiler_Start_Params_STRUCT_SIZE;
         params.pRangeProfilerObject = self.raw.as_ptr();
 
         Error::result(unsafe { cuptiRangeProfilerStart(&mut params) })
@@ -318,7 +318,7 @@ impl RangeProfiler {
     /// - [`Error::Unknown`] for any internal error
     pub fn stop(&mut self) -> Result<StopStatus> {
         let mut params = CUpti_RangeProfiler_Stop_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_RangeProfiler_Stop_Params_STRUCT_SIZE;
         params.pRangeProfilerObject = self.raw.as_ptr();
 
         Error::result(unsafe { cuptiRangeProfilerStop(&mut params) })?;
@@ -353,7 +353,7 @@ impl RangeProfiler {
     /// [`pop_range`]: Self::pop_range
     pub fn push_range(&mut self, range_name: &CStr) -> Result<()> {
         let mut params = CUpti_RangeProfiler_PushRange_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_RangeProfiler_PushRange_Params_STRUCT_SIZE;
         params.pRangeProfilerObject = self.raw.as_ptr();
         params.pRangeName = range_name.as_ptr();
 
@@ -373,7 +373,7 @@ impl RangeProfiler {
     /// - [`Error::Unknown`] for any internal error
     pub fn pop_range(&mut self) -> Result<()> {
         let mut params = CUpti_RangeProfiler_PopRange_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_RangeProfiler_PopRange_Params_STRUCT_SIZE;
         params.pRangeProfilerObject = self.raw.as_ptr();
 
         Error::result(unsafe { cuptiRangeProfilerPopRange(&mut params) })
@@ -397,7 +397,7 @@ impl RangeProfiler {
     /// [`set_config`]: Self::set_config
     pub fn decode_data(&mut self) -> Result<usize> {
         let mut params = CUpti_RangeProfiler_DecodeData_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_RangeProfiler_DecodeData_Params_STRUCT_SIZE;
         params.pRangeProfilerObject = self.raw.as_ptr();
 
         Error::result(unsafe { cuptiRangeProfilerDecodeData(&mut params) })?;
@@ -409,7 +409,7 @@ impl RangeProfiler {
 impl Drop for RangeProfiler {
     fn drop(&mut self) {
         let mut params = CUpti_RangeProfiler_Disable_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_RangeProfiler_Disable_Params_STRUCT_SIZE;
         params.pRangeProfilerObject = self.raw.as_ptr();
 
         let _ = unsafe { cuptiRangeProfilerDisable(&mut params) };
@@ -492,7 +492,7 @@ impl RangeCounterDataImage {
     ) -> Result<Self> {
         // Get the required size for the counter data image
         let mut size_params = CUpti_RangeProfiler_GetCounterDataSize_Params::default();
-        size_params.structSize = std::mem::size_of_val(&size_params);
+        size_params.structSize = CUpti_RangeProfiler_GetCounterDataSize_Params_STRUCT_SIZE;
         size_params.pRangeProfilerObject = profiler.raw.as_ptr() as *mut _;
         size_params.pMetricNames = metric_names.as_raw_slice().as_ptr() as *mut _;
         size_params.numMetrics = metric_names.len();
@@ -507,7 +507,7 @@ impl RangeCounterDataImage {
 
         // Initialize the buffer
         let mut init_params = CUpti_RangeProfiler_CounterDataImage_Initialize_Params::default();
-        init_params.structSize = std::mem::size_of_val(&init_params);
+        init_params.structSize = CUpti_RangeProfiler_CounterDataImage_Initialize_Params_STRUCT_SIZE;
         init_params.pRangeProfilerObject = profiler.raw.as_ptr() as *mut _;
         init_params.counterDataSize = this.0.len();
         init_params.pCounterData = this.0.as_mut_ptr();
@@ -535,7 +535,7 @@ impl RangeCounterDataImage {
     /// - [`Error::Unknown`] for any internal error
     pub fn get_data_info(&self) -> Result<RangeCounterDataInfo> {
         let mut params = CUpti_RangeProfiler_GetCounterDataInfo_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_RangeProfiler_GetCounterDataInfo_Params_STRUCT_SIZE;
         params.pCounterDataImage = self.0.as_ptr();
         params.counterDataImageSize = self.0.len();
 
@@ -559,7 +559,7 @@ impl RangeCounterDataImage {
     /// - [`Error::Unknown`] for any internal error
     pub fn get_range_info(&self, range_index: usize, delimiter: &CStr) -> Result<&'static CStr> {
         let mut params = CUpti_RangeProfiler_CounterData_GetRangeInfo_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_RangeProfiler_CounterData_GetRangeInfo_Params_STRUCT_SIZE;
         params.pCounterDataImage = self.0.as_ptr();
         params.counterDataImageSize = self.0.len();
         params.rangeIndex = range_index;
@@ -594,7 +594,7 @@ impl RangeCounterDataImage {
         let mut metric_values = Vec::with_capacity(metric_names.len());
 
         let mut params = CUpti_Profiler_Host_EvaluateToGpuValues_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_EvaluateToGpuValues_Params_STRUCT_SIZE;
         params.pHostObject = profiler.host.as_raw() as *mut _;
         params.pCounterDataImage = self.0.as_ptr();
         params.counterDataImageSize = self.0.len();
