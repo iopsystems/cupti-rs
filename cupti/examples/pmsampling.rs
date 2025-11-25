@@ -10,6 +10,7 @@ use anyhow::{Context, bail};
 use clap::Parser;
 use cupti::pmsampling::*;
 use cupti::{CStringList, get_device_chip_name};
+use cust::CudaFlags;
 
 /// PM Sampling example - collect GPU performance metrics at regular intervals
 #[derive(Parser, Debug)]
@@ -28,7 +29,7 @@ struct Args {
     buffer_size: usize,
 
     /// Maximum number of samples to collect
-    #[arg(short, long, default_value_t = 100)]
+    #[arg(long, default_value_t = 100)]
     max_samples: u32,
 
     /// Metrics to collect (can be specified multiple times)
@@ -41,6 +42,9 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
+
+    cust::init(CudaFlags::empty())
+        .context("Failed to initialize the CUDA driver API")?;
 
     // Initialize the CUPTI profiler interface
     let _guard = cupti::initialize().context("failed to initialize CUPTI profiler")?;
@@ -170,7 +174,7 @@ fn main() -> anyhow::Result<()> {
             .get_sample_info(&sampler, i)
             .context("failed to get sample info")?;
 
-        let duration_ns = sample_info.end_timestamp - sample_info.start_timestamp;
+        let duration_ns = sample_info.end_timestamp.abs_diff(sample_info.start_timestamp);
 
         println!(
             "Sample {}: timestamps [{} - {}] (duration: {} ns)",

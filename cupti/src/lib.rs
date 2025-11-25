@@ -16,6 +16,8 @@ mod error;
 mod nvtx_cbid;
 mod util;
 
+use cupti_sys::CUpti_Device_GetChipName_Params_STRUCT_SIZE;
+
 pub use self::cuda::*;
 pub use self::driver_cbid::DriverApiTraceCbid;
 pub use self::error::Error;
@@ -93,7 +95,7 @@ pub fn get_device_chip_name(device_index: usize) -> Result<&'static str> {
     use cupti_sys::{CUpti_Device_GetChipName_Params, cuptiDeviceGetChipName};
 
     let mut params = CUpti_Device_GetChipName_Params {
-        structSize: std::mem::size_of::<CUpti_Device_GetChipName_Params>(),
+        structSize: CUpti_Device_GetChipName_Params_STRUCT_SIZE,
         deviceIndex: device_index,
         ..Default::default()
     };

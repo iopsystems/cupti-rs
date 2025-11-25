@@ -12,3 +12,4 @@ cupti-sys = { workspace = true }
 [dev-dependencies]
 anyhow = "1.0.100"
 clap = { version = "4.5.52", features = ["derive"] }
+cust = "0.3.2"

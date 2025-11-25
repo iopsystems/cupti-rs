@@ -351,7 +351,7 @@ impl Sampler {
     /// - [`Error::Unknown`] for any internal error
     pub fn decode_data(&mut self, counter_data: &mut CounterDataImage) -> Result<DecodeStatus> {
         let mut params = CUpti_PmSampling_DecodeData_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_PmSampling_DecodeData_Params_STRUCT_SIZE;
         params.pPmSamplingObject = self.raw.as_ptr();
         params.pCounterDataImage = counter_data.0.as_mut_ptr();
         params.counterDataImageSize = counter_data.0.len();

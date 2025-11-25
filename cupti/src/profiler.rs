@@ -189,9 +189,9 @@ impl HostProfiler {
         let mut data = Vec::with_capacity(params.configImageSize);
 
         let mut params = CUpti_Profiler_Host_GetConfigImage_Params::default();
-        params.structSize = std::mem::size_of_val(&params);
+        params.structSize = CUpti_Profiler_Host_GetConfigImage_Params_STRUCT_SIZE;
         params.pHostObject = self.raw.as_ptr();
-        params.configImageSize = data.len();
+        params.configImageSize = data.capacity();
         params.pConfigImage = data.spare_capacity_mut().as_ptr() as *mut u8;
 
         Error::result(unsafe { cuptiProfilerHostGetConfigImage(&mut params) })?;
